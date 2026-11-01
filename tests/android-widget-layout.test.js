@@ -30,8 +30,10 @@ test('activity selection provides both bulk actions and a compact resizable widg
     const settings = fs.readFileSync(path.join(root, 'java', 'io', 'github', 'lgy8687', 'timebook', 'WidgetSettingsActivity.java'), 'utf8');
     const provider = fs.readFileSync(path.join(root, 'java', 'io', 'github', 'lgy8687', 'timebook', 'MainActivityWidget.java'), 'utf8');
     const info = fs.readFileSync(path.join(root, 'res', 'xml', 'main_widget_info.xml'), 'utf8');
-    assert.match(settings, /setAll\(dialog, checked, true\)/);
-    assert.match(settings, /setAll\(dialog, checked, false\)/);
+    assert.match(settings, /setAll\(boxes, true\)/);
+    assert.match(settings, /setAll\(boxes, false\)/);
+    assert.match(settings, /new android\.widget\.ScrollView/);
+    assert.doesNotMatch(settings, /setMultiChoiceItems/);
     assert.match(provider, /onAppWidgetOptionsChanged/);
     assert.doesNotMatch(provider, /OPTION_APPWIDGET_MIN_HEIGHT/);
     assert.match(provider, /i < visibleRows\.size\(\)/);

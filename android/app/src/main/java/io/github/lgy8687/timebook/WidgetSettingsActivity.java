@@ -44,9 +44,28 @@ public class WidgetSettingsActivity extends Activity {
         });
         controls.addView(opacityLabel);
         controls.addView(transparency);
+        android.widget.TextView activitiesLabel = new android.widget.TextView(this);
+        activitiesLabel.setText(ids.length == 0 ? "请先打开应用获取活动列表" : "显示的活动");
+        controls.addView(activitiesLabel);
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        android.widget.LinearLayout choices = new android.widget.LinearLayout(this);
+        choices.setOrientation(android.widget.LinearLayout.VERTICAL);
+        java.util.ArrayList<android.widget.CheckBox> boxes = new java.util.ArrayList<>();
+        for (int i = 0; i < ids.length; i++) {
+            final int index = i;
+            android.widget.CheckBox box = new android.widget.CheckBox(this);
+            box.setText(labels[i]);
+            box.setChecked(checked[i]);
+            box.setOnCheckedChangeListener((button, value) -> checked[index] = value);
+            choices.addView(box);
+            boxes.add(box);
+        }
+        scroll.addView(choices);
+        int listHeight = (int) Math.min(280 * getResources().getDisplayMetrics().density,
+                getResources().getDisplayMetrics().heightPixels * 0.38f);
+        controls.addView(scroll, new android.widget.LinearLayout.LayoutParams(-1, listHeight));
         AlertDialog dialog = new AlertDialog.Builder(this).setTitle("桌面小组件设置")
             .setView(controls)
-            .setMultiChoiceItems(labels, checked, (d, index, value) -> checked[index] = value)
             .setPositiveButton("完成", (d, w) -> {
                 Set<String> selected = new HashSet<>();
                 for (int i = 0; i < ids.length; i++) if (checked[i]) selected.add(ids[i]);
@@ -62,16 +81,13 @@ public class WidgetSettingsActivity extends Activity {
             }).setNeutralButton("全选", null).setNegativeButton("全不选", null)
             .setOnCancelListener(d -> finish()).create();
         dialog.setOnShowListener(ignored -> {
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> setAll(dialog, checked, true));
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(v -> setAll(dialog, checked, false));
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> setAll(boxes, true));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener(v -> setAll(boxes, false));
         });
         dialog.show();
     }
 
-    private void setAll(AlertDialog dialog, boolean[] checked, boolean value) {
-        for (int i = 0; i < checked.length; i++) {
-            checked[i] = value;
-            dialog.getListView().setItemChecked(i, value);
-        }
+    private void setAll(java.util.List<android.widget.CheckBox> boxes, boolean value) {
+        for (android.widget.CheckBox box : boxes) box.setChecked(value);
     }
 }
