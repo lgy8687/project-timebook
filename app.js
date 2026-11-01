@@ -679,6 +679,7 @@ let configSectionOpen = null;
 let expandedCategoryId = -1;
 let categoryConfigTab = 'categories';
 let drawerViewMode = 'columns';
+let editDrawerPreviousViewMode = null;
 const BJ_OFFSET = 8 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -2833,6 +2834,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('edit-cat-btn');
     if (btn) btn.addEventListener('click', () => {
         if (!editTarget) return;
+        if (editTarget.source === 'unassigned') {
+            editDrawerPreviousViewMode = drawerViewMode;
+            drawerViewMode = 'flat';
+        }
         _parallelCallback = (l1, l2) => { editOldL1 = l1; editOldL2 = l2; updateEditCatDisplay(l1, l2); document.getElementById('edit-modal').classList.remove('hidden'); };
         pickerMode = 'edit';
         setDrawerDevAddress('B65');
@@ -7431,6 +7436,10 @@ function closeDrawer() {
     document.getElementById('drawer').classList.add('hidden');
     setDrawerDevAddress('B13');
     if (wasCalendarBackfill) document.getElementById('calendar-backfill-modal').classList.remove('hidden');
+    if (pickerMode === 'edit' && editDrawerPreviousViewMode !== null) {
+        drawerViewMode = editDrawerPreviousViewMode;
+        editDrawerPreviousViewMode = null;
+    }
     pickerMode = 'record';
     _parallelCallback = null;
     if (wasClassify) {
