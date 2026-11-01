@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 
 public class MainActivity extends Activity {
-    private static final String APP_URL = "https://lgy8687.github.io/timebook/";
+    private static final String APP_URL = "https://lgy8687.github.io/project-timebook/";
     private static final int REQUEST_BACKUP = 101;
     private static final int REQUEST_IMPORT = 102;
     private WebView webView;
@@ -112,7 +112,7 @@ public class MainActivity extends Activity {
                 Uri uri = request.getUrl();
                 if ("https".equals(uri.getScheme())
                         && "lgy8687.github.io".equals(uri.getHost())
-                        && uri.getPath() != null && uri.getPath().startsWith("/timebook/")) {
+                        && uri.getPath() != null && uri.getPath().startsWith("/project-timebook/")) {
                     return false;
                 }
                 startActivity(new Intent(Intent.ACTION_VIEW, uri));
