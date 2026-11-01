@@ -679,6 +679,11 @@ let configSectionOpen = null;
 let expandedCategoryId = -1;
 let categoryConfigTab = 'categories';
 let drawerViewMode = 'columns';
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.TimeBookAndroid && typeof window.TimeBookAndroid.openWidgetSettings === 'function') {
+        document.getElementById('widget-settings-entry')?.classList.remove('hidden');
+    }
+});
 let editDrawerPreviousViewMode = null;
 const BJ_OFFSET = 8 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;

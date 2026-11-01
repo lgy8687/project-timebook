@@ -31,6 +31,7 @@ public class MainActivityWidget extends AppWidgetProvider {
     private static void update(Context context, AppWidgetManager manager, int[] ids) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         Set<String> selected = prefs.getStringSet("selected", null);
+        int backgroundAlpha = Math.round(Math.max(0, Math.min(100, prefs.getInt("background_opacity", 100))) * 255 / 100f);
         JSONObject data;
         try { data = new JSONObject(prefs.getString("daily", "{}")); } catch (Exception e) { data = new JSONObject(); }
         JSONArray rows = data.optJSONArray("rows");
@@ -56,6 +57,7 @@ public class MainActivityWidget extends AppWidgetProvider {
                 long ms = Math.max(0, row.optLong("ms"));
                 boolean live = row.optBoolean("live");
                 RemoteViews item = new RemoteViews(context.getPackageName(), R.layout.main_widget_row);
+                item.setInt(R.id.row_background, "setImageAlpha", backgroundAlpha);
                 item.setTextViewText(R.id.row_name, row.optString("name"));
                 item.setViewVisibility(R.id.row_timer, live ? View.VISIBLE : View.GONE);
                 item.setViewVisibility(R.id.row_duration, live ? View.GONE : View.VISIBLE);
@@ -69,10 +71,11 @@ public class MainActivityWidget extends AppWidgetProvider {
                 else item.setTextViewText(R.id.row_duration, String.format(java.util.Locale.ROOT, "%d:%02d:%02d", ms / 3600000, ms / 60000 % 60, ms / 1000 % 60));
                 views.addView(R.id.widget_rows, item);
             }
-            views.setTextViewText(R.id.widget_empty, stale ? "点击打开应用更新" : selected != null && selected.isEmpty() ? "点击选择活动" : "暂无活动，点击设置");
-            views.setViewVisibility(R.id.widget_empty, visibleRows.isEmpty() ? View.VISIBLE : View.GONE);
+            views.setTextViewText(R.id.widget_empty, stale ? "点击打开应用更新" : "暂无显示的活动，点击打开应用");
+            views.setInt(R.id.widget_empty_background, "setImageAlpha", backgroundAlpha);
+            views.setViewVisibility(R.id.widget_empty_container, visibleRows.isEmpty() ? View.VISIBLE : View.GONE);
             views.setViewVisibility(R.id.widget_rows, visibleRows.isEmpty() ? View.GONE : View.VISIBLE);
-            Intent action = new Intent(context, stale ? MainActivity.class : WidgetSettingsActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Intent action = new Intent(context, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             views.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(context, 0, action, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             manager.updateAppWidget(id, views);
         }

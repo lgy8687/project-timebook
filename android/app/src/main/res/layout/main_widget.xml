@@ -1,6 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical">
-    <TextView android:id="@+id/widget_empty" android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:paddingStart="12dp" android:paddingEnd="12dp" android:background="@drawable/main_widget_background" android:textColor="#526A91" android:textSize="15sp" />
+    <FrameLayout android:id="@+id/widget_empty_container" android:layout_width="match_parent" android:layout_height="48dp">
+        <ImageView android:id="@+id/widget_empty_background" android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/main_widget_background" android:scaleType="fitXY" />
+        <TextView android:id="@+id/widget_empty" android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center_vertical" android:paddingStart="12dp" android:paddingEnd="12dp" android:textColor="#526A91" android:textSize="15sp" />
+    </FrameLayout>
     <LinearLayout android:id="@+id/widget_rows" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" />
 </LinearLayout>

@@ -15,11 +15,7 @@ public class WidgetSettingsActivity extends Activity {
         android.content.SharedPreferences prefs = getSharedPreferences(MainActivityWidget.PREFS, MODE_PRIVATE);
         JSONArray rows;
         try { rows = new JSONObject(prefs.getString("daily", "{}")).optJSONArray("rows"); } catch (Exception e) { rows = null; }
-        if (rows == null || rows.length() == 0) {
-            new AlertDialog.Builder(this).setMessage("请先打开应用，获取活动列表。")
-                .setPositiveButton("知道了", (d, w) -> finish()).setOnCancelListener(d -> finish()).show();
-            return;
-        }
+        if (rows == null) rows = new JSONArray();
         String[] labels = new String[rows.length()];
         String[] ids = new String[rows.length()];
         boolean[] checked = new boolean[rows.length()];
@@ -30,12 +26,33 @@ public class WidgetSettingsActivity extends Activity {
             labels[i] = row.optString("category") + " · " + row.optString("name");
             checked[i] = old == null || old.contains(ids[i]);
         }
-        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("选择桌面显示的活动")
+        android.widget.LinearLayout controls = new android.widget.LinearLayout(this);
+        controls.setOrientation(android.widget.LinearLayout.VERTICAL);
+        int padding = (int) (24 * getResources().getDisplayMetrics().density);
+        controls.setPadding(padding, padding / 2, padding, 0);
+        android.widget.TextView opacityLabel = new android.widget.TextView(this);
+        android.widget.SeekBar transparency = new android.widget.SeekBar(this);
+        transparency.setMax(100);
+        transparency.setProgress(100 - Math.max(0, Math.min(100, prefs.getInt("background_opacity", 100))));
+        opacityLabel.setText("背景透明度：" + transparency.getProgress() + "%");
+        transparency.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(android.widget.SeekBar bar, int value, boolean fromUser) {
+                opacityLabel.setText("背景透明度：" + value + "%");
+            }
+            @Override public void onStartTrackingTouch(android.widget.SeekBar bar) { }
+            @Override public void onStopTrackingTouch(android.widget.SeekBar bar) { }
+        });
+        controls.addView(opacityLabel);
+        controls.addView(transparency);
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("桌面小组件设置")
+            .setView(controls)
             .setMultiChoiceItems(labels, checked, (d, index, value) -> checked[index] = value)
             .setPositiveButton("完成", (d, w) -> {
                 Set<String> selected = new HashSet<>();
                 for (int i = 0; i < ids.length; i++) if (checked[i]) selected.add(ids[i]);
-                prefs.edit().putStringSet("selected", selected).apply();
+                android.content.SharedPreferences.Editor editor = prefs.edit().putInt("background_opacity", 100 - transparency.getProgress());
+                if (ids.length > 0) editor.putStringSet("selected", selected);
+                editor.apply();
                 MainActivityWidget.refresh(this);
                 int widgetId = getIntent().getIntExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID);
                 if (widgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {

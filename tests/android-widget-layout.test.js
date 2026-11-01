@@ -13,6 +13,18 @@ test('widget layouts use only views supported by Android RemoteViews', () => {
     }
 });
 
+test('widget opens the app and transparency changes backgrounds only', () => {
+    const root = path.join(__dirname, '..', 'android', 'app', 'src', 'main');
+    const provider = fs.readFileSync(path.join(root, 'java', 'io', 'github', 'lgy8687', 'timebook', 'MainActivityWidget.java'), 'utf8');
+    const settings = fs.readFileSync(path.join(root, 'java', 'io', 'github', 'lgy8687', 'timebook', 'WidgetSettingsActivity.java'), 'utf8');
+    assert.match(provider, /new Intent\(context, MainActivity\.class\)/);
+    assert.match(provider, /R\.id\.row_background, "setImageAlpha"/);
+    assert.match(provider, /R\.id\.widget_empty_background, "setImageAlpha"/);
+    assert.doesNotMatch(provider, /R\.id\.row_(?:name|timer|duration), "setImageAlpha"/);
+    assert.match(settings, /背景透明度/);
+    assert.match(settings, /putInt\("background_opacity"/);
+});
+
 test('activity selection provides both bulk actions and a compact resizable widget', () => {
     const root = path.join(__dirname, '..', 'android', 'app', 'src', 'main');
     const settings = fs.readFileSync(path.join(root, 'java', 'io', 'github', 'lgy8687', 'timebook', 'WidgetSettingsActivity.java'), 'utf8');

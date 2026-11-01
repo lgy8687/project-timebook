@@ -63,6 +63,10 @@ public class MainActivity extends Activity {
 
     private class BackupBridge {
         @JavascriptInterface
+        public void openWidgetSettings() {
+            runOnUiThread(() -> startActivity(new Intent(MainActivity.this, WidgetSettingsActivity.class)));
+        }
+        @JavascriptInterface
         public void saveBackup(String name, String json) {
             runOnUiThread(() -> {
                 pendingBackup = json;
