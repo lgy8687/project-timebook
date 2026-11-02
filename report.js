@@ -199,7 +199,7 @@
                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
             });
         });
-        if (data.period !== 'day' && data.daily?.length) {
+        if (mode === 'count' && data.period !== 'day' && data.daily?.length >= 3) {
             const max = Math.max(1, ...data.daily.map(day => day.count));
             const trend = document.createElement('div');
             trend.className = 'event-trend';
@@ -214,8 +214,9 @@
             const caption = document.createElement('div');
             caption.className = 'event-trend-caption';
             caption.textContent = `${data.daily[0].date} — ${data.daily[data.daily.length - 1].date} · 每日次数`;
-            box.prepend(caption);
-            box.prepend(trend);
+            const list = box.querySelector('.event-report-list');
+            box.insertBefore(trend, list);
+            box.insertBefore(caption, list);
         }
     }
 

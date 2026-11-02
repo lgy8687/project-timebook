@@ -38,7 +38,7 @@ body#report-standalone {
 .toolbar { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
 .report-heading-row { display:flex; align-items:center; justify-content:space-between; gap:16px; }
 .report-heading-row h2 { margin:0; font-size:20px; font-weight:700; }
-#report-period-toolbar { padding:16px 0 12px; border-bottom:1px solid #dce3e8; gap:16px; }
+#report-period-toolbar { padding:0 0 4px; border-bottom:1px solid #dce3e8; gap:4px; margin-bottom:12px; }
 #report-period-toolbar .report-kind-tabs { display:flex; gap:4px; padding:3px; background:#eef2f4; border-radius:8px; }
 #report-period-toolbar .report-kind-tabs button { border:0; padding:8px 18px; font-size:14px; border-radius:6px; color:#526171; background:transparent; }
 #report-period-toolbar .report-kind-tabs button.active { background:#fff; color:#263c4b; box-shadow:0 1px 3px #0001; }
@@ -62,8 +62,8 @@ body#report-standalone {
 .event-manager-detail button { min-height:44px; border-radius:6px; }
 .event-center-row { border:0; border-bottom:1px solid #e2e8ed; border-radius:0; box-shadow:none; padding:14px 0; }
 .event-center-row > button { min-width:44px; min-height:44px; font-size:24px; }
-.event-trend { display:flex; align-items:flex-end; gap:3px; height:100px; margin:20px 0 8px; }
-.event-trend-bar { flex:1; min-width:2px; background:#438a78; border-radius:3px 3px 0 0; }
+.event-trend { display:flex; align-items:flex-end; justify-content:space-around; gap:3px; height:64px; margin:16px 0 8px; border-bottom:1px solid #dce3e8; }
+.event-trend-bar { flex:1; min-width:0; max-width:20px; background:#438a78; border-radius:3px 3px 0 0; }
 .event-trend-caption { display:flex; justify-content:space-between; color:#697785; font-size:12px; margin-bottom:20px; }
 .seg-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .seg {
