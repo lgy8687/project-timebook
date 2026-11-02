@@ -78,7 +78,9 @@
         ['B89', '事件记录编辑', '#event-record-editor-card'],
         ['B90', '仅日期的事件补录', '#event-modal[data-dev-address-block="B90"] #event-modal-card'],
         ['B91', '事件确认和补录选择', '#event-modal[data-dev-address-block="B91"] #event-modal-card'],
-        ['B92', '并行时长排行', '#report-structure-card[data-dev-address-block="B92"]', 'C01']
+        ['B92', '并行时长排行', '#report-structure-card[data-dev-address-block="B92"]', 'C01'],
+        ['B93', '事件首页', '#page-event-home'],
+        ['B94', '新建事件方式选择', '#event-home-create-card']
     ];
     // A Z address names a submodule prototype; repeated instances share one badge and contract.
     const submodules = [

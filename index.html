@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=5.73">
+    <link rel="stylesheet" href="style.css?v=5.74">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=5.73">
     <link rel="stylesheet" href="design-system.css?v=5.67">
@@ -43,7 +43,7 @@
                 <span id="match-flame">🔥</span>
                 <div id="day-remain-label" class="day-remain-label">今天剩余 --%</div>
             </div>
-            <div id="cache-buster" class="version-below-daybar">v5.73</div>
+            <div id="cache-buster" class="version-below-daybar">v5.74</div>
             <div id="main-shortcut-section" class="space-y-3">
                 <div class="px-1">
                     <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">快捷入口</h3>
@@ -63,7 +63,7 @@
             <div class="free-note-row" id="free-note-module">
                 <button type="button" onclick="handleFreeInput()" class="free-note-label btn-active">随手记</button>
                 <input type="text" id="free-input" placeholder="#标签 或内容…" class="free-note-input flex-1 bg-white border-none rounded-2xl px-4 py-4 shadow-sm text-base focus:ring-2 focus:ring-indigo-100">
-                <button type="button" id="free-note-event-btn" class="free-note-event-btn" onclick="openEventModal()" aria-label="记录事件" title="记录事件">＋</button>
+                <button type="button" id="free-note-event-btn" class="free-note-event-btn" onclick="openEventHome()" aria-label="事件首页" title="事件首页">＋</button>
             </div>
             <div id="free-backfill" class="hidden space-y-2">
                 <div class="flex items-center justify-between">
@@ -403,6 +403,14 @@
             </div>
         </section>
 
+        <section id="page-event-home" class="tab-content event-home pb-8">
+            <header class="event-home-header"><button type="button" onclick="closeEventHome()" aria-label="返回">‹</button><h2>事件</h2><button type="button" onclick="openEventCenter('manage')">管理</button></header>
+            <div id="event-home-groups" class="event-home-groups" aria-label="事件分组"></div>
+            <div id="event-home-cards" class="event-home-cards"></div>
+            <p id="event-home-empty" class="event-home-empty hidden">还没有事件，点击右下角新建</p>
+            <button type="button" class="event-home-add" onclick="document.getElementById('event-home-create').classList.remove('hidden')" aria-label="新建事件" title="新建事件">＋</button>
+            <div id="event-home-success" class="event-home-success hidden" role="status" aria-live="polite"><span>✓</span><span class="sr-only">记录成功</span></div>
+        </section>
         <section id="page-events" class="tab-content event-center pb-8">
             <div class="event-center-header"><button type="button" onclick="closeEventCenter()" aria-label="返回">‹</button><h2>事件</h2><button type="button" onclick="openEventModal()">＋ 记录</button></div>
             <div class="event-center-tabs" role="tablist"><button type="button" data-event-center-tab="history" onclick="setEventCenterTab('history')">记录</button><button type="button" data-event-center-tab="manage" onclick="setEventCenterTab('manage')">管理</button></div>
@@ -631,6 +639,12 @@
             <div class="event-record-editor-actions"><button type="button" onclick="deleteEventCenterRecord(eventEditId)">删除记录</button><button type="button" onclick="saveEventRecordEdit()">保存</button></div>
         </div>
     </div>
+    <div id="event-home-create" class="event-modal hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div id="event-home-create-card" class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="event-home-create-title">
+            <div class="event-modal-head"><h3 id="event-home-create-title">新建事件</h3><button type="button" onclick="document.getElementById('event-home-create').classList.add('hidden')" aria-label="关闭">×</button></div>
+            <div class="event-home-create-options"><button type="button" onclick="startEventHomeCreate(true)"><strong>快速记录</strong><span>点击一次记录一次</span></button><button type="button" onclick="startEventHomeCreate(false)"><strong>详细记录</strong><span>填写日期和次数</span></button></div>
+        </div>
+    </div>
     <div id="event-modal" class="event-modal hidden" onclick="if(event.target===this)closeEventModal()">
         <div id="event-modal-card" class="event-modal-card" onclick="event.stopPropagation()">
             <div class="event-modal-head">
@@ -774,12 +788,12 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=5.73"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=5.73"></script>
+    <script src="app.js?v=5.74"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=1"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=5.67"></script>
+    <script src="dev-inspector.js?v=5.74"></script>
 </body>
 </html>

@@ -197,6 +197,8 @@ eventTypes = eventTypes
         name: item.name.trim(),
         icon: item.icon || '•',
         disabled: !!item.disabled,
+        group: typeof item.group === 'string' ? item.group.trim() : '',
+        quick: item.quick === true,
         color: safeColor(item.color, EVENT_COLORS[index % EVENT_COLORS.length]),
     }));
 eventRecords = eventRecords
@@ -939,6 +941,7 @@ function renderAll() {
     renderConfig();
     renderReport();
     if (document.getElementById('page-events')?.classList.contains('active')) renderEventCenter();
+    if (document.getElementById('page-event-home')?.classList.contains('active')) renderEventHome();
     updateUI();
 }
 
@@ -4282,7 +4285,7 @@ function eventNameAvailable(name, exceptId) {
         && !eventTypes.some((item) => item.id !== exceptId && item.name === normalized);
 }
 
-function addEventType() {
+function addEventType(options = {}) {
     showPrompt('新增事件', '例如：上厕所、吃饭、喝水', '', (name) => {
         const next = String(name || '').trim();
         if (!next) return;
@@ -4292,13 +4295,17 @@ function addEventType() {
         }
         showCategoryPicker('选择事件图标', (icon) => {
             if (!icon) return;
-            eventTypes.push({ id: genId(), name: next, icon, color: EVENT_COLORS[eventTypes.length % EVENT_COLORS.length] });
+            eventTypes.push({ id: genId(), name: next, icon, color: EVENT_COLORS[eventTypes.length % EVENT_COLORS.length], quick: options.quick === true, group: '' });
             saveEventTypes();
             renderAll();
         });
     });
 }
 window.addEventType = addEventType;
+function startEventHomeCreate(quick) {
+    document.getElementById('event-home-create').classList.add('hidden');
+    addEventType({ quick });
+}
 
 function renderEventSettings(hostId = 'event-settings-ui') {
     const host = document.getElementById(hostId);
@@ -4403,7 +4410,18 @@ function renderEventSettings(hostId = 'event-settings-ui') {
             [eventTypes[index - 1], eventTypes[index]] = [eventTypes[index], eventTypes[index - 1]];
             saveEventTypes(); renderAll();
         });
-        detail.append(colorLabel, iconLabel, name, enabled, moveUp, del);
+        const group = document.createElement('button');
+        group.type = 'button'; group.className = 'event-manager-action';
+        group.textContent = `分组：${eventType.group || '未分组'}`;
+        group.addEventListener('click', () => showPrompt('事件分组', '填写分组名称，留空为未分组', eventType.group || '', value => {
+            if (value === null || value === undefined) return;
+            eventType.group = String(value).trim(); saveEventTypes(); renderAll();
+        }));
+        const mode = document.createElement('button');
+        mode.type = 'button'; mode.className = 'event-manager-action';
+        mode.textContent = eventType.quick ? '记录方式：快速' : '记录方式：详细';
+        mode.addEventListener('click', () => { eventType.quick = !eventType.quick; saveEventTypes(); renderAll(); });
+        detail.append(colorLabel, iconLabel, name, group, mode, enabled, moveUp, del);
         row.append(heading, detail);
         host.appendChild(row);
     });
@@ -4723,6 +4741,63 @@ function setEventStage(stage) {
     document.getElementById('event-modal').dataset.devAddressBlock = blockCode;
     ['choose', 'confirm', 'time'].forEach((name) => {
         document.getElementById('event-stage-' + name)?.classList.toggle('hidden', name !== stage);
+    });
+}
+
+let eventHomeGroup = '';
+let eventHomeReturn = 'record';
+let eventHomeFeedbackTimer = null;
+function openEventHome() {
+    const active = document.querySelector('main > .tab-content.active');
+    if (active && active.id !== 'page-event-home') eventHomeReturn = active.id.replace('page-', '');
+    eventHomeGroup = '';
+    switchTab('event-home');
+}
+function closeEventHome() { switchTab(eventHomeReturn); }
+function renderEventHome() {
+    const groups = document.getElementById('event-home-groups');
+    const cards = document.getElementById('event-home-cards');
+    if (!groups || !cards) return;
+    const types = eventTypes.filter(type => !type.disabled);
+    const names = [...new Set(types.map(type => type.group).filter(Boolean))];
+    if (eventHomeGroup && !names.includes(eventHomeGroup)) eventHomeGroup = '';
+    groups.replaceChildren();
+    ['', ...names].forEach(name => {
+        const button = document.createElement('button');
+        button.type = 'button'; button.textContent = name || '所有';
+        button.className = name === eventHomeGroup ? 'active' : '';
+        button.setAttribute('aria-pressed', String(name === eventHomeGroup));
+        button.addEventListener('click', () => { eventHomeGroup = name; renderEventHome(); });
+        groups.appendChild(button);
+    });
+    cards.replaceChildren();
+    const shown = types.filter(type => !eventHomeGroup || type.group === eventHomeGroup);
+    document.getElementById('event-home-empty').classList.toggle('hidden', types.length > 0);
+    shown.forEach(type => {
+        const card = document.createElement('article'); card.className = 'event-home-card';
+        const open = document.createElement('button'); open.type = 'button'; open.className = 'event-home-card-main';
+        const icon = document.createElement('span'); icon.className = 'event-home-card-icon'; icon.textContent = type.icon;
+        icon.style.setProperty('--event-color', safeColor(type.color, '#64748b'));
+        const title = document.createElement('strong'); title.textContent = type.name;
+        const last = document.createElement('small');
+        const latest = eventRecords.filter(record => String(record.typeId) === String(type.id)).reduce((a, b) => !a || b.occurredAt > a.occurredAt ? b : a, null);
+        last.textContent = latest ? `上次：${formatBeijingDate(latest.occurredAt)}${latest.dateOnly ? '' : ' ' + formatBeijingClockSec(latest.occurredAt).slice(0, 5)}` : '暂无记录';
+        open.append(icon, title, last);
+        open.addEventListener('click', () => { openEventModal(); chooseEventType(type.id); });
+        const action = document.createElement('button'); action.type = 'button'; action.className = 'event-home-card-action';
+        action.textContent = type.quick ? 'ϟ' : '＋';
+        action.setAttribute('aria-label', type.quick ? `快速记录${type.name}` : `记录${type.name}`);
+        action.addEventListener('click', () => {
+            if (!type.quick) { openEventModal(); chooseEventType(type.id); return; }
+            if (saveEventRecord({ typeId: type.id, occurredAt: nowSecondMs(), parentId: null })) {
+                renderEventHome();
+                const feedback = document.getElementById('event-home-success');
+                feedback.classList.remove('hidden');
+                clearTimeout(eventHomeFeedbackTimer);
+                eventHomeFeedbackTimer = setTimeout(() => feedback.classList.add('hidden'), 1000);
+            }
+        });
+        card.append(open, action); cards.appendChild(card);
     });
 }
 
@@ -7446,6 +7521,7 @@ function switchTab(t) {
     });
     const btn = document.getElementById('nav-'+t); if(btn) btn.classList.replace('text-slate-400','text-indigo-600');
     if (t === 'report') renderReport();
+    if (t === 'event-home') renderEventHome();
     if (t === 'record') {
         renderRecordPage();
         renderShortcuts();
