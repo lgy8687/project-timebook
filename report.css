@@ -36,6 +36,35 @@ body#report-standalone {
 
 /* ── 顶栏切换 ── */
 .toolbar { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
+.report-heading-row { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.report-heading-row h2 { margin:0; font-size:20px; font-weight:700; }
+#report-period-toolbar { padding:16px 0 12px; border-bottom:1px solid #dce3e8; gap:16px; }
+#report-period-toolbar .report-kind-tabs { display:flex; gap:4px; padding:3px; background:#eef2f4; border-radius:8px; }
+#report-period-toolbar .report-kind-tabs button { border:0; padding:8px 18px; font-size:14px; border-radius:6px; color:#526171; background:transparent; }
+#report-period-toolbar .report-kind-tabs button.active { background:#fff; color:#263c4b; box-shadow:0 1px 3px #0001; }
+#report-period-toolbar .seg-row, #report-period-toolbar #seg-period { width:100%; }
+#report-period-toolbar #seg-period { display:grid; grid-template-columns:repeat(4,1fr); background:none; border:0; padding:0; border-radius:0; }
+#report-period-toolbar #seg-period button { min-height:44px; border-radius:0; border-bottom:3px solid transparent; background:none; color:#697785; font-size:15px; }
+#report-period-toolbar #seg-period button.active { color:#266b58; border-bottom-color:#266b58; font-weight:700; }
+#report-period-toolbar .report-period-nav { border:0; box-shadow:none; background:none; padding:0; min-height:48px; }
+.event-count-stepper { display:flex; align-items:center; gap:8px; width:calc(100% - 44px); min-width:0; }
+.event-count-stepper button { width:44px; height:44px; background:#edf2f5; border-radius:8px; font-size:22px; }
+.event-time-field .event-count-stepper input { flex:1; width:1px; min-width:0; text-align:center; }
+.event-count-stepper button { flex-shrink:0; }
+.event-assignment-actions { display:flex; gap:8px; margin-bottom:8px; }
+.event-assignment-actions button { padding:10px 12px; border:1px solid #dbe3e8; border-radius:6px; font-size:14px; }
+.event-record-date { font-size:14px; color:#657584; padding:16px 0 8px; border-bottom:1px solid #e2e8ed; }
+.report-period-nav-range { position:relative; }
+#report-date-picker { position:absolute; inset:0; width:100%; height:28px; opacity:0; cursor:pointer; }
+.event-manager-item { border:0; border-bottom:1px solid #e2e8ed; border-radius:0; background:transparent; box-shadow:none; }
+.event-manager-heading { min-height:52px; width:100%; padding:12px 8px; font-size:16px; }
+.event-manager-detail { padding:12px 8px; background:#f3f6f8; }
+.event-manager-detail button { min-height:44px; border-radius:6px; }
+.event-center-row { border:0; border-bottom:1px solid #e2e8ed; border-radius:0; box-shadow:none; padding:14px 0; }
+.event-center-row > button { min-width:44px; min-height:44px; font-size:24px; }
+.event-trend { display:flex; align-items:flex-end; gap:3px; height:100px; margin:20px 0 8px; }
+.event-trend-bar { flex:1; min-width:2px; background:#438a78; border-radius:3px 3px 0 0; }
+.event-trend-caption { display:flex; justify-content:space-between; color:#697785; font-size:12px; margin-bottom:20px; }
 .seg-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .seg {
     display: inline-flex;

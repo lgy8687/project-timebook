@@ -22,6 +22,7 @@ test('event statistics count occurrences and distinct days, preserving date-only
     vm.runInContext(source, context);
     const report = context.buildEventReport(start, start + 2 * day, 'range');
     assert.equal(report.total, 5);
+    assert.deepEqual(Array.from(report.daily, item => item.count), [2, 3]);
     assert.equal(report.activeDays, 2);
     assert.equal(report.entries[0].days, 2);
     assert.equal(report.entries[0].latestDateOnly, true);

@@ -196,6 +196,7 @@ eventTypes = eventTypes
         id: item.id || genId(),
         name: item.name.trim(),
         icon: item.icon || '•',
+        disabled: !!item.disabled,
         color: safeColor(item.color, EVENT_COLORS[index % EVENT_COLORS.length]),
     }));
 eventRecords = eventRecords
@@ -1976,7 +1977,7 @@ function showCalendarBackfillForm(kind) {
     renderUnassignedBackfillActivities();
     if (!kind) return;
     if (kind === 'event') {
-        fillCalendarBackfillSelect('calendar-backfill-event-type', eventTypes.map((item) => ({ value: String(item.id), label: `${item.icon} ${item.name}` })));
+        fillCalendarBackfillSelect('calendar-backfill-event-type', eventTypes.filter(item => !item.disabled).map((item) => ({ value: String(item.id), label: `${item.icon} ${item.name}` })));
         document.getElementById('calendar-backfill-event-count').value = '1';
     } else {
         document.getElementById('calendar-backfill-l1').value = '';
@@ -4318,7 +4319,7 @@ function renderEventSettings(hostId = 'event-settings-ui') {
         heading.className = 'event-manager-heading';
         heading.setAttribute('aria-expanded', 'false');
         const headingLabel = document.createElement('span');
-        headingLabel.textContent = `${eventType.icon}  ${eventType.name}`;
+        headingLabel.textContent = `${eventType.icon}  ${eventType.name}${eventType.disabled ? ' · 已停用' : ''}`;
         const arrow = document.createElement('span'); arrow.textContent = '›';
         heading.append(headingLabel, arrow);
         const detail = document.createElement('div');
@@ -4384,7 +4385,25 @@ function renderEventSettings(hostId = 'event-settings-ui') {
         const colorText = document.createElement('span'); colorText.textContent = '颜色'; colorLabel.append(colorText, color);
         const iconLabel = document.createElement('div'); iconLabel.className = 'event-manager-option';
         const iconText = document.createElement('span'); iconText.textContent = '图标'; iconLabel.append(iconText, icon);
-        detail.append(colorLabel, iconLabel, name, del);
+        const enabled = document.createElement('button');
+        enabled.type = 'button';
+        enabled.className = 'event-manager-action';
+        enabled.textContent = eventType.disabled ? '启用事件' : '停用事件';
+        enabled.addEventListener('click', () => {
+            eventType.disabled = !eventType.disabled;
+            saveEventTypes(); renderAll();
+        });
+        const moveUp = document.createElement('button');
+        moveUp.type = 'button'; moveUp.textContent = '上移';
+        moveUp.className = 'event-manager-action';
+        moveUp.disabled = eventTypes.indexOf(eventType) === 0;
+        moveUp.addEventListener('click', () => {
+            const index = eventTypes.indexOf(eventType);
+            if (index < 1) return;
+            [eventTypes[index - 1], eventTypes[index]] = [eventTypes[index], eventTypes[index - 1]];
+            saveEventTypes(); renderAll();
+        });
+        detail.append(colorLabel, iconLabel, name, enabled, moveUp, del);
         row.append(heading, detail);
         host.appendChild(row);
     });
@@ -4598,6 +4617,7 @@ function openEventCenter(tab = 'history', range = null) {
 }
 function closeEventCenter() { switchTab(eventCenterReturn); }
 function setEventCenterTab(tab) {
+    if (tab === 'stats') tab = 'history';
     if (!['history', 'stats', 'manage'].includes(tab)) return;
     eventCenterTab = tab;
     renderEventCenter();
@@ -4608,8 +4628,8 @@ function renderEventCenter() {
     ['history', 'stats', 'manage'].forEach(tab => {
         document.getElementById('event-center-' + tab).classList.toggle('hidden', tab !== eventCenterTab);
         const button = document.querySelector(`[data-event-center-tab="${tab}"]`);
-        button.classList.toggle('active', tab === eventCenterTab);
-        button.setAttribute('aria-selected', String(tab === eventCenterTab));
+        button?.classList.toggle('active', tab === eventCenterTab);
+        button?.setAttribute('aria-selected', String(tab === eventCenterTab));
     });
     const filter = document.getElementById('event-center-filter');
     const selected = filter.value;
@@ -4623,16 +4643,25 @@ function renderEventCenter() {
     document.getElementById('event-center-history-range').textContent = eventCenterRange ? `当前范围：${eventCenterRange.label}` : '全部日期';
     const records = eventRecords.filter(item => (!filter.value || String(item.typeId) === filter.value) && (!eventCenterRange || (item.occurredAt >= eventCenterRange.start && item.occurredAt < eventCenterRange.end))).slice().sort((a, b) => b.occurredAt - a.occurredAt);
     if (!records.length) list.textContent = '暂无事件记录';
+    let previousEventDate = '';
     records.forEach(record => {
+        const recordDate = formatBeijingDate(record.occurredAt);
+        if (recordDate !== previousEventDate) {
+            const heading = document.createElement('h3');
+            heading.className = 'event-record-date';
+            heading.textContent = recordDate;
+            list.appendChild(heading);
+            previousEventDate = recordDate;
+        }
         const type = eventTypeById(record.typeId);
         const row = document.createElement('div'); row.className = 'event-center-row';
         const content = document.createElement('div'); content.className = 'event-center-row-content';
         const name = document.createElement('strong'); name.textContent = `${type?.icon || record.icon || '•'} ${type?.name || record.typeName || '已删除事件'} · ${record.count || 1}次`;
         const detail = document.createElement('span'); detail.textContent = `${formatBeijingDate(record.occurredAt)} ${record.dateOnly ? '仅日期' : formatBeijingClockSec(record.occurredAt)}${record.parentId ? ' · 已关联主线' : ' · 独立事件'}`;
+        detail.textContent = `${record.dateOnly ? '未指定时间' : formatBeijingClockSec(record.occurredAt)}`;
         content.append(name, detail);
-        const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = '编辑'; edit.addEventListener('click', () => openEventRecordEditor(record.id));
-        const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '删除'; remove.addEventListener('click', () => deleteEventCenterRecord(record.id));
-        row.append(content, edit, remove); list.appendChild(row);
+        const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = '›'; edit.setAttribute('aria-label', `查看${type?.name || record.typeName}记录`); edit.addEventListener('click', () => openEventRecordEditor(record.id));
+        row.append(content, edit); list.appendChild(row);
     });
     document.querySelectorAll('[data-event-period]').forEach(button => button.classList.toggle('active', !eventCenterRange && Number(button.dataset.eventPeriod) === eventCenterPeriod));
     const end = beijingDateStrToDayStart(getTodayDateStr()) + DAY_MS;
@@ -4683,7 +4712,7 @@ function saveEventRecordEdit() {
 }
 function deleteEventCenterRecord(id) {
     showConfirm('删除事件记录', '删除后无法撤销，主线时间不受影响。', '删除', ok => {
-        if (!ok) return; eventRecords = eventRecords.filter(item => String(item.id) !== String(id)); saveEventRecords(); renderAll();
+        if (!ok) return; eventRecords = eventRecords.filter(item => String(item.id) !== String(id)); saveEventRecords(); closeEventRecordEditor(); renderAll();
     }, '取消');
 }
 
@@ -4698,6 +4727,7 @@ function setEventStage(stage) {
 }
 
 function openEventModal() {
+    document.getElementById('event-modal-title').innerText = '记录事件';
     eventParentSelecting = false;
     eventParentCandidate = null;
     eventDraft = null;
@@ -4725,8 +4755,8 @@ function renderEventChoiceGrid() {
     const empty = document.getElementById('event-empty-hint');
     if (!grid || !empty) return;
     grid.innerHTML = '';
-    empty.classList.toggle('hidden', eventTypes.length > 0);
-    eventTypes.forEach((type) => {
+    empty.classList.toggle('hidden', eventTypes.some(type => !type.disabled));
+    eventTypes.filter(type => !type.disabled).forEach((type) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'event-choice-item';
@@ -4740,10 +4770,30 @@ function renderEventChoiceGrid() {
 function chooseEventType(typeId) {
     const type = eventTypeById(typeId);
     if (!type) return;
-    eventDraft = { typeId, parentId: current?.id || null, occurredAt: nowSecondMs() };
+    eventDraft = { typeId, parentId: null, occurredAt: nowSecondMs() };
     eventConfirmationDraft = { ...eventDraft };
     document.getElementById('event-confirm-preview').innerText = `记录「${type.icon} ${type.name}」\n归属：当前主线 ${current ? '· ' + displayName(current) : '· 未开启主线'}`;
-    setEventStage('confirm');
+    document.getElementById('event-modal-title').innerText = `记录${type.name}`;
+    document.getElementById('event-time-parent').innerText = '不关联主线';
+    fillEventTimeInputs(eventDraft.occurredAt);
+    document.getElementById('event-use-time-row').classList.remove('hidden');
+    document.getElementById('event-use-time').checked = true;
+    document.getElementById('event-supplement-count').value = '1';
+    setEventStage('time');
+    toggleEventSupplementTime();
+}
+
+function clearEventParent() {
+    if (!eventDraft) return;
+    eventDraft.parentId = null;
+    document.getElementById('event-time-parent').innerText = '不关联主线';
+    document.getElementById('event-use-time-row').classList.remove('hidden');
+    toggleEventSupplementTime();
+}
+
+function stepEventCount(delta) {
+    const input = document.getElementById('event-supplement-count');
+    input.value = String(Math.max(1, Math.min(999, (Number(input.value) || 1) + delta)));
 }
 
 function saveEventRecord({ typeId, occurredAt, parentId, count = 1, dateOnly = false }) {
@@ -4819,7 +4869,7 @@ window.beginEventParentSelection = beginEventParentSelection;
 function cancelEventParentSelection() {
     eventParentSelecting = false;
     eventParentCandidate = null;
-    eventDraft = null;
+    document.getElementById('event-modal')?.classList.remove('hidden');
     renderAll();
 }
 window.cancelEventParentSelection = cancelEventParentSelection;
@@ -4842,7 +4892,6 @@ function confirmEventParentSelection() {
     document.getElementById('event-time-parent').innerText = `归属主线 · ${displayName(parent)}`;
     fillEventTimeInputs(parent.startTime);
     document.getElementById('event-use-time-row').classList.add('hidden');
-    document.getElementById('event-supplement-count').value = '1';
     document.getElementById('event-modal')?.classList.remove('hidden');
     setEventStage('time');
     toggleEventSupplementTime();
@@ -6291,10 +6340,14 @@ function parallelHostL1(paraLog) {
 }
 
 function buildEventReport(rangeStart, rangeEnd, period) {
+    const dayMs = 86400000;
     const byType = new Map();
+    const dailyCounts = new Map();
     eventRecords
         .filter((record) => record.occurredAt >= rangeStart && record.occurredAt < rangeEnd)
         .forEach((record) => {
+            const date = formatBeijingDate(record.occurredAt);
+            dailyCounts.set(date, (dailyCounts.get(date) || 0) + (record.count || 1));
             const type = eventTypeById(record.typeId);
             const key = record.typeId || record.typeName;
             const item = byType.get(key) || {
@@ -6320,6 +6373,10 @@ function buildEventReport(rangeStart, rangeEnd, period) {
         .sort((a, b) => b.count - a.count || b.days - a.days || a.name.localeCompare(b.name, 'zh-CN'));
     return {
         period,
+        daily: Array.from({ length: Math.max(0, Math.min(366, Math.ceil((rangeEnd - rangeStart) / dayMs))) }, (_, index) => {
+            const date = formatBeijingDate(rangeStart + index * dayMs);
+            return { date, count: dailyCounts.get(date) || 0 };
+        }),
         total: entries.reduce((sum, item) => sum + item.count, 0),
         activeDays: new Set(eventRecords.filter((record) => record.occurredAt >= rangeStart && record.occurredAt < rangeEnd).map((record) => formatBeijingDate(record.occurredAt))).size,
         entries,

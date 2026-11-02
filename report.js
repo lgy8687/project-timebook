@@ -185,6 +185,38 @@
             const detail = item.latest ? `最近 ${data.period === 'day' ? '' : lastDate + ' '}${latest}` : `${item.count} 次 · ${item.days} 天`;
             return `<div class="event-report-row"><span class="event-report-dot" style="background:${esc(reportColor(item.color, item.name))}"></span><span class="event-report-icon">${esc(item.icon)}</span><span class="event-report-name">${esc(item.name)}</span><span class="event-report-detail">${esc(detail)}</span><strong>${esc(String(value))}${suffix}</strong></div>`;
         }).join('')}</div>`;
+        box.querySelectorAll('.event-report-row').forEach((row, index) => {
+            row.setAttribute('role', 'button');
+            row.tabIndex = 0;
+            const open = () => {
+                window.openReportEventCenter('history');
+                const filter = document.getElementById('event-center-filter');
+                filter.value = String(data.entries[index].id);
+                filter.dispatchEvent(new Event('change'));
+            };
+            row.addEventListener('click', open);
+            row.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
+            });
+        });
+        if (data.period !== 'day' && data.daily?.length) {
+            const max = Math.max(1, ...data.daily.map(day => day.count));
+            const trend = document.createElement('div');
+            trend.className = 'event-trend';
+            trend.setAttribute('aria-label', '每日事件次数');
+            data.daily.forEach(day => {
+                const bar = document.createElement('div');
+                bar.className = 'event-trend-bar';
+                bar.style.height = `${day.count / max * 100}%`;
+                bar.title = `${day.date}：${day.count}次`;
+                trend.appendChild(bar);
+            });
+            const caption = document.createElement('div');
+            caption.className = 'event-trend-caption';
+            caption.textContent = `${data.daily[0].date} — ${data.daily[data.daily.length - 1].date} · 每日次数`;
+            box.prepend(caption);
+            box.prepend(trend);
+        }
     }
 
     function renderTimelineHalf(tl, suffix, fromPct, toPct, title) {
@@ -519,6 +551,7 @@
         nav?.classList.toggle('hidden', !navigable);
         if (range && navigable) range.textContent = getPeriodRangeLabel(state.period, offset);
         reset?.classList.toggle('hidden', offset === 0);
+        if (reset) reset.textContent = { day: '回到今天', week: '回到本周', month: '回到本月', year: '回到今年' }[state.period];
         if (next) {
             next.disabled = offset >= 0;
             next.title = offset >= 0 ? '已是当前周期' : '查看下一周期';
@@ -551,6 +584,18 @@
     function bindEvents() {
         if (eventsBound) return;
         eventsBound = true;
+        document.getElementById('report-date-picker')?.addEventListener('change', event => {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(event.target.value)) return;
+            const target = new Date(event.target.value + 'T00:00:00Z');
+            const now = new Date(Date.now() + 8 * 3600000);
+            const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+            let offset = Math.floor((target.getTime() - today) / 86400000);
+            if (state.period === 'week') offset = Math.round((target.getTime() - ((target.getUTCDay() + 6) % 7) * 86400000 - (today - ((now.getUTCDay() + 6) % 7) * 86400000)) / (7 * 86400000));
+            if (state.period === 'month') offset = (target.getUTCFullYear() - now.getUTCFullYear()) * 12 + target.getUTCMonth() - now.getUTCMonth();
+            if (state.period === 'year') offset = target.getUTCFullYear() - now.getUTCFullYear();
+            state.periodOffsets[state.period] = Math.min(0, offset);
+            render();
+        });
         document.querySelectorAll('[data-report-kind]').forEach(button => button.addEventListener('click', () => {
             state.kind = button.dataset.reportKind;
             render();
