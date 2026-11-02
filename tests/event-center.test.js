@@ -7,6 +7,16 @@ const vm = require('node:vm');
 const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
 const source = app.slice(app.indexOf('function buildEventReport('), app.indexOf('\nfunction buildLiveReportDay(', app.indexOf('function buildEventReport(')));
 
+test('event chooser searches enabled types and orders by latest use without mutating settings', () => {
+    const picker = app.slice(app.indexOf('function getEventChoiceTypes('), app.indexOf('\nfunction renderEventChoiceGrid(', app.indexOf('function getEventChoiceTypes(')));
+    const context = {}; vm.createContext(context); vm.runInContext(picker, context);
+    const types = [{id:'a',name:'喝水'}, {id:'b',name:'吃药'}, {id:'c',name:'喝茶',disabled:true}];
+    const records = [{typeId:'b',createdAt:20}, {typeId:'a',createdAt:10}];
+    assert.deepEqual(Array.from(context.getEventChoiceTypes(types, records, ''), x => x.id), ['b', 'a']);
+    assert.deepEqual(Array.from(context.getEventChoiceTypes(types, records, '喝'), x => x.id), ['a']);
+    assert.deepEqual(types.map(x => x.id), ['a', 'b', 'c']);
+});
+
 test('event statistics count occurrences and distinct days, preserving date-only status', () => {
     const day = 86400000, start = Date.parse('2026-10-01T00:00:00Z');
     const context = {

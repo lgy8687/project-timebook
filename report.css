@@ -293,6 +293,8 @@ body#report-standalone {
 .event-report-summary { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; padding: 8px 10px; border-radius: 8px; background: #f7fafb; color: #718096; font-size: 10px; font-weight: 800; }
 .event-report-summary strong { color: #35506a; font-size: 18px; font-variant-numeric: tabular-nums; }
 .event-report-list { display: grid; gap: 6px; }
+.event-report-share { grid-column:3 / 5; height:4px; overflow:hidden; background:#e7edf0; border-radius:3px; margin:5px 0 2px; }
+.event-report-share > span { display:block; height:100%; border-radius:3px; }
 .event-report-row { display: grid; grid-template-columns: 8px 24px minmax(0, 1fr) auto; align-items: center; gap: 2px 6px; min-height: 60px; padding: 10px 0; border-bottom: 1px solid var(--rp-border); color: var(--rp-muted); }
 .event-report-dot { width: 7px; height: 7px; border-radius: 50%; }
 .event-report-icon { font-size: 14px; text-align: center; }

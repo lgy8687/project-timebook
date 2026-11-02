@@ -4728,6 +4728,7 @@ function setEventStage(stage) {
 
 function openEventModal() {
     document.getElementById('event-modal-title').innerText = '记录事件';
+    document.getElementById('event-choice-search').value = '';
     eventParentSelecting = false;
     eventParentCandidate = null;
     eventDraft = null;
@@ -4750,13 +4751,28 @@ function closeEventModal() {
 }
 window.closeEventModal = closeEventModal;
 
+function getEventChoiceTypes(types, records, query) {
+    const term = String(query || '').trim().toLocaleLowerCase();
+    const recentlyUsed = new Map();
+    records.forEach(record => {
+        const key = String(record.typeId);
+        const time = Number(record.createdAt || record.occurredAt || 0);
+        recentlyUsed.set(key, Math.max(recentlyUsed.get(key) || 0, time));
+    });
+    return types.filter(type => !type.disabled && type.name.toLocaleLowerCase().includes(term))
+        .sort((a, b) => (recentlyUsed.get(String(b.id)) || 0) - (recentlyUsed.get(String(a.id)) || 0));
+}
+
 function renderEventChoiceGrid() {
     const grid = document.getElementById('event-choice-grid');
     const empty = document.getElementById('event-empty-hint');
     if (!grid || !empty) return;
     grid.innerHTML = '';
-    empty.classList.toggle('hidden', eventTypes.some(type => !type.disabled));
-    eventTypes.filter(type => !type.disabled).forEach((type) => {
+    const available = eventTypes.filter(type => !type.disabled);
+    const matches = getEventChoiceTypes(available, eventRecords, document.getElementById('event-choice-search').value);
+    empty.classList.toggle('hidden', available.length > 0);
+    document.getElementById('event-search-empty').classList.toggle('hidden', !available.length || matches.length > 0);
+    matches.forEach((type) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'event-choice-item';

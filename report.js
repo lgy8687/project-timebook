@@ -183,7 +183,9 @@
             const lastDate = item.latest ? new Date(item.latest + 8 * 60 * 60 * 1000).toISOString().slice(0, 10) : '';
             const latest = item.latestDateOnly ? '仅日期' : formatEventClock(item.latest);
             const detail = item.latest ? `最近 ${data.period === 'day' ? '' : lastDate + ' '}${latest}` : `${item.count} 次 · ${item.days} 天`;
-            return `<div class="event-report-row"><span class="event-report-dot" style="background:${esc(reportColor(item.color, item.name))}"></span><span class="event-report-icon">${esc(item.icon)}</span><span class="event-report-name">${esc(item.name)}</span><span class="event-report-detail">${esc(detail)}</span><strong>${esc(String(value))}${suffix}</strong></div>`;
+            const percent = mode === 'count' && data.total ? Math.round(item.count / data.total * 100) : null;
+            const proportion = percent === null ? '' : `<span class="event-report-share" aria-label="占总次数 ${percent}%"><span style="width:${percent}%;background:${esc(reportColor(item.color, item.name))}"></span></span>`;
+            return `<div class="event-report-row"><span class="event-report-dot" style="background:${esc(reportColor(item.color, item.name))}"></span><span class="event-report-icon">${esc(item.icon)}</span><span class="event-report-name">${esc(item.name)}</span><span class="event-report-detail">${esc(detail)}</span><strong>${esc(String(value))}${suffix}${percent === null ? '' : ` · ${percent}%`}</strong>${proportion}</div>`;
         }).join('')}</div>`;
         box.querySelectorAll('.event-report-row').forEach((row, index) => {
             row.setAttribute('role', 'button');
