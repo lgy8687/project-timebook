@@ -309,7 +309,16 @@
 #match-flame { position: absolute; top: 50%; font-size: 14px; z-index: 3; pointer-events: none; transition: left .35s linear; filter: drop-shadow(0 0 5px rgba(255,120,0,0.6)); animation: fireDance 0.7s ease-in-out infinite; }
 .version-below-daybar { margin: -3px 4px 0; font-size: 10px; line-height: 1; font-weight: 900; letter-spacing: .08em; color: #ef4444; }
 #zone-frame { position: fixed; inset: 0; z-index: 60; pointer-events: none; border: 0 solid transparent; transition: border-color .25s ease, border-width .25s ease; }
-.app-header { display: grid; grid-template-columns: minmax(0, 1fr) 62px; align-items: stretch; gap: 8px; border-bottom: 1px solid #e2e8f0; }
+.app-header { display: grid; grid-template-columns: minmax(0, 1fr) 62px 40px; align-items: stretch; gap: 6px; border-bottom: 1px solid #e2e8f0; }
+.dev-inspector-shortcut { width:40px; min-height:44px; border:1px solid #dbe4eb; border-radius:8px; background:#fff; color:#607589; font:700 13px monospace; }
+.dev-inspector-shortcut[aria-pressed="true"] { background:#e8f1fd; border-color:#6b8db5; color:#264d78; }
+@media (max-width:360px) {
+    .app-header { gap:4px; padding-left:8px; padding-right:8px; grid-template-columns:minmax(0,1fr) 56px 36px; }
+    .app-header .scene-zone-tile { width:56px; }
+    .dev-inspector-shortcut { width:36px; }
+    .header-main-status { gap:4px; padding-left:6px; padding-right:6px; }
+    .header-main-timer { font-size:16px; }
+}
 .header-main-status { min-width: 0; min-height: 56px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
 .header-main-timer { flex-shrink: 0; }
 .scene-zone-tile { width: 62px; min-height: 56px; padding: 5px 4px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #64748b; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); transition: border-color .25s ease, background-color .25s ease, color .25s ease; }

@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=5.74">
+    <link rel="stylesheet" href="style.css?v=5.75">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=5.73">
     <link rel="stylesheet" href="design-system.css?v=5.67">
@@ -34,6 +34,7 @@
         <button id="scene-entry-btn" type="button" class="scene-zone-tile" title="切换区域">
             <span id="scene-entry-label" class="scene-zone-tile-label">生活区</span>
         </button>
+        <button id="dev-inspector-shortcut" type="button" class="dev-inspector-shortcut" title="开发者模式" aria-label="开发者模式" aria-pressed="false" onclick="setDevInspectorEnabled(this.getAttribute('aria-pressed') !== 'true')">&lt;/&gt;</button>
     </header>
 
     <main class="flex-1 overflow-y-auto p-4 pb-52">
@@ -43,7 +44,7 @@
                 <span id="match-flame">🔥</span>
                 <div id="day-remain-label" class="day-remain-label">今天剩余 --%</div>
             </div>
-            <div id="cache-buster" class="version-below-daybar">v5.74</div>
+            <div id="cache-buster" class="version-below-daybar">v5.75</div>
             <div id="main-shortcut-section" class="space-y-3">
                 <div class="px-1">
                     <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">快捷入口</h3>
@@ -788,12 +789,12 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=5.73"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=5.74"></script>
+    <script src="app.js?v=5.75"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=1"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=5.74"></script>
+    <script src="dev-inspector.js?v=5.75"></script>
 </body>
 </html>

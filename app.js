@@ -6881,7 +6881,6 @@ function renderDrawerToggle() {
         const modes = [
             { key: 'columns', icon: '◧', title: '左右分栏' },
             { key: 'flat', icon: '⊞', title: '扁平铺满' },
-            { key: 'stacked', icon: '⊟', title: '上下堆叠' },
         ];
         btn.innerHTML = modes.map(m =>
             `<span class="drawer-view-btn ${drawerViewMode === m.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}" data-mode="${m.key}" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:14px;cursor:pointer;transition:.12s" title="${m.title}">${m.icon}</span>`

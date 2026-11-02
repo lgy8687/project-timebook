@@ -284,6 +284,11 @@
         document.body.classList.toggle('dev-inspector-on', enabled);
         const toggle = document.getElementById('dev-inspector-toggle');
         if (toggle) toggle.checked = enabled;
+        const shortcut = document.getElementById('dev-inspector-shortcut');
+        if (shortcut) {
+            shortcut.setAttribute('aria-pressed', String(enabled));
+            shortcut.title = enabled ? '关闭开发者模式' : '开启开发者模式';
+        }
         if (enabled) scheduleScan();
         else {
             document.querySelectorAll('.dev-inspector-badge').forEach((badge) => badge.remove());

@@ -11,6 +11,15 @@ const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const report = fs.readFileSync(path.join(root, 'report.js'), 'utf8');
 const registry = fs.readFileSync(path.join(root, 'docs/design-registry.md'), 'utf8');
 
+test('developer shortcut follows the shared inspector state and drawer exposes two modes', () => {
+    assert.match(html, /id="dev-inspector-shortcut"/);
+    assert.match(inspector, /shortcut\.setAttribute\('aria-pressed', String\(enabled\)\)/);
+    const chooser = app.slice(app.indexOf('function renderDrawerToggle()'), app.indexOf('function renderPicker()'));
+    assert.match(chooser, /key: 'columns'/);
+    assert.match(chooser, /key: 'flat'/);
+    assert.doesNotMatch(chooser, /key: 'stacked'/);
+});
+
 function readRegistryArray(name) {
     const match = inspector.match(new RegExp(`const ${name} = (\\[[\\s\\S]*?\\n    \\]);`));
     assert.ok(match, `Unable to read ${name} from dev-inspector.js`);
