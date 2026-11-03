@@ -23,6 +23,8 @@ test('swipe preview does not rerender or detach the active touch target', () => 
     assert.doesNotMatch(preview, /\brender\(\)/);
     assert.match(preview, /clone\.classList\.remove\('hidden'\)/);
     assert.match(preview, /next\.style\.top = `\$\{sourceAnchor\.getBoundingClientRect\(\)\.top - top\}px`/);
-    assert.match(source, /const targetKind = direction > 0 \? 'event' : 'time'/);
+    assert.match(source, /const targetKind = direction > 0 \? 'time' : 'event'/);
+    assert.match(source, /const boundary = targetKind === originalKind/);
+    assert.match(source, /!preview\.boundary &&/);
     assert.match(source, /touchcancel.*clearReportSwipe/);
 });

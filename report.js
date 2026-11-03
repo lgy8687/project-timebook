@@ -625,7 +625,8 @@
             Object.assign(root.style, { left: main.left + 'px', top: top + 'px', width: main.width + 'px', height: (bottom - top) + 'px' });
             root.setAttribute('aria-hidden', 'true');
             const originalKind = state.kind;
-            const targetKind = direction > 0 ? 'event' : 'time';
+            const targetKind = direction > 0 ? 'time' : 'event';
+            const boundary = targetKind === originalKind;
             const makePanel = kind => {
                 const panel = document.createElement('div'); panel.className = 'report-swipe-panel';
                 panel.style.padding = '0 16px';
@@ -649,13 +650,14 @@
             };
             const current = makePanel(originalKind);
             const next = makePanel(targetKind);
+            if (boundary) next.style.visibility = 'hidden';
             const sourceAnchor = document.getElementById(originalKind === 'time' ? 'report-time-view' : 'event-report-block');
             next.style.top = `${sourceAnchor.getBoundingClientRect().top - top}px`;
             root.append(current, next); reportPage.appendChild(root);
-            return { root, current, next, targetKind, direction, width: main.width };
+            return { root, current, next, targetKind, direction, boundary, width: main.width };
         }
         reportPage?.addEventListener('touchstart', event => {
-            if (event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"], .event-pattern-week, .event-pattern-days')) {
+            if (event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"]')) {
                 reportSwipeStart = null;
                 return;
             }
@@ -670,12 +672,12 @@
             if (!reportSwipeStart.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 8) reportSwipeStart.axis = Math.abs(dx) > Math.abs(dy) * 1.3 ? 'horizontal' : 'vertical';
             if (reportSwipeStart.axis !== 'horizontal') return;
             const direction = dx > 0 ? 1 : -1;
-            const targetKind = direction > 0 ? 'event' : 'time';
-            if (targetKind === state.kind) { clearReportSwipe(); return; }
             if (!reportSwipePreview || reportSwipePreview.direction !== direction) reportSwipePreview = makeReportSwipePreview(direction);
             if (!reportSwipePreview) return;
             if (event.cancelable) event.preventDefault();
-            const offset = Math.max(-reportSwipePreview.width, Math.min(reportSwipePreview.width, dx));
+            const offset = reportSwipePreview.boundary
+                ? direction * 36 * (1 - Math.exp(-Math.abs(dx) / 120))
+                : Math.max(-reportSwipePreview.width, Math.min(reportSwipePreview.width, dx));
             reportSwipePreview.current.style.transform = `translateX(${offset}px)`;
             reportSwipePreview.next.style.transform = `translateX(${offset - direction * reportSwipePreview.width}px)`;
         }, { passive: false });
@@ -687,7 +689,7 @@
             reportSwipeStart = null;
             const preview = reportSwipePreview;
             if (!preview) return;
-            const commit = Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Math.sign(dx) === preview.direction;
+            const commit = !preview.boundary && Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Math.sign(dx) === preview.direction;
             const offset = commit ? preview.direction * preview.width : 0;
             preview.current.style.transition = preview.next.style.transition = 'transform 240ms ease-out';
             preview.current.style.transform = `translateX(${offset}px)`;
