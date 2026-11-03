@@ -317,6 +317,25 @@ body#report-standalone {
 .event-report-row strong { grid-column: 4; grid-row: 1; color: #35506a; font-size: 12px; font-variant-numeric: tabular-nums; }
 .event-report-empty { padding: 18px 8px; color: #94a3b8; font-size: 11px; font-weight: 700; text-align: center; }
 
+.event-pattern { margin: 14px 0 20px; }
+.event-pattern h2 { margin: 0 0 12px; color: #304356; font-size: 16px; font-weight: 700; }
+.event-pattern-empty { padding: 28px 0; text-align: center; color: #687b8a; font-size: 14px; }
+.event-pattern-week { padding: 10px 12px; background: #fff; border: 1px solid #e1e8ec; border-radius: 8px; }
+.event-pattern-week-row { display: grid; grid-template-columns: minmax(68px, 1fr) repeat(7, minmax(0, 28px)); align-items: center; gap: 5px; min-height: 48px; }
+.event-pattern-week-labels { min-height: 32px; color: #738392; text-align: center; font-size: 12px; }
+.event-pattern-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #304356; font-size: 14px; }
+.event-pattern-cell { display: grid; place-items: center; width: 100%; aspect-ratio: 1; min-width: 0; border-radius: 50%; background: #edf0f2; color: #fff; font-size: 11px; font-weight: 700; }
+.event-pattern-cards { display: grid; gap: 10px; }
+.event-pattern-cards.is-month, .event-pattern-cards.is-day { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.event-pattern-card { min-width: 0; padding: 14px; border: 1px solid #e1e8ec; border-radius: 8px; background: #fff; }
+.event-pattern-card-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px; color: #304356; }
+.event-pattern-card-title strong { min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+.event-pattern-card-title span { color: #687b8a; font-size: 12px; white-space: nowrap; }
+.event-pattern-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; margin-top: 16px; }
+.event-pattern-days .event-pattern-cell { border-radius: 3px; }
+.is-year .event-pattern-days { grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 3px; }
+.is-year .event-pattern-cell { border-radius: 2px; }
+
 
 .sunburst-svg { width: 100%; height: auto; display: block; }
 .sunburst-legend { flex: 1; min-width: 0; }

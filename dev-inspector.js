@@ -82,7 +82,8 @@
         ['B93', '事件首页', '#page-event-home'],
         ['B94', '新建事件方式选择', '#event-home-create-card'],
         ['B95', '数据模式入口', '#demo-entry-bar'],
-        ['B96', '示例模式状态栏', '#demo-mode-header']
+        ['B96', '示例模式状态栏', '#demo-mode-header'],
+        ['B97', '事件趋势', '#event-pattern-block']
     ];
     // A Z address names a submodule prototype; repeated instances share one badge and contract.
     const submodules = [

@@ -3,13 +3,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-test('yearly event trend requires count mode and at least three daily samples', () => {
+test('event trend uses per-event daily counts for week, month and year', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
-    assert.match(source, /mode === 'count' && data.period === 'year' && data.daily\?\.length >= 3/);
-    assert.doesNotMatch(source, /box.prepend\(trend\)/);
+    assert.match(source, /item\.dailyCounts\?\.\[date\]/);
+    assert.match(source, /data\.period === 'week'/);
+    assert.match(source, /data\.period === 'month' \|\| data\.period === 'year'/);
 });
 
-test('event trend bars have a width cap instead of filling sparse periods', () => {
+test('event trends use seven weekday columns and a compact yearly grid', () => {
     const css = fs.readFileSync(path.join(__dirname, '..', 'report.css'), 'utf8');
-    assert.match(css, /\.event-trend-bar\s*\{[^}]*max-width:20px/);
+    assert.match(css, /\.event-pattern-days\s*\{[^}]*repeat\(7,/);
+    assert.match(css, /\.is-year \.event-pattern-days\s*\{[^}]*repeat\(26,/);
 });

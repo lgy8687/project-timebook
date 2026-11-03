@@ -6490,11 +6490,13 @@ function buildEventReport(rangeStart, rangeEnd, period, displayEnd = rangeEnd) {
                 icon: type?.icon || record.icon || '•',
                 color: type?.color || record.color || '#64748b',
                 count: 0,
+                dailyCounts: {},
                 days: new Set(),
                 latest: 0,
                 latestDateOnly: false,
             };
             item.count += record.count || 1;
+            item.dailyCounts[date] = (item.dailyCounts[date] || 0) + (record.count || 1);
             item.days.add(formatBeijingDate(record.occurredAt));
             if (record.occurredAt >= item.latest) {
                 item.latest = record.occurredAt;
