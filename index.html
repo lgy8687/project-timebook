@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css?v=5.86">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=5.92">
-    <link rel="stylesheet" href="design-system.css?v=5.93">
+    <link rel="stylesheet" href="design-system.css?v=5.94">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -398,7 +398,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v5.93</div>
+            <div id="cache-buster" class="version-in-settings">v5.94</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8">
@@ -458,16 +458,16 @@
 
     <nav id="app-bottom-nav" class="app-bottom-nav bg-white border-t border-slate-100 fixed bottom-0 w-full h-16 grid grid-cols-4 items-center px-2 z-40 shadow-sm">
         <button onclick="switchTab('record')" class="flex flex-col items-center text-indigo-600" id="nav-record">
-            <span class="text-lg">📋</span><span class="text-[10px] mt-0.5 font-bold">流水</span>
+            <span class="nav-line-icon nav-line-icon--home" aria-hidden="true"></span><span class="text-[10px] mt-0.5 font-bold">流水</span>
         </button>
         <button onclick="switchTab('calendar')" class="flex flex-col items-center text-slate-400" id="nav-calendar">
-            <span class="text-lg">📅</span><span class="text-[10px] mt-0.5 font-bold">日历</span>
+            <span class="nav-line-icon nav-line-icon--calendar" aria-hidden="true"></span><span class="text-[10px] mt-0.5 font-bold">日历</span>
         </button>
         <button onclick="switchTab('report')" class="flex flex-col items-center text-slate-400" id="nav-report">
-            <span class="text-lg">📊</span><span class="text-[10px] mt-0.5 font-bold">统计</span>
+            <span class="nav-line-icon nav-line-icon--chart" aria-hidden="true"></span><span class="text-[10px] mt-0.5 font-bold">统计</span>
         </button>
         <button onclick="switchTab('mine')" class="flex flex-col items-center text-slate-400" id="nav-mine">
-            <span class="text-lg">👤</span><span class="text-[10px] mt-0.5 font-bold">我的</span>
+            <span class="nav-line-icon nav-line-icon--more" aria-hidden="true"></span><span class="text-[10px] mt-0.5 font-bold">我的</span>
         </button>
     </nav>
 

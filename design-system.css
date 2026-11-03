@@ -233,6 +233,11 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .app-bottom-nav button span:first-child { font-size: 22px; line-height: 1.2; }
 .app-bottom-nav button.text-slate-400 { color: var(--ui-muted); }
 .app-bottom-nav button.text-indigo-600 { color: var(--ui-accent); }
+.app-bottom-nav .nav-line-icon { display: block; width: 24px; height: 24px; flex: none; background-color: currentColor; -webkit-mask: var(--nav-icon) center / contain no-repeat; mask: var(--nav-icon) center / contain no-repeat; }
+.nav-line-icon--home { --nav-icon: url('assets/lucide/house.svg'); }
+.nav-line-icon--calendar { --nav-icon: url('assets/lucide/calendar-days.svg'); }
+.nav-line-icon--chart { --nav-icon: url('assets/lucide/chart-pie.svg'); }
+.nav-line-icon--more { --nav-icon: url('assets/lucide/circle-ellipsis.svg'); }
 .flow-calendar-weekdays { font-size: var(--ui-caption); color: var(--ui-muted); }
 .flow-calendar-day { font-size: var(--ui-body); font-weight: 600; }
 .flow-calendar-title { font-size: var(--ui-title); font-weight: 700; }

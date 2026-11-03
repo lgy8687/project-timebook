@@ -10,6 +10,16 @@ test('event trend uses per-event daily counts for week, month and year', () => {
     assert.match(source, /data\.period === 'month' \|\| data\.period === 'year'/);
 });
 
+test('bottom navigation uses locally bundled line icons', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    for (const icon of ['house', 'calendar-days', 'chart-pie', 'circle-ellipsis']) {
+        assert.ok(fs.existsSync(path.join(__dirname, '..', 'assets', 'lucide', `${icon}.svg`)));
+    }
+    const nav = html.match(/<nav id="app-bottom-nav"[\s\S]*?<\/nav>/)?.[0];
+    assert.ok(nav);
+    assert.equal((nav.match(/class="nav-line-icon /g) || []).length, 4);
+});
+
 test('event trends open dedicated record and statistics views without changing primary time', () => {
     const report = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
     const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
