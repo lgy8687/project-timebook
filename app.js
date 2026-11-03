@@ -1,19 +1,43 @@
 // --- 安全读取 localStorage ---
+let demoLoadingTimer;
+function demoModeUrl(currentLocation) {
+    const base = currentLocation.protocol === 'file:'
+        ? 'https://lgy8687.github.io/project-timebook/'
+        : currentLocation.href;
+    const url = new URL(base);
+    url.search = '?demo=october2026';
+    url.hash = '';
+    return url.href;
+}
 function openDemoMode() {
     if (window.__timebookDemo) {
         window.parent.postMessage({ type: 'timebook-close-demo' }, '*');
         return;
     }
-    document.getElementById('demo-mode-frame').src = location.pathname + '?demo=october2026';
     document.getElementById('demo-mode-layer').classList.remove('hidden');
+    document.getElementById('demo-loading').hidden = false;
+    document.getElementById('demo-loading-message').textContent = '正在打开10月示例…';
+    document.getElementById('demo-retry-button').hidden = true;
+    clearTimeout(demoLoadingTimer);
+    document.getElementById('demo-mode-frame').src = demoModeUrl(location);
+    demoLoadingTimer = setTimeout(() => {
+        document.getElementById('demo-loading-message').textContent = '示例加载失败，请检查网络后重试。';
+        document.getElementById('demo-retry-button').hidden = false;
+    }, 15000);
 }
 function closeDemoMode() {
+    clearTimeout(demoLoadingTimer);
     document.getElementById('demo-mode-layer').classList.add('hidden');
     document.getElementById('demo-mode-frame').removeAttribute('src');
 }
 window.addEventListener('message', event => {
     const frame = document.getElementById('demo-mode-frame');
-    if (event.source === frame?.contentWindow && event.data?.type === 'timebook-close-demo') closeDemoMode();
+    if (event.source !== frame?.contentWindow) return;
+    if (event.data?.type === 'timebook-close-demo') closeDemoMode();
+    if (event.data?.type === 'timebook-demo-ready') {
+        clearTimeout(demoLoadingTimer);
+        document.getElementById('demo-loading').hidden = true;
+    }
 });
 function safeJSON(key, fallback) {
     try {

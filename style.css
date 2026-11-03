@@ -324,6 +324,10 @@ html[data-demo] #widget-settings-entry, html[data-demo] [data-config-section="da
 .demo-mode-header button { min-height:40px; padding:0 10px; border-radius:6px; background:#fff; color:#235e50; font-size:13px; white-space:nowrap; }
 .demo-mode-layer iframe { width:100%; flex:1; min-height:0; border:0; }
 .demo-mode-layer iframe { background:#f8fafc; }
+.demo-loading { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:#f8fafc; color:#34465b; }
+.demo-loading[hidden], .demo-loading button[hidden] { display:none; }
+.demo-loading div { display:flex; gap:12px; }
+.demo-loading button { padding:10px 16px; border:1px solid #cbd8df; border-radius:6px; background:#fff; color:#365c68; }
 .dev-inspector-shortcut { width:40px; min-height:44px; border:1px solid #dbe4eb; border-radius:8px; background:#fff; color:#607589; font:700 13px monospace; }
 .dev-inspector-shortcut[aria-pressed="true"] { background:#e8f1fd; border-color:#6b8db5; color:#264d78; }
 @media (max-width:360px) {

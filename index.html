@@ -7,9 +7,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>TimeBook Pro - 稳如老狗版</title>
-    <script src="demo-sandbox.js?v=2"></script>
+    <script src="demo-sandbox.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=5.97">
+    <link rel="stylesheet" href="style.css?v=5.97-demo-fix">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=5.92">
     <link rel="stylesheet" href="design-system.css?v=5.97">
@@ -38,7 +38,7 @@
         <div id="demo-entry-bar" class="demo-entry-bar"><button id="demo-entry-button" type="button" onclick="openDemoMode()" aria-label="打开10月示例" title="打开10月示例">📅</button></div>
         <button id="dev-inspector-shortcut" type="button" class="dev-inspector-shortcut" title="开发者模式" aria-label="开发者模式" aria-pressed="false" onclick="setDevInspectorEnabled(this.getAttribute('aria-pressed') !== 'true')">&lt;/&gt;</button>
     </header>
-    <div id="demo-mode-layer" class="demo-mode-layer hidden"><div id="demo-mode-header" class="demo-mode-header"><span>10月示例 · 退出重置</span><button id="demo-exit-button" type="button" onclick="closeDemoMode()">返回真实数据</button></div><iframe id="demo-mode-frame" title="10月示例模式" sandbox="allow-scripts"></iframe></div>
+    <div id="demo-mode-layer" class="demo-mode-layer hidden"><iframe id="demo-mode-frame" title="10月示例模式" sandbox="allow-scripts"></iframe><div id="demo-loading" class="demo-loading" role="status"><p id="demo-loading-message">正在打开10月示例…</p><div><button id="demo-retry-button" type="button" onclick="openDemoMode()" hidden>重试</button><button type="button" onclick="closeDemoMode()">返回真实数据</button></div></div></div>
 
     <main class="flex-1 overflow-y-auto p-4 pb-52">
         <section id="page-record" class="tab-content active space-y-5">
@@ -809,7 +809,7 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=5.92"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=5.97"></script>
+    <script src="app.js?v=5.97-demo-fix"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

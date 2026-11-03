@@ -66,6 +66,7 @@
             }
             switchTab('calendar');
             renderCalendarPage();
+            window.parent.postMessage({ type: 'timebook-demo-ready' }, '*');
         }, 0);
     });
 })();

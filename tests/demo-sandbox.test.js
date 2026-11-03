@@ -33,3 +33,14 @@ test('example frame has an opaque origin and cloud sync is disabled', () => {
     assert.match(html, /id="demo-mode-frame"[^>]*sandbox="allow-scripts"/);
     assert.match(sync, /if \(window\.__timebookDemo\) return/);
 });
+
+test('local files use the hosted example while websites keep their own origin', () => {
+    const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+    const source = app.slice(app.indexOf('function demoModeUrl('), app.indexOf('function openDemoMode('));
+    const context = { URL };
+    vm.runInNewContext(source, context);
+    assert.equal(context.demoModeUrl({ protocol: 'file:', href: 'file:///tmp/index.html' }),
+        'https://lgy8687.github.io/project-timebook/?demo=october2026');
+    assert.equal(context.demoModeUrl({ protocol: 'https:', href: 'https://example.org/app/?old=1#section' }),
+        'https://example.org/app/?demo=october2026');
+});
