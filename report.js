@@ -649,6 +649,8 @@
             };
             const current = makePanel(originalKind);
             const next = makePanel(targetKind);
+            const sourceAnchor = document.getElementById(originalKind === 'time' ? 'report-time-view' : 'event-report-block');
+            next.style.top = `${sourceAnchor.getBoundingClientRect().top - top}px`;
             root.append(current, next); reportPage.appendChild(root);
             return { root, current, next, targetKind, direction, width: main.width };
         }
