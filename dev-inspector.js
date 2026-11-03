@@ -80,7 +80,9 @@
         ['B91', '事件确认和补录选择', '#event-modal[data-dev-address-block="B91"] #event-modal-card'],
         ['B92', '并行时长排行', '#report-structure-card[data-dev-address-block="B92"]', 'C01'],
         ['B93', '事件首页', '#page-event-home'],
-        ['B94', '新建事件方式选择', '#event-home-create-card']
+        ['B94', '新建事件方式选择', '#event-home-create-card'],
+        ['B95', '数据模式入口', '#demo-entry-bar'],
+        ['B96', '示例模式状态栏', '#demo-mode-header']
     ];
     // A Z address names a submodule prototype; repeated instances share one badge and contract.
     const submodules = [
@@ -106,7 +108,9 @@
         ['Z33-1', '报表周期切换', '#seg-period', 'C18'],
         ['Z33-2', '报表日期导航', '#report-period-nav', 'C03'],
         ['Z34-1', '随手记旁的事件入口', '#free-note-event-btn'],
-        ['Z85-1', '未分配主线的事件入口', '.unassigned-live-event-btn']
+        ['Z85-1', '未分配主线的事件入口', '.unassigned-live-event-btn'],
+        ['Z95-1', '打开示例模式', '#demo-entry-button'],
+        ['Z96-1', '返回真实数据', '#demo-exit-button']
     ];
     const floatingBadges = new Map();
     let enabled = localStorage.getItem(STORAGE_KEY) !== 'false';

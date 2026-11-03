@@ -310,6 +310,16 @@
 .version-below-daybar { margin: -3px 4px 0; font-size: 10px; line-height: 1; font-weight: 900; letter-spacing: .08em; color: #ef4444; }
 #zone-frame { position: fixed; inset: 0; z-index: 60; pointer-events: none; border: 0 solid transparent; transition: border-color .25s ease, border-width .25s ease; }
 .app-header { display: grid; grid-template-columns: minmax(0, 1fr) 62px 40px; align-items: stretch; gap: 6px; border-bottom: 1px solid #e2e8f0; }
+.demo-entry-bar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 16px; background:#f4f7f8; color:#617182; font-size:12px; }
+.demo-entry-bar button { min-height:36px; padding:0 12px; border:1px solid #cbd8df; border-radius:6px; color:#365c68; background:#fff; }
+html[data-demo] .demo-entry-bar { display:none; }
+html[data-demo] #widget-settings-entry, html[data-demo] [data-config-section="data"] { display:none !important; }
+.demo-mode-layer { position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; background:#fff; }
+.demo-mode-layer.hidden { display:none; }
+.demo-mode-header { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; padding:4px 12px; background:#e2f2ec; color:#235e50; font-size:13px; }
+.demo-mode-header button { min-height:40px; padding:0 10px; border-radius:6px; background:#fff; color:#235e50; font-size:13px; white-space:nowrap; }
+.demo-mode-layer iframe { width:100%; flex:1; min-height:0; border:0; }
+.demo-mode-layer iframe { background:#f8fafc; }
 .dev-inspector-shortcut { width:40px; min-height:44px; border:1px solid #dbe4eb; border-radius:8px; background:#fff; color:#607589; font:700 13px monospace; }
 .dev-inspector-shortcut[aria-pressed="true"] { background:#e8f1fd; border-color:#6b8db5; color:#264d78; }
 @media (max-width:360px) {

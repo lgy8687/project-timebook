@@ -1,5 +1,6 @@
 /* global supabase */
 (() => {
+    if (window.__timebookDemo) return;
     const config = window.TIMEBOOK_SYNC_CONFIG || {};
     const TABLE = 'timebook_snapshots';
     const OWNER_KEY = 'timebook_sync_owner';

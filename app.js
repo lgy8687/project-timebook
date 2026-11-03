@@ -1,4 +1,12 @@
 // --- 安全读取 localStorage ---
+function openDemoMode() {
+    document.getElementById('demo-mode-frame').src = location.pathname + '?demo=october2026';
+    document.getElementById('demo-mode-layer').classList.remove('hidden');
+}
+function closeDemoMode() {
+    document.getElementById('demo-mode-layer').classList.add('hidden');
+    document.getElementById('demo-mode-frame').removeAttribute('src');
+}
 function safeJSON(key, fallback) {
     try {
         const v = localStorage.getItem(key);
