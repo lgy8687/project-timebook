@@ -7072,7 +7072,7 @@ function renderPicker() {
     }
 
     l1Box.style.display = '';
-    l2Box.className = "w-3/4 flex-1 min-h-0 p-4 overflow-y-auto grid grid-cols-2 content-start gap-3";
+    l2Box.className = "w-3/4 flex-1 min-h-0 p-4 overflow-y-auto grid grid-cols-3 content-start gap-2";
     if (!cats.some(c => c.name === selL1)) selL1 = cats[0].name;
     if (isPickerWithRecents()) appendDrawerRecentsBar(l2Box);
 
@@ -7091,7 +7091,7 @@ function renderPicker() {
     const selected = cats.find(c => c.name === selL1);
     if (!selected) return;
     const reportCategoryPicker = pickerMode === 'report-summary-category';
-    if (!reportCategoryPicker) {
+    if (!reportCategoryPicker && !selected.subs.length) {
         const direct = document.createElement('button');
         direct.type = 'button';
         direct.className = "bg-indigo-600 text-white border border-indigo-600 p-4 rounded-2xl text-sm font-black shadow-sm active:bg-indigo-700";
@@ -7104,8 +7104,14 @@ function renderPicker() {
     selected.subs.forEach(s => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = "bg-white border border-slate-100 p-4 rounded-2xl text-sm font-black text-slate-600 shadow-sm active:bg-indigo-50";
-        btn.innerText = s;
+        btn.className = "drawer-column-item";
+        const icon = document.createElement('span');
+        icon.className = 'drawer-column-item-icon';
+        icon.textContent = getSubIcon(s, selected.icon, selected);
+        const label = document.createElement('span');
+        label.className = 'drawer-column-item-label';
+        label.textContent = s;
+        btn.append(icon, label);
         const mode = pickerMode;
         const category = selL1;
         btn.addEventListener('click', () => drawerPick(category, s, mode));
@@ -7113,7 +7119,7 @@ function renderPicker() {
     });
     if (!selected.subs.length) {
         const hint = document.createElement('div');
-        hint.className = "col-span-2 text-sm text-slate-300 font-bold px-2";
+        hint.className = "col-span-full text-sm text-slate-300 font-bold px-2";
         hint.innerText = reportCategoryPicker
             ? "这个分类还没有二级目录，暂时不能用于类别统计。"
             : "这个一级分类还没有子类，也可以直接记录。";
