@@ -709,6 +709,7 @@
             clearReportSwipe();
             const toolbar = document.getElementById('report-period-toolbar').getBoundingClientRect();
             const main = reportPage.closest('main').getBoundingClientRect();
+            const reportBounds = reportPage.getBoundingClientRect();
             const top = Math.max(main.top, toolbar.bottom);
             const bottom = main.bottom;
             if (bottom <= top) return null;
@@ -720,20 +721,25 @@
             const boundary = targetKind === originalKind;
             const makePanel = kind => {
                 const panel = document.createElement('div'); panel.className = 'report-swipe-panel';
-                panel.style.padding = '0 16px';
+                panel.style.padding = `0 ${Math.max(0, main.right - reportBounds.right)}px 0 ${Math.max(0, reportBounds.left - main.left)}px`;
                 const selectors = kind === 'time' ? ['report-time-view', 'report-time-detail'] : state.eventDetail ? ['event-detail-block'] : ['event-report-block', 'event-pattern-block'];
                 selectors.forEach(id => {
                     const node = document.getElementById(id);
                     if (!node) return;
                     const clone = node.cloneNode(true);
                     clone.classList.remove('hidden');
-                    clone.removeAttribute('id'); clone.querySelectorAll('[id]').forEach(child => child.removeAttribute('id'));
+                    [clone, ...clone.querySelectorAll('[id]')].forEach(element => {
+                        if (!element.id) return;
+                        element.dataset.swipeSourceId = element.id;
+                        element.removeAttribute('id');
+                    });
                     clone.querySelectorAll('.dev-inspector-badge').forEach(child => child.remove());
                     if (kind === originalKind) {
                         clone.style.position = 'absolute';
                         clone.style.top = `${node.getBoundingClientRect().top - top}px`;
-                        clone.style.left = '16px';
-                        clone.style.right = '16px';
+                        const bounds = node.getBoundingClientRect();
+                        clone.style.left = `${bounds.left - main.left}px`;
+                        clone.style.right = `${main.right - bounds.right}px`;
                     }
                     panel.appendChild(clone);
                 });

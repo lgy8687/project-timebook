@@ -70,4 +70,9 @@ test('swipe preview does not rerender or detach the active touch target', () => 
     assert.match(source, /touchcancel.*clearReportSwipe/);
     assert.match(source, /const reportScrollArea = reportPage\?\.closest\('main'\)/);
     assert.match(source, /!reportPage\.classList\.contains\('active'\)/);
+    assert.match(preview, /element\.dataset\.swipeSourceId = element\.id/);
+    assert.match(preview, /reportBounds\.left - main\.left/);
+    const css = fs.readFileSync(path.join(__dirname, '..', 'design-system.css'), 'utf8');
+    assert.match(css, /\[data-swipe-source-id="chart-mode-toggle"\]/);
+    assert.match(css, /\[data-swipe-source-id="legend-mode-toggle"\]/);
 });
