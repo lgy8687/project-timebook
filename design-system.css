@@ -259,13 +259,6 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
     background: #fff;
     box-shadow: 0 2px 8px rgba(53, 80, 106, .05);
 }
-#page-report #report-period-toolbar,
-#page-report #summary-block-main,
-#page-report #summary-block-parallel,
-#page-report #event-report-block,
-#page-report #report-structure-card {
-    border-color: #002fa7;
-}
 #page-report .report-surface .summary-block-title,
 #page-report .report-surface .structure-title {
     font-size: var(--tb-report-title-size, var(--ui-heading-3));
@@ -438,7 +431,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
     min-width: 128px;
     padding: 2px;
     gap: 3px;
-    border: 1px solid var(--ui-border);
+    border: 1px solid #002fa7;
     border-radius: 12px;
     background: #fff;
     box-shadow: none;
@@ -466,6 +459,34 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #page-report #chart-mode-toggle > .chart-main.active { background: var(--rp-indigo); }
 #page-report #summary-block-parallel .report-segmented-template > .summary-view-btn.is-active,
 #page-report #chart-mode-toggle > .chart-parallel.active { background: var(--rp-violet); }
+#page-report #report-period-toolbar .report-kind-tabs,
+#page-report #report-period-toolbar #seg-period {
+    display: inline-grid;
+    padding: 2px;
+    gap: 3px;
+    border: 1px solid #002fa7;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+}
+#page-report #report-period-toolbar #seg-period { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+#page-report #report-period-toolbar .report-kind-tabs > button,
+#page-report #report-period-toolbar #seg-period > button {
+    min-height: 40px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--ui-muted);
+    font-size: var(--ui-type-1-7);
+    font-weight: 600;
+    box-shadow: none;
+}
+#page-report #report-period-toolbar .report-kind-tabs > button.active,
+#page-report #report-period-toolbar #seg-period > button.active {
+    background: var(--ui-accent);
+    color: #fff;
+}
 #page-report .event-report-title,
 #page-report .summary-block-title,
 #page-report .structure-title {

@@ -12,11 +12,12 @@ const report = fs.readFileSync(path.join(root, 'report.js'), 'utf8');
 const registry = fs.readFileSync(path.join(root, 'docs/design-registry.md'), 'utf8');
 const designCss = fs.readFileSync(path.join(root, 'design-system.css'), 'utf8');
 
-test('B33 shares C01 shell and C01 report blocks use Klein blue', () => {
+test('report selectors use Klein blue while B33 retains its own toolbar shell', () => {
     const blocks = readRegistryArray('blocks');
-    assert.equal(blocks.find(([code]) => code === 'B33')[3], 'C01');
-    assert.match(html, /class="toolbar report-surface" id="report-period-toolbar"/);
-    assert.match(designCss, /#page-report #report-period-toolbar,[\s\S]*?#page-report #event-report-block,[\s\S]*?border-color: #002fa7/);
+    assert.equal(blocks.find(([code]) => code === 'B33')[3], 'C16');
+    assert.match(html, /class="toolbar" id="report-period-toolbar"/);
+    assert.match(designCss, /#page-report \.report-segmented-template\s*\{[^}]*border: 1px solid #002fa7/);
+    assert.match(designCss, /#page-report #report-period-toolbar #seg-period\s*\{[^}]*border: 1px solid #002fa7/);
 });
 
 test('developer shortcut follows the shared inspector state and drawer exposes two modes', () => {
