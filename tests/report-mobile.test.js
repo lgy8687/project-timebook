@@ -45,6 +45,8 @@ test('event overview stays concise and framed areas share the same corner token'
     assert.doesNotMatch(overview, /事件统计|事件记录与编辑|管理事件/);
     assert.match(css, /\.event-pattern-card, \.event-pattern-week[\s\S]*?border-radius: var\(--ui-report-surface-radius\)/);
     assert.match(css, /\.unassigned-main-card\.swipe-card\.log-flow-card--main-log\.swiping\s*\{\s*border-radius:\s*0/);
+    assert.match(css, /#page-report \.event-overview\s*\{\s*margin:\s*0/);
+    assert.match(css, /--ui-space-4:\s*16px/);
 });
 
 test('swipe preview does not rerender or detach the active touch target', () => {

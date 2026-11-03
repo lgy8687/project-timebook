@@ -18,6 +18,11 @@
     --ui-body: var(--ui-type-1-6);
     --ui-caption: var(--ui-type-1-8);
     --ui-report-surface-radius: 14px;
+    --ui-space-1: 4px;
+    --ui-space-2: 8px;
+    --ui-space-3: 12px;
+    --ui-space-4: 16px;
+    --ui-space-5: 24px;
     --ui-ink: #334155;
     --ui-muted: #64748b;
     --ui-accent: #526a91;
@@ -258,7 +263,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .structure-card, .report-card-block, .event-report-block { padding: 16px; }
 #page-report .report-surface {
     margin-bottom: 12px;
-    padding: 16px;
+    padding: var(--ui-space-4);
     border: 1px solid var(--ui-border);
     border-radius: var(--ui-report-surface-radius);
     background: #fff;
@@ -669,6 +674,23 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .unassigned-main-card.swipe-card.log-flow-card--main-log:not(.swiping) { border-radius: var(--ui-report-surface-radius); }
 .unassigned-main-card.swipe-card.log-flow-card--main-log.swiping { border-radius: 0; }
 :is(.config-grid-card, .flow-calendar-panel, .calendar-day-summary, .event-home-card, .event-pattern-card, .event-pattern-week, .design-option) { border-color: var(--ui-border); }
+
+/* Shared spacing: component internals use 4/8/12px, surface padding uses 16px. */
+#page-report .event-overview { margin: 0; gap: var(--ui-space-1); }
+#page-report .event-overview > div { min-height: 64px; justify-content: center; gap: var(--ui-space-1); padding: var(--ui-space-2) var(--ui-space-1); }
+#page-report .event-pattern { margin: var(--ui-space-4) 0 var(--ui-space-5); }
+#page-report .event-pattern h2 { margin: 0 0 var(--ui-space-3); }
+#page-report .event-pattern-cards { gap: var(--ui-space-2); }
+#page-report .event-pattern-card { padding: var(--ui-space-4); }
+#page-report .event-pattern-card-title { align-items: center; gap: var(--ui-space-2); }
+#page-report .event-pattern-days { margin-top: var(--ui-space-2); gap: var(--ui-space-1); }
+#page-report .event-pattern-cards.is-year .event-pattern-days { gap: 3px; }
+.event-home-cards { gap: var(--ui-space-2); }
+.event-home-card-main { padding: var(--ui-space-3); gap: var(--ui-space-1); }
+.config-grid { gap: var(--ui-space-2); }
+.config-grid-card, .calendar-day-summary { padding: var(--ui-space-4); }
+.event-detail-header { gap: var(--ui-space-2); margin-bottom: var(--ui-space-4); }
+.event-detail-calendar { gap: var(--ui-space-1); margin: var(--ui-space-3) 0 var(--ui-space-4); }
 main:has(> #page-report.active) { padding-top: 0; }
 #page-report #report-period-toolbar { position: sticky; top: 0; z-index: 20; isolation: isolate; padding: 6px 0; background: #f8fafc; }
 #page-report #report-period-toolbar::before { content: ''; position: absolute; inset: 0 -16px; z-index: -1; background: #f8fafc; }
