@@ -7563,6 +7563,69 @@ function renderFlowCalendar() {
     host.appendChild(grid);
 }
 
+const DESIGN_DRAFT_KEY = 'timebook_design_draft';
+const DESIGN_VARIANTS = [
+    ['A', '描边实心'], ['B', '浅底实心'], ['C', '无框实心'],
+    ['D', '双层描边'], ['E', '浅色选中'], ['F', '分隔胶囊']
+];
+function renderDesignStudio() {
+    const host = document.getElementById('design-options');
+    const controls = document.getElementById('design-controls');
+    if (!host || !controls) return;
+    const saved = safeJSON(DESIGN_DRAFT_KEY, {});
+    const draft = { variant: 'A', font: 12, height: 32, border: 1, gap: 2, color: '#526a91', borderColor: '#002fa7', ...saved };
+    const page = document.getElementById('page-design');
+    const update = () => {
+        ['font', 'height', 'border', 'gap'].forEach(key => {
+            const input = controls.querySelector(`[data-design="${key}"]`);
+            const value = Math.max(Number(input.min), Math.min(Number(input.max), Number(draft[key]) || 0));
+            draft[key] = value; input.value = String(value);
+            controls.querySelector(`[data-design-output="${key}"]`).textContent = `${value}px`;
+            page.style.setProperty(`--design-${key}`, `${value}px`);
+        });
+        ['color', 'borderColor'].forEach(key => {
+            if (!/^#[0-9a-f]{6}$/i.test(draft[key])) draft[key] = key === 'color' ? '#526a91' : '#002fa7';
+            controls.querySelector(`[data-design="${key}"]`).value = draft[key];
+            page.style.setProperty(key === 'color' ? '--design-color' : '--design-border-color', draft[key]);
+        });
+        document.getElementById('design-selection').textContent = `已选择 ${draft.variant} · 字号 ${draft.font}px · 高度 ${draft.height}px · 边框 ${draft.border}px · 间距 ${draft.gap}px · 选中 ${draft.color} · 边框 ${draft.borderColor}`;
+        const current = document.getElementById('design-current-preview');
+        const selected = host.querySelector(`input[name="design-variant"][value="${draft.variant}"]`)?.closest('.design-option');
+        if (current && selected && current.dataset.variant !== draft.variant) {
+            current.replaceChildren();
+            const preview = selected.cloneNode(true); preview.querySelector('.design-option-heading')?.remove();
+            preview.querySelectorAll('.design-preview').forEach(group => group.addEventListener('click', event => {
+                const button = event.target.closest('button');
+                if (button) group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+            }));
+            current.appendChild(preview); current.dataset.variant = draft.variant;
+        }
+        localStorage.setItem(DESIGN_DRAFT_KEY, JSON.stringify(draft));
+    };
+    host.replaceChildren();
+    DESIGN_VARIANTS.forEach(([id, name]) => {
+        const item = document.createElement('div'); item.className = `design-option design-variant-${id.toLowerCase()}`;
+        const label = document.createElement('label'); label.className = 'design-option-heading';
+        const radio = document.createElement('input'); radio.type = 'radio'; radio.name = 'design-variant'; radio.value = id; radio.checked = draft.variant === id;
+        radio.addEventListener('change', () => { draft.variant = id; update(); });
+        const title = document.createElement('strong'); title.textContent = `${id}  ${name}`; label.append(radio, title); item.appendChild(label);
+        [['时间', '事件'], ['日报', '周报', '月报', '年报']].forEach((labels) => {
+            const group = document.createElement('div'); group.className = 'design-preview'; group.setAttribute('role', 'group'); group.setAttribute('aria-label', `${id} ${labels.join('、')}`);
+            labels.forEach((text, index) => {
+                const button = document.createElement('button'); button.type = 'button'; button.textContent = text;
+                button.setAttribute('aria-pressed', String(index === 0));
+                button.addEventListener('click', () => { group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === button))); });
+                group.appendChild(button);
+            });
+            item.appendChild(group);
+        });
+        host.appendChild(item);
+    });
+    controls.querySelectorAll('[data-design]').forEach(input => {
+        input.oninput = () => { draft[input.dataset.design] = input.value; update(); };
+    });
+    update();
+}
 function switchTab(t) {
     pickerMode = 'record';
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -7571,6 +7634,7 @@ function switchTab(t) {
     const mainEl = document.querySelector('main');
     if (mainEl) mainEl.scrollTop = 0;
     if (t === 'dev' && typeof renderDevAppearancePanel === 'function') renderDevAppearancePanel();
+    if (t === 'design') renderDesignStudio();
     ['record', 'calendar', 'report', 'mine'].forEach(name => {
         const nav = document.getElementById('nav-' + name);
         if (nav) {

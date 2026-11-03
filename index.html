@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css?v=5.86">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=5.82">
-    <link rel="stylesheet" href="design-system.css?v=5.86">
+    <link rel="stylesheet" href="design-system.css?v=5.87">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -278,6 +278,9 @@
                     <span class="config-tile-icon">🛠</span>
                     <span class="config-tile-label">开发外观</span>
                 </button>
+                <button type="button" class="config-tile" onclick="switchTab('design')">
+                    <span class="config-tile-icon">◉</span><span class="config-tile-label">设计模块</span>
+                </button>
                 <button type="button" class="config-tile" data-config-section="mode" onclick="openConfigSection('mode')">
                     <span class="config-tile-icon">◫</span>
                     <span class="config-tile-label">记录模式</span>
@@ -398,7 +401,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v5.86</div>
+            <div id="cache-buster" class="version-in-settings">v5.87</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8">
@@ -421,6 +424,23 @@
             <div id="event-center-stats" class="hidden"><div id="event-center-stat-content"></div></div>
             <div id="event-center-manage" class="hidden"><div class="event-center-section-head"><h3>事件类型</h3><button type="button" onclick="addEventType()">＋ 新增</button></div><div id="event-center-types"></div></div>
         </section>
+        <section id="page-design" class="tab-content design-studio pb-8">
+            <div class="event-center-header"><button type="button" onclick="switchTab('mine')" aria-label="返回">‹</button><h2>设计模块</h2></div>
+            <h3 class="design-section-title">胶囊选择框</h3>
+            <div id="design-options" class="design-options"></div>
+            <h3 class="design-section-title">样式调整</h3>
+            <div id="design-current-preview" class="design-current-preview" aria-label="当前样式预览"></div>
+            <div class="design-controls" id="design-controls">
+                <label>字号 <output data-design-output="font"></output><input type="range" data-design="font" min="12" max="18" step="1"></label>
+                <label>高度 <output data-design-output="height"></output><input type="range" data-design="height" min="30" max="48" step="1"></label>
+                <label>边框粗细 <output data-design-output="border"></output><input type="range" data-design="border" min="0" max="3" step="1"></label>
+                <label>选项间距 <output data-design-output="gap"></output><input type="range" data-design="gap" min="0" max="8" step="1"></label>
+                <label class="design-color">选中颜色 <input type="color" data-design="color" aria-label="选中颜色"></label>
+                <label class="design-color">边框颜色 <input type="color" data-design="borderColor" aria-label="边框颜色"></label>
+            </div>
+            <p id="design-selection" class="design-selection" aria-live="polite"></p>
+        </section>
+
         <section id="page-dev" class="tab-content space-y-4 pb-8">
             <div class="sticky top-0 z-10 bg-slate-50 py-3 flex items-center gap-3 border-b border-slate-100 mb-2">
                 <button type="button" onclick="switchTab('mine')" class="bg-white w-9 h-9 rounded-xl shadow-sm flex items-center justify-center text-base shrink-0">⬅️</button>
@@ -791,12 +811,12 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=5.86"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=5.86"></script>
+    <script src="app.js?v=5.87"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=5.77"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=5.82"></script>
+    <script src="dev-inspector.js?v=5.87"></script>
 </body>
 </html>
