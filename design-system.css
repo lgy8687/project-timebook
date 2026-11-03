@@ -635,16 +635,20 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #page-events .event-center-record-arrow { color: var(--ui-muted); font-size: 24px; }
 
 .version-in-settings { padding: 12px 0 20px; color: var(--ui-muted); text-align: center; font-size: 12px; }
-#page-report #report-period-toolbar { position: sticky; top: 0; z-index: 8; padding: 6px 0; background: #f8fafc; }
-#page-report #report-period-toolbar .report-kind-tabs { width: 152px; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+main:has(> #page-report.active) { padding-top: 0; }
+#page-report #report-period-toolbar { position: sticky; top: 0; z-index: 20; isolation: isolate; padding: 6px 0; background: #f8fafc; }
+#page-report #report-period-toolbar::before { content: ''; position: absolute; inset: 0 -16px; z-index: -1; background: #f8fafc; }
+#page-report #report-period-toolbar .report-kind-tabs { width: 128px; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #page-report #report-period-toolbar .seg-row { display: flex; justify-content: center; }
-#page-report #report-period-toolbar #seg-period { width: min(100%, 320px); min-width: 0; }
+#page-report #report-period-toolbar #seg-period { width: min(100%, 256px); min-width: 0; }
 #page-report #report-period-toolbar .report-kind-tabs > button,
-#page-report #report-period-toolbar #seg-period > button { min-height: 40px; }
+#page-report #report-period-toolbar #seg-period > button { min-height: 36px; padding: 3px 4px; }
 #page-report #chart-mode-toggle.report-segmented-template,
 #page-report #legend-mode-toggle.report-segmented-template { min-width: 0; width: auto; }
+#page-report #chart-mode-toggle.report-segmented-template { width: 84px; }
+#page-report #legend-mode-toggle.report-segmented-template { width: 128px; }
 #page-report #chart-mode-toggle.report-segmented-template > button,
-#page-report #legend-mode-toggle.report-segmented-template > button { min-height: 36px; padding: 4px 9px; }
+#page-report #legend-mode-toggle.report-segmented-template > button { min-height: 36px; padding: 3px 2px; }
 
 /* B86 shares the event identity and chronology used by recording. */
 #event-center-history .event-center-filter label { display: grid; }
