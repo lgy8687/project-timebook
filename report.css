@@ -349,13 +349,18 @@ body#report-standalone {
 .event-detail-weekday { text-align: center; padding: 4px 0; color: #718398; font-size: 12px; }
 .event-detail-day { position: relative; display: grid; place-items: center; gap: 0; min-height: 44px; padding: 2px; border: 1px solid transparent; border-radius: 6px; color: #526779; font-size: 13px; }
 .event-detail-day.has-records { background: #e9f3ef; color: #236b59; }
-.event-detail-day.active { border-color: #526a91; }
+.event-detail-day.active { border-color: #526a91; background: #526a91; color: #fff; }
 .event-detail-day small { color: #236b59; font-size: 10px; }
+.event-detail-day.active small { color: #fff; }
 .event-detail-section-head { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; }
 .event-detail-section-head h3, .event-detail-subtitle { font-size: 14px; font-weight: 700; color: #304356; }
 .event-detail-section-head button { min-height: 44px; padding: 0 8px; color: #526a91; font-size: 13px; }
 .event-detail-record { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 54px; padding: 10px 4px; border-bottom: 1px solid #e1e8ec; color: #526779; font-size: 13px; text-align: left; }
 .event-detail-record strong { flex: none; color: #304356; font-size: 14px; }
+.event-detail-record-info { display: grid; gap: 3px; min-width: 0; }
+.event-detail-record-info small { color: #718398; font-size: 12px; }
+.event-detail-record-count { margin-left: auto; color: #304356; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.event-detail-record-arrow { color: #718398; font-size: 22px; }
 .event-detail-empty { padding: 24px 0; color: #718398; text-align: center; font-size: 13px; }
 .event-detail-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 10px 0 24px; }
 .event-detail-metrics div { display: grid; justify-items: center; gap: 4px; padding: 12px 2px; }

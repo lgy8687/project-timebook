@@ -247,6 +247,9 @@
         const item = data.entries.find(entry => String(entry.id) === String(detail.id)) || { ...detail, count: 0, days: 0, dailyCounts: {}, records: [] };
         const records = (item.records || []).slice().sort((a, b) => b.occurredAt - a.occurredAt);
         const dates = data.daily || [];
+        if (state.eventDetailTab === 'records' && !state.eventDetailDate && records.length) {
+            state.eventDetailDate = state.period === 'year' ? records[0].date.slice(0, 7) : records[0].date;
+        }
         box.replaceChildren();
         const header = document.createElement('div'); header.className = 'event-detail-header';
         const back = document.createElement('button'); back.type = 'button'; back.className = 'event-detail-back'; back.textContent = '‹'; back.setAttribute('aria-label', '返回事件趋势'); back.onclick = () => { state.eventDetail = null; state.eventDetailDate = ''; render(); };
@@ -267,22 +270,27 @@
         days.forEach(day => {
             const count = records.filter(record => record.date.startsWith(day.date)).reduce((sum, record) => sum + record.count, 0);
             const button = document.createElement('button'); button.type = 'button'; button.className = 'event-detail-day'; button.textContent = day.label; button.classList.toggle('has-records', count > 0); button.classList.toggle('active', state.eventDetailDate === day.date); button.setAttribute('aria-label', `${day.date}，${count}次`); button.setAttribute('aria-pressed', String(state.eventDetailDate === day.date));
-            button.onclick = () => { state.eventDetailDate = state.eventDetailDate === day.date ? '' : day.date; renderEventDetail(data); };
+            button.onclick = () => { state.eventDetailDate = day.date; renderEventDetail(data); };
             if (count) { const dot = document.createElement('small'); dot.textContent = String(count); button.appendChild(dot); }
             calendar.appendChild(button);
         });
         if (state.eventDetailTab === 'records') {
             if (days.length > 1) box.appendChild(calendar);
+            const showAll = state.eventDetailDate === 'all' || !state.eventDetailDate;
+            const shown = records.filter(record => showAll || record.date.startsWith(state.eventDetailDate));
             const heading = document.createElement('div'); heading.className = 'event-detail-section-head';
-            const h = document.createElement('h3'); h.textContent = state.eventDetailDate || '记录'; heading.appendChild(h);
-            if (state.eventDetailDate) { const all = document.createElement('button'); all.type = 'button'; all.textContent = '全部'; all.onclick = () => { state.eventDetailDate = ''; renderEventDetail(data); }; heading.appendChild(all); }
+            const h = document.createElement('h3'); h.textContent = showAll ? '全部记录' : state.eventDetailDate; heading.appendChild(h);
+            if (days.length > 1 && records.length) { const all = document.createElement('button'); all.type = 'button'; all.textContent = showAll ? '最近记录' : '查看全部'; all.onclick = () => { state.eventDetailDate = showAll ? (state.period === 'year' ? records[0].date.slice(0, 7) : records[0].date) : 'all'; renderEventDetail(data); }; heading.appendChild(all); }
             box.appendChild(heading);
-            const shown = records.filter(record => !state.eventDetailDate || record.date.startsWith(state.eventDetailDate));
-            if (!shown.length) { const empty = document.createElement('p'); empty.className = 'event-detail-empty'; empty.textContent = '当前范围没有记录'; box.appendChild(empty); }
+            if (!shown.length) { const empty = document.createElement('p'); empty.className = 'event-detail-empty'; empty.textContent = showAll ? '当前范围没有记录' : '这段时间没有记录'; box.appendChild(empty); }
             shown.forEach(record => {
                 const row = document.createElement('button'); row.type = 'button'; row.className = 'event-detail-record';
-                const date = document.createElement('span'); date.textContent = `${record.date}  ${record.dateOnly ? '未指定时间' : formatEventClock(record.occurredAt)}`;
-                const count = document.createElement('strong'); count.textContent = `${record.count}次  ›`; row.append(date, count); row.onclick = () => window.openEventRecordEditor(record.id); box.appendChild(row);
+                const details = document.createElement('span'); details.className = 'event-detail-record-info';
+                const time = document.createElement('strong'); time.textContent = record.dateOnly ? '未指定时间' : formatEventClock(record.occurredAt); details.appendChild(time);
+                if (showAll || state.period === 'year') { const date = document.createElement('small'); date.textContent = record.date; details.appendChild(date); }
+                const count = document.createElement('span'); count.className = 'event-detail-record-count'; count.textContent = `${record.count}次`;
+                const arrow = document.createElement('span'); arrow.className = 'event-detail-record-arrow'; arrow.textContent = '›'; arrow.setAttribute('aria-hidden', 'true');
+                row.append(details, count, arrow); row.setAttribute('aria-label', `${record.date} ${time.textContent}，${record.count}次，编辑记录`); row.onclick = () => window.openEventRecordEditor(record.id); box.appendChild(row);
             });
         } else {
             const overview = document.createElement('div'); overview.className = 'event-detail-metrics';

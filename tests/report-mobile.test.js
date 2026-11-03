@@ -17,6 +17,8 @@ test('event trends open dedicated record and statistics views without changing p
     assert.match(report, /eventDetailTab === 'records' \? 'B99' : 'B100'/);
     assert.match(app, /item\.records\.push\(\{ id: record\.id/);
     assert.match(report, /record\.dateOnly \? '未指定时间'/);
+    assert.match(report, /state\.eventDetailDate = state\.period === 'year' \? records\[0\]\.date\.slice\(0, 7\) : records\[0\]\.date/);
+    assert.match(report, /showAll \? '最近记录' : '查看全部'/);
 });
 
 test('event trends use seven weekday columns and a compact yearly grid', () => {
