@@ -24,7 +24,7 @@
         ['B30', '底部导航', '#app-bottom-nav', 'C07'],
         ['B31', '当前状态卡片', '#header-main-status'],
         ['B32', '场景切换键', '#scene-entry-btn', 'C21'],
-        ['B33', '报表周期与日期', '#report-period-toolbar', 'C16'],
+        ['B33', '报表周期与日期', '#report-period-toolbar', 'C01'],
         ['B34', '随手记', '#free-note-module'],
         ['B35', '时钟设置面板', '#config-panel-clock', 'C22'],
         ['B36', '报表摘要设置面板', '#config-panel-report', 'C22'],
