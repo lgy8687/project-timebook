@@ -170,14 +170,15 @@
             button.classList.toggle('active', active);
             button.setAttribute('aria-pressed', String(active));
         });
-        if (!data.entries.length) {
-            box.innerHTML = '<div class="event-report-empty">这个周期还没有事件记录</div>';
-            return;
-        }
         const mode = state.eventMode;
         const label = mode === 'days' ? '发生天数' : '记录次数';
         const total = mode === 'days' ? data.activeDays : data.total;
-        box.innerHTML = `<div class="event-report-summary"><span>${esc(label)}</span><strong>${esc(String(total))}</strong></div><div class="event-report-list">${data.entries.map((item) => {
+        const overview = `<div class="event-overview" aria-label="事件概览"><div><strong>${esc(String(data.entries.length))}</strong><span>事件种类</span></div><div><strong>${esc(String(data.recordsCount ?? 0))}</strong><span>记录条数</span></div><div><strong>${esc(String(data.total || 0))}</strong><span>发生次数</span></div><div><strong>${esc(String(data.activeDays || 0))}</strong><span>发生天数</span></div></div>`;
+        if (!data.entries.length) {
+            box.innerHTML = overview + '<div class="event-report-empty">这个周期还没有事件记录</div>';
+            return;
+        }
+        box.innerHTML = `${overview}<div class="event-report-summary"><span>${esc(label)}</span><strong>${esc(String(total))}</strong></div><div class="event-report-list">${data.entries.map((item) => {
             const value = mode === 'days' ? item.days : item.count;
             const suffix = mode === 'days' ? '天' : '次';
             const lastDate = item.latest ? new Date(item.latest + 8 * 60 * 60 * 1000).toISOString().slice(0, 10) : '';
@@ -187,6 +188,23 @@
             const proportion = percent === null ? '' : `<span class="event-report-share" aria-label="占总次数 ${percent}%"><span style="width:${percent}%;background:${esc(reportColor(item.color, item.name))}"></span></span>`;
             return `<div class="event-report-row"><span class="event-report-dot" style="background:${esc(reportColor(item.color, item.name))}"></span><span class="event-report-icon">${esc(item.icon)}</span><span class="event-report-name">${esc(item.name)}</span><span class="event-report-detail">${esc(detail)}</span><strong>${esc(String(value))}${suffix}${percent === null ? '' : ` · ${percent}%`}</strong>${proportion}</div>`;
         }).join('')}</div>`;
+        if ((data.period === 'week' || data.period === 'month') && data.daily?.length) {
+            const distribution = document.createElement('section');
+            distribution.className = 'event-distribution';
+            const heading = document.createElement('h3'); heading.textContent = '发生分布';
+            const grid = document.createElement('div'); grid.className = 'event-distribution-grid';
+            data.daily.forEach(day => {
+                const cell = document.createElement('div');
+                cell.className = `event-distribution-day${day.count ? ' has-records' : ''}`;
+                cell.setAttribute('aria-label', `${day.date}：${day.count}次`);
+                cell.title = `${day.date}：${day.count}次`;
+                const date = document.createElement('span'); date.textContent = String(Number(day.date.slice(-2)));
+                const value = document.createElement('small'); value.textContent = day.count ? (mode === 'days' ? '✓' : String(day.count)) : '—';
+                cell.append(date, value); grid.appendChild(cell);
+            });
+            distribution.append(heading, grid);
+            box.insertBefore(distribution, box.querySelector('.event-report-summary'));
+        }
         box.querySelectorAll('.event-report-row').forEach((row, index) => {
             row.setAttribute('role', 'button');
             row.tabIndex = 0;
@@ -201,21 +219,26 @@
                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); }
             });
         });
-        if (mode === 'count' && data.period !== 'day' && data.daily?.length >= 3) {
-            const max = Math.max(1, ...data.daily.map(day => day.count));
+        if (mode === 'count' && data.period === 'year' && data.daily?.length >= 3) {
+            const months = new Map();
+            data.daily.forEach(day => {
+                const key = day.date.slice(0, 7);
+                months.set(key, (months.get(key) || 0) + day.count);
+            });
+            const max = Math.max(1, ...months.values());
             const trend = document.createElement('div');
             trend.className = 'event-trend';
-            trend.setAttribute('aria-label', '每日事件次数');
-            data.daily.forEach(day => {
+            trend.setAttribute('aria-label', '每月事件次数');
+            months.forEach((count, month) => {
                 const bar = document.createElement('div');
                 bar.className = 'event-trend-bar';
-                bar.style.height = `${day.count / max * 100}%`;
-                bar.title = `${day.date}：${day.count}次`;
+                bar.style.height = `${count / max * 100}%`;
+                bar.title = `${month}：${count}次`;
                 trend.appendChild(bar);
             });
             const caption = document.createElement('div');
             caption.className = 'event-trend-caption';
-            caption.textContent = `${data.daily[0].date} — ${data.daily[data.daily.length - 1].date} · 每日次数`;
+            caption.textContent = `${data.daily[0].date.slice(0, 7)} — ${data.daily[data.daily.length - 1].date.slice(0, 7)} · 每月次数`;
             const list = box.querySelector('.event-report-list');
             box.insertBefore(trend, list);
             box.insertBefore(caption, list);

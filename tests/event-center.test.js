@@ -32,10 +32,14 @@ test('event statistics count occurrences and distinct days, preserving date-only
     vm.runInContext(source, context);
     const report = context.buildEventReport(start, start + 2 * day, 'range');
     assert.equal(report.total, 5);
+    assert.equal(report.recordsCount, 2);
     assert.deepEqual(Array.from(report.daily, item => item.count), [2, 3]);
     assert.equal(report.activeDays, 2);
     assert.equal(report.entries[0].days, 2);
     assert.equal(report.entries[0].latestDateOnly, true);
+    const fullPeriod = context.buildEventReport(start, start + 2 * day, 'week', start + 7 * day);
+    assert.equal(fullPeriod.daily.length, 7);
+    assert.equal(fullPeriod.total, 5);
 });
 
 test('independent supplement saves count without inventing a time', () => {

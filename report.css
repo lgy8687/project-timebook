@@ -36,7 +36,7 @@ body#report-standalone {
 
 /* ── 顶栏切换 ── */
 .toolbar { margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
-.report-heading-row { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.report-heading-row { display:flex; align-items:center; justify-content:center; gap:16px; }
 .report-heading-row h2 { margin:0; font-size:20px; font-weight:700; }
 #report-period-toolbar { padding:0 0 4px; border-bottom:1px solid #dce3e8; gap:4px; margin-bottom:12px; }
 #report-period-toolbar .report-kind-tabs { display:flex; gap:4px; padding:3px; background:#eef2f4; border-radius:8px; }
@@ -293,6 +293,16 @@ body#report-standalone {
 .event-report-summary { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; padding: 8px 10px; border-radius: 8px; background: #f7fafb; color: #718096; font-size: 10px; font-weight: 800; }
 .event-report-summary strong { color: #35506a; font-size: 18px; font-variant-numeric: tabular-nums; }
 .event-report-list { display: grid; gap: 6px; }
+.event-overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; margin:4px 0 16px; }
+.event-overview > div { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; padding:10px 2px; background:#f4f7f8; border-radius:6px; }
+.event-overview strong { color:#304d5c; font-size:19px; font-variant-numeric:tabular-nums; }
+.event-overview span { color:#66798a; font-size:12px; white-space:nowrap; }
+.event-distribution { margin:12px 0 18px; }
+.event-distribution h3 { margin:0 0 10px; font-size:14px; font-weight:600; color:#405564; }
+.event-distribution-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+.event-distribution-day { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:40px; border-radius:4px; background:#f3f6f7; color:#738392; font-size:12px; }
+.event-distribution-day.has-records { background:#d4ebe3; color:#216a58; font-weight:700; }
+.event-distribution-day small { font-size:11px; }
 .event-report-share { grid-column:3 / 5; height:4px; overflow:hidden; background:#e7edf0; border-radius:3px; margin:5px 0 2px; }
 .event-report-share > span { display:block; height:100%; border-radius:3px; }
 .event-report-row { display: grid; grid-template-columns: 8px 24px minmax(0, 1fr) auto; align-items: center; gap: 2px 6px; min-height: 60px; padding: 10px 0; border-bottom: 1px solid var(--rp-border); color: var(--rp-muted); }

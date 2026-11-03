@@ -6430,12 +6430,12 @@ function parallelHostL1(paraLog) {
     return fallback?.l?.l1 || '未分类';
 }
 
-function buildEventReport(rangeStart, rangeEnd, period) {
+function buildEventReport(rangeStart, rangeEnd, period, displayEnd = rangeEnd) {
     const dayMs = 86400000;
     const byType = new Map();
     const dailyCounts = new Map();
-    eventRecords
-        .filter((record) => record.occurredAt >= rangeStart && record.occurredAt < rangeEnd)
+    const inRange = eventRecords.filter((record) => record.occurredAt >= rangeStart && record.occurredAt < rangeEnd);
+    inRange
         .forEach((record) => {
             const date = formatBeijingDate(record.occurredAt);
             dailyCounts.set(date, (dailyCounts.get(date) || 0) + (record.count || 1));
@@ -6464,7 +6464,8 @@ function buildEventReport(rangeStart, rangeEnd, period) {
         .sort((a, b) => b.count - a.count || b.days - a.days || a.name.localeCompare(b.name, 'zh-CN'));
     return {
         period,
-        daily: Array.from({ length: Math.max(0, Math.min(366, Math.ceil((rangeEnd - rangeStart) / dayMs))) }, (_, index) => {
+        recordsCount: inRange.length,
+        daily: Array.from({ length: Math.max(0, Math.min(366, Math.ceil((displayEnd - rangeStart) / dayMs))) }, (_, index) => {
             const date = formatBeijingDate(rangeStart + index * dayMs);
             return { date, count: dailyCounts.get(date) || 0 };
         }),
@@ -6786,7 +6787,7 @@ function buildLiveReportPeriod(period, options = {}) {
         _live: isCurrentPeriod,
         _period: period,
         _range: { start: range.start, end: summaryEnd },
-        events: buildEventReport(range.start, Math.min(range.end, now), period),
+        events: buildEventReport(range.start, Math.min(range.end, now), period, range.end),
         timeline: { title: period === 'year' ? `${periodTitle}每月分类构成` : `${periodTitle}每日时间构成`, hint: '时段按时间定位；未指定补录仅计入类别汇总', kind: 'bars', bars },
         main: {
             meta: { title: periodTitle, range: period === 'week' ? '周报主线' : period === 'month' ? '月报主线' : '本年主线', footnote: '指定时段按时间定位；未指定补录只计入时长。' },
