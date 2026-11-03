@@ -627,23 +627,28 @@
             const originalKind = state.kind;
             const targetKind = direction > 0 ? 'event' : 'time';
             const makePanel = kind => {
-                state.kind = kind; render();
                 const panel = document.createElement('div'); panel.className = 'report-swipe-panel';
                 panel.style.padding = '0 16px';
                 const selectors = kind === 'time' ? ['report-time-view', 'report-time-detail'] : ['event-report-block', 'event-pattern-block'];
                 selectors.forEach(id => {
                     const node = document.getElementById(id);
-                    if (!node || node.classList.contains('hidden')) return;
+                    if (!node) return;
                     const clone = node.cloneNode(true);
+                    clone.classList.remove('hidden');
                     clone.removeAttribute('id'); clone.querySelectorAll('[id]').forEach(child => child.removeAttribute('id'));
                     clone.querySelectorAll('.dev-inspector-badge').forEach(child => child.remove());
+                    if (kind === originalKind) {
+                        clone.style.position = 'absolute';
+                        clone.style.top = `${node.getBoundingClientRect().top - top}px`;
+                        clone.style.left = '16px';
+                        clone.style.right = '16px';
+                    }
                     panel.appendChild(clone);
                 });
                 return panel;
             };
             const current = makePanel(originalKind);
             const next = makePanel(targetKind);
-            state.kind = originalKind; render();
             root.append(current, next); reportPage.appendChild(root);
             return { root, current, next, targetKind, direction, width: main.width };
         }
@@ -673,7 +678,7 @@
             reportSwipePreview.next.style.transform = `translateX(${offset - direction * reportSwipePreview.width}px)`;
         }, { passive: false });
         reportPage?.addEventListener('touchend', event => {
-            if (!reportSwipeStart || event.changedTouches.length !== 1) { reportSwipeStart = null; return; }
+            if (!reportSwipeStart || event.changedTouches.length !== 1) { reportSwipeStart = null; clearReportSwipe(); return; }
             const touch = event.changedTouches[0];
             const dx = touch.clientX - reportSwipeStart.x;
             const dy = touch.clientY - reportSwipeStart.y;

@@ -15,3 +15,13 @@ test('event trends use seven weekday columns and a compact yearly grid', () => {
     assert.match(css, /\.event-pattern-days\s*\{[^}]*repeat\(7,/);
     assert.match(css, /\.is-year \.event-pattern-days\s*\{[^}]*repeat\(26,/);
 });
+
+test('swipe preview does not rerender or detach the active touch target', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
+    const preview = source.match(/function makeReportSwipePreview\(direction\) \{([\s\S]*?)\n        reportPage\?\.addEventListener\('touchstart'/)?.[1];
+    assert.ok(preview);
+    assert.doesNotMatch(preview, /\brender\(\)/);
+    assert.match(preview, /clone\.classList\.remove\('hidden'\)/);
+    assert.match(source, /const targetKind = direction > 0 \? 'event' : 'time'/);
+    assert.match(source, /touchcancel.*clearReportSwipe/);
+});
