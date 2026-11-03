@@ -84,7 +84,9 @@
         ['B95', '数据模式入口', '#demo-entry-bar'],
         ['B96', '示例模式状态栏', '#demo-mode-header'],
         ['B97', '事件趋势', '#event-pattern-block'],
-        ['B98', '设计模块', '#page-design']
+        ['B98', '设计模块', '#page-design'],
+        ['B99', '单事件记录', '#event-detail-block[data-dev-address-block="B99"]'],
+        ['B100', '单事件统计', '#event-detail-block[data-dev-address-block="B100"]']
     ];
     // A Z address names a submodule prototype; repeated instances share one badge and contract.
     const submodules = [

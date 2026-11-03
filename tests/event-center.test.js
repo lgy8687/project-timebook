@@ -37,6 +37,10 @@ test('event statistics count occurrences and distinct days, preserving date-only
     assert.equal(report.activeDays, 2);
     assert.equal(report.entries[0].days, 2);
     assert.equal(report.entries[0].latestDateOnly, true);
+    assert.equal(report.entries[0].records.length, 2);
+    assert.equal(report.entries[0].records[1].dateOnly, true);
+    assert.equal(report.entries[0].records[1].date, '2026-10-02');
+    assert.equal(report.entries[0].records[1].count, 3);
     const fullPeriod = context.buildEventReport(start, start + 2 * day, 'week', start + 7 * day);
     assert.equal(fullPeriod.daily.length, 7);
     assert.equal(fullPeriod.total, 5);

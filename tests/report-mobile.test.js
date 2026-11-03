@@ -10,6 +10,15 @@ test('event trend uses per-event daily counts for week, month and year', () => {
     assert.match(source, /data\.period === 'month' \|\| data\.period === 'year'/);
 });
 
+test('event trends open dedicated record and statistics views without changing primary time', () => {
+    const report = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
+    const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    assert.match(report, /function openEventDetail\(item\)/);
+    assert.match(report, /eventDetailTab === 'records' \? 'B99' : 'B100'/);
+    assert.match(app, /item\.records\.push\(\{ id: record\.id/);
+    assert.match(report, /record\.dateOnly \? '未指定时间'/);
+});
+
 test('event trends use seven weekday columns and a compact yearly grid', () => {
     const css = fs.readFileSync(path.join(__dirname, '..', 'report.css'), 'utf8');
     assert.match(css, /\.event-pattern-days\s*\{[^}]*repeat\(7,/);

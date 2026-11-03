@@ -6499,12 +6499,14 @@ function buildEventReport(rangeStart, rangeEnd, period, displayEnd = rangeEnd) {
                 color: type?.color || record.color || '#64748b',
                 count: 0,
                 dailyCounts: {},
+                records: [],
                 days: new Set(),
                 latest: 0,
                 latestDateOnly: false,
             };
             item.count += record.count || 1;
             item.dailyCounts[date] = (item.dailyCounts[date] || 0) + (record.count || 1);
+            item.records.push({ id: record.id, occurredAt: record.occurredAt, dateOnly: !!record.dateOnly, count: record.count || 1, date });
             item.days.add(formatBeijingDate(record.occurredAt));
             if (record.occurredAt >= item.latest) {
                 item.latest = record.occurredAt;

@@ -15,6 +15,9 @@
             parallel: localStorage.getItem('v9_report_summary_view_parallel') || 'live',
         },
         eventMode: localStorage.getItem('v9_report_event_mode') || 'count',
+        eventDetail: null,
+        eventDetailTab: 'records',
+        eventDetailDate: '',
     };
     let getPeriodData = null;
     let eventsBound = false;
@@ -195,8 +198,9 @@
             table.appendChild(labels);
             entries.forEach(item => {
                 const row = document.createElement('div'); row.className = 'event-pattern-week-row';
-                const name = document.createElement('span'); name.className = 'event-pattern-name'; name.textContent = `${item.icon} ${item.name}`; row.appendChild(name);
+                const name = document.createElement('button'); name.type = 'button'; name.className = 'event-pattern-name event-pattern-open'; name.textContent = `${item.icon} ${item.name}`; name.setAttribute('aria-label', `查看${item.name}详情`); name.addEventListener('click', () => openEventDetail(item)); row.appendChild(name);
                 dates.forEach(day => row.appendChild(cell(day.date, item, false)));
+                row.addEventListener('click', event => { if (!event.target.closest('button')) openEventDetail(item); });
                 table.appendChild(row);
             });
             pattern.appendChild(table);
@@ -206,7 +210,7 @@
             entries.forEach(item => {
                 const card = document.createElement('article'); card.className = 'event-pattern-card';
                 const title = document.createElement('div'); title.className = 'event-pattern-card-title';
-                const name = document.createElement('strong'); name.textContent = `${item.icon} ${item.name}`;
+                const name = document.createElement('button'); name.type = 'button'; name.className = 'event-pattern-open'; name.textContent = `${item.icon} ${item.name}`; name.setAttribute('aria-label', `查看${item.name}详情`); name.addEventListener('click', () => openEventDetail(item));
                 const total = document.createElement('span'); total.textContent = `${item.count}次 · ${item.days}天`;
                 title.append(name, total); card.appendChild(title);
                 if (data.period === 'month' || data.period === 'year') {
@@ -218,9 +222,82 @@
                     dates.forEach(day => days.appendChild(cell(day.date, item, data.period === 'year')));
                     card.appendChild(days);
                 }
+                card.addEventListener('click', event => { if (!event.target.closest('button')) openEventDetail(item); });
                 grid.appendChild(card);
             });
             pattern.appendChild(grid);
+        }
+    }
+
+    function openEventDetail(item) {
+        state.eventDetail = { id: item.id, name: item.name, icon: item.icon, color: item.color };
+        state.eventDetailTab = 'records'; state.eventDetailDate = '';
+        render();
+        document.getElementById('page-report')?.closest('main')?.scrollTo({ top: 0 });
+    }
+
+    function renderEventDetail(data) {
+        const box = document.getElementById('event-detail-block');
+        if (!box) return;
+        const visible = state.kind === 'event' && !!state.eventDetail;
+        box.classList.toggle('hidden', !visible);
+        if (!visible) { delete box.dataset.devAddressBlock; return; }
+        box.dataset.devAddressBlock = state.eventDetailTab === 'records' ? 'B99' : 'B100';
+        const detail = state.eventDetail;
+        const item = data.entries.find(entry => String(entry.id) === String(detail.id)) || { ...detail, count: 0, days: 0, dailyCounts: {}, records: [] };
+        const records = (item.records || []).slice().sort((a, b) => b.occurredAt - a.occurredAt);
+        const dates = data.daily || [];
+        box.replaceChildren();
+        const header = document.createElement('div'); header.className = 'event-detail-header';
+        const back = document.createElement('button'); back.type = 'button'; back.className = 'event-detail-back'; back.textContent = '‹'; back.setAttribute('aria-label', '返回事件趋势'); back.onclick = () => { state.eventDetail = null; state.eventDetailDate = ''; render(); };
+        const title = document.createElement('h2'); title.textContent = `${item.icon} ${item.name}`;
+        const tabs = document.createElement('div'); tabs.className = 'event-detail-tabs report-segmented-template'; tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', '事件详情视图');
+        [['records', '记录'], ['statistics', '统计']].forEach(([key, label]) => {
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.setAttribute('role', 'tab'); button.setAttribute('aria-selected', String(state.eventDetailTab === key)); button.classList.toggle('active', state.eventDetailTab === key); button.onclick = () => { state.eventDetailTab = key; state.eventDetailDate = ''; render(); }; tabs.appendChild(button);
+        });
+        header.append(back, title, tabs); box.appendChild(header);
+        const calendar = document.createElement('div'); calendar.className = 'event-detail-calendar';
+        const days = state.period === 'year' ? Array.from({length: 12}, (_, i) => ({ date: dates[0]?.date.slice(0, 4) + '-' + String(i + 1).padStart(2, '0'), label: `${i + 1}月` })) : dates.map(day => ({ date: day.date, label: String(Number(day.date.slice(-2))) }));
+        if (state.period === 'month' && days.length) {
+            const offset = (new Date(days[0].date + 'T00:00:00Z').getUTCDay() + 6) % 7;
+            ['一','二','三','四','五','六','日'].forEach(day => { const label = document.createElement('span'); label.className = 'event-detail-weekday'; label.textContent = day; calendar.appendChild(label); });
+            for (let i = 0; i < offset; i++) calendar.appendChild(document.createElement('span'));
+        }
+        if (state.period === 'year') calendar.classList.add('is-year');
+        days.forEach(day => {
+            const count = records.filter(record => record.date.startsWith(day.date)).reduce((sum, record) => sum + record.count, 0);
+            const button = document.createElement('button'); button.type = 'button'; button.className = 'event-detail-day'; button.textContent = day.label; button.classList.toggle('has-records', count > 0); button.classList.toggle('active', state.eventDetailDate === day.date); button.setAttribute('aria-label', `${day.date}，${count}次`); button.setAttribute('aria-pressed', String(state.eventDetailDate === day.date));
+            button.onclick = () => { state.eventDetailDate = state.eventDetailDate === day.date ? '' : day.date; renderEventDetail(data); };
+            if (count) { const dot = document.createElement('small'); dot.textContent = String(count); button.appendChild(dot); }
+            calendar.appendChild(button);
+        });
+        if (state.eventDetailTab === 'records') {
+            if (days.length > 1) box.appendChild(calendar);
+            const heading = document.createElement('div'); heading.className = 'event-detail-section-head';
+            const h = document.createElement('h3'); h.textContent = state.eventDetailDate || '记录'; heading.appendChild(h);
+            if (state.eventDetailDate) { const all = document.createElement('button'); all.type = 'button'; all.textContent = '全部'; all.onclick = () => { state.eventDetailDate = ''; renderEventDetail(data); }; heading.appendChild(all); }
+            box.appendChild(heading);
+            const shown = records.filter(record => !state.eventDetailDate || record.date.startsWith(state.eventDetailDate));
+            if (!shown.length) { const empty = document.createElement('p'); empty.className = 'event-detail-empty'; empty.textContent = '当前范围没有记录'; box.appendChild(empty); }
+            shown.forEach(record => {
+                const row = document.createElement('button'); row.type = 'button'; row.className = 'event-detail-record';
+                const date = document.createElement('span'); date.textContent = `${record.date}  ${record.dateOnly ? '未指定时间' : formatEventClock(record.occurredAt)}`;
+                const count = document.createElement('strong'); count.textContent = `${record.count}次  ›`; row.append(date, count); row.onclick = () => window.openEventRecordEditor(record.id); box.appendChild(row);
+            });
+        } else {
+            const overview = document.createElement('div'); overview.className = 'event-detail-metrics';
+            [[item.count, '发生次数'], [item.days, '发生天数'], [records.length, '记录条数']].forEach(([value, label]) => { const block = document.createElement('div'); const number = document.createElement('strong'); number.textContent = String(value); const caption = document.createElement('span'); caption.textContent = label; block.append(number, caption); overview.appendChild(block); });
+            box.appendChild(overview);
+            const label = document.createElement('h3'); label.className = 'event-detail-subtitle'; label.textContent = state.period === 'year' ? '每月记录' : '发生分布'; box.appendChild(label);
+            const values = days.map(day => ({ ...day, count: records.filter(record => record.date.startsWith(day.date)).reduce((sum, record) => sum + record.count, 0) }));
+            if (values.length) {
+                const chart = document.createElement('div'); chart.className = 'event-detail-chart'; chart.setAttribute('role', 'img'); chart.setAttribute('aria-label', values.map(day => `${day.date} ${day.count}次`).join('，'));
+                const max = Math.max(1, ...values.map(day => day.count));
+                values.forEach(day => { const column = document.createElement('div'); column.className = 'event-detail-chart-column'; const bar = document.createElement('span'); bar.style.height = `${day.count / max * 100}%`; bar.style.backgroundColor = reportColor(item.color, item.name); column.appendChild(bar); column.title = `${day.date}：${day.count}次`; chart.appendChild(column); });
+                box.appendChild(chart);
+                const scale = document.createElement('div'); scale.className = 'event-detail-chart-scale'; const first = document.createElement('span'); first.textContent = values[0].label; const last = document.createElement('span'); last.textContent = values[values.length - 1].label; scale.append(first, last); box.appendChild(scale);
+            }
+            box.appendChild(calendar);
         }
     }
 
@@ -332,6 +409,10 @@
             syncSummaryModeButtons();
         }
         renderEventReport(periodData.events);
+        const detailVisible = state.kind === 'event' && !!state.eventDetail;
+        document.getElementById('event-report-block').classList.toggle('hidden', state.kind !== 'event' || detailVisible);
+        document.getElementById('event-pattern-block').classList.toggle('hidden', state.kind !== 'event' || detailVisible);
+        renderEventDetail(periodData.events);
 
         if (periodData.timeline?.kind === 'day') {
             renderTimelineHalf(periodData.timeline, 'a', 0, 50, '00:00–12:00');
@@ -598,6 +679,7 @@
             if (state.period === 'week') offset = Math.round((target.getTime() - ((target.getUTCDay() + 6) % 7) * 86400000 - (today - ((now.getUTCDay() + 6) % 7) * 86400000)) / (7 * 86400000));
             if (state.period === 'month') offset = (target.getUTCFullYear() - now.getUTCFullYear()) * 12 + target.getUTCMonth() - now.getUTCMonth();
             if (state.period === 'year') offset = target.getUTCFullYear() - now.getUTCFullYear();
+            state.eventDetailDate = '';
             state.periodOffsets[state.period] = Math.min(0, offset);
             render();
         });
@@ -630,7 +712,7 @@
             const makePanel = kind => {
                 const panel = document.createElement('div'); panel.className = 'report-swipe-panel';
                 panel.style.padding = '0 16px';
-                const selectors = kind === 'time' ? ['report-time-view', 'report-time-detail'] : ['event-report-block', 'event-pattern-block'];
+                const selectors = kind === 'time' ? ['report-time-view', 'report-time-detail'] : state.eventDetail ? ['event-detail-block'] : ['event-report-block', 'event-pattern-block'];
                 selectors.forEach(id => {
                     const node = document.getElementById(id);
                     if (!node) return;
@@ -651,7 +733,7 @@
             const current = makePanel(originalKind);
             const next = makePanel(targetKind);
             if (boundary) next.style.visibility = 'hidden';
-            const sourceAnchor = document.getElementById(originalKind === 'time' ? 'report-time-view' : 'event-report-block');
+            const sourceAnchor = document.getElementById(originalKind === 'time' ? 'report-time-view' : state.eventDetail ? 'event-detail-block' : 'event-report-block');
             next.style.top = `${sourceAnchor.getBoundingClientRect().top - top}px`;
             root.append(current, next); reportPage.appendChild(root);
             return { root, current, next, targetKind, direction, boundary, width: main.width };
@@ -708,6 +790,7 @@
         document.querySelectorAll('[data-report-nav]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 const direction = btn.dataset.reportNav;
+                state.eventDetailDate = '';
                 if (direction === 'previous') state.periodOffsets[state.period] -= 1;
                 if (direction === 'next') state.periodOffsets[state.period] = Math.min(0, state.periodOffsets[state.period] + 1);
                 if (direction === 'current') state.periodOffsets[state.period] = 0;
@@ -815,6 +898,7 @@
 
     window.setPeriod = function (period) {
         if (!Object.hasOwn(state.periodOffsets, period)) return;
+        if (period !== state.period) state.eventDetailDate = '';
         state.period = period;
         render();
     };
