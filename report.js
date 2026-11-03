@@ -605,6 +605,27 @@
             state.kind = button.dataset.reportKind;
             render();
         }));
+        const reportPage = document.getElementById('page-report');
+        let reportSwipeStart = null;
+        reportPage?.addEventListener('touchstart', event => {
+            if (event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"], .event-pattern-week, .event-pattern-days')) {
+                reportSwipeStart = null;
+                return;
+            }
+            const touch = event.touches[0];
+            reportSwipeStart = { x: touch.clientX, y: touch.clientY };
+        }, { passive: true });
+        reportPage?.addEventListener('touchend', event => {
+            if (!reportSwipeStart || event.changedTouches.length !== 1) { reportSwipeStart = null; return; }
+            const touch = event.changedTouches[0];
+            const dx = touch.clientX - reportSwipeStart.x;
+            const dy = touch.clientY - reportSwipeStart.y;
+            reportSwipeStart = null;
+            if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+            const kind = dx < 0 ? 'time' : 'event';
+            if (kind !== state.kind) { state.kind = kind; render(); }
+        }, { passive: true });
+        reportPage?.addEventListener('touchcancel', () => { reportSwipeStart = null; }, { passive: true });
         document.addEventListener('click', e => {
             if (!e.target.closest('.inner-seg, .outer-seg, .scene-coverage-seg, .timeline-block, .timeline-bar-segment')) hideTip();
         });

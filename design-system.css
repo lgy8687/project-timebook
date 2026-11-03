@@ -638,17 +638,19 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 main:has(> #page-report.active) { padding-top: 0; }
 #page-report #report-period-toolbar { position: sticky; top: 0; z-index: 20; isolation: isolate; padding: 6px 0; background: #f8fafc; }
 #page-report #report-period-toolbar::before { content: ''; position: absolute; inset: 0 -16px; z-index: -1; background: #f8fafc; }
-#page-report #report-period-toolbar .report-kind-tabs { width: 128px; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#page-report #report-period-toolbar .report-kind-tabs { width: 112px; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #page-report #report-period-toolbar .seg-row { display: flex; justify-content: center; }
-#page-report #report-period-toolbar #seg-period { width: min(100%, 256px); min-width: 0; }
+#page-report #report-period-toolbar #seg-period { width: min(100%, 224px); min-width: 0; }
 #page-report #report-period-toolbar .report-kind-tabs > button,
-#page-report #report-period-toolbar #seg-period > button { min-height: 36px; padding: 3px 4px; }
+#page-report #report-period-toolbar #seg-period > button { min-width: 0; width: 100%; min-height: 32px; padding: 2px; }
 #page-report #chart-mode-toggle.report-segmented-template,
 #page-report #legend-mode-toggle.report-segmented-template { min-width: 0; width: auto; }
-#page-report #chart-mode-toggle.report-segmented-template { width: 84px; }
-#page-report #legend-mode-toggle.report-segmented-template { width: 128px; }
+#page-report #chart-mode-toggle.report-segmented-template { width: 76px; }
+#page-report #legend-mode-toggle.report-segmented-template { width: 116px; }
 #page-report #chart-mode-toggle.report-segmented-template > button,
-#page-report #legend-mode-toggle.report-segmented-template > button { min-height: 36px; padding: 3px 2px; }
+#page-report #legend-mode-toggle.report-segmented-template > button { min-width: 0; width: 100%; min-height: 32px; padding: 2px 0; }
+#page-report :is(#chart-mode-toggle, #legend-mode-toggle, .report-kind-tabs, #seg-period).report-segmented-template { gap: 0; padding: 2px; border-radius: 8px; }
+#page-report :is(#chart-mode-toggle, #legend-mode-toggle, .report-kind-tabs, #seg-period).report-segmented-template > button:not(.dev-inspector-badge) { border-radius: 5px; }
 
 /* B86 shares the event identity and chronology used by recording. */
 #event-center-history .event-center-filter label { display: grid; }
