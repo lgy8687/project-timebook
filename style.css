@@ -316,11 +316,11 @@
 .app-header { display: grid; grid-template-columns: minmax(0, 1fr) 62px 40px 40px; align-items: stretch; gap: 6px; border-bottom: 1px solid #e2e8f0; }
 .demo-entry-bar { display:flex; align-items:stretch; min-width:0; }
 .demo-entry-bar button { width:100%; min-height:44px; padding:0; border:1px solid #cbd8df; border-radius:6px; color:#365c68; background:#fff; font-size:18px; }
-html[data-demo] .demo-entry-bar { display:none; }
+html[data-demo] .demo-entry-bar button { background:#d8f4df; border-color:#168453; color:#116a40; }
 html[data-demo] #widget-settings-entry, html[data-demo] [data-config-section="data"] { display:none !important; }
 .demo-mode-layer { position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; background:#fff; }
 .demo-mode-layer.hidden { display:none; }
-.demo-mode-header { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; padding:4px 12px; background:#e2f2ec; color:#235e50; font-size:13px; }
+.demo-mode-header { display:none; }
 .demo-mode-header button { min-height:40px; padding:0 10px; border-radius:6px; background:#fff; color:#235e50; font-size:13px; white-space:nowrap; }
 .demo-mode-layer iframe { width:100%; flex:1; min-height:0; border:0; }
 .demo-mode-layer iframe { background:#f8fafc; }

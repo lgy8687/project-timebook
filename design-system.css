@@ -645,12 +645,15 @@ main:has(> #page-report.active) { padding-top: 0; }
 #page-report #report-period-toolbar #seg-period > button { min-width: 0; width: 100%; min-height: 32px; padding: 2px; }
 #page-report #chart-mode-toggle.report-segmented-template,
 #page-report #legend-mode-toggle.report-segmented-template { min-width: 0; width: auto; }
-#page-report #chart-mode-toggle.report-segmented-template { width: 76px; }
-#page-report #legend-mode-toggle.report-segmented-template { width: 116px; }
+#page-report #chart-mode-toggle.report-segmented-template { width: 74px; }
+#page-report #legend-mode-toggle.report-segmented-template { width: 112px; }
 #page-report #chart-mode-toggle.report-segmented-template > button,
 #page-report #legend-mode-toggle.report-segmented-template > button { min-width: 0; width: 100%; min-height: 32px; padding: 2px 0; }
-#page-report :is(#chart-mode-toggle, #legend-mode-toggle, .report-kind-tabs, #seg-period).report-segmented-template { gap: 0; padding: 2px; border-radius: 8px; }
-#page-report :is(#chart-mode-toggle, #legend-mode-toggle, .report-kind-tabs, #seg-period).report-segmented-template > button:not(.dev-inspector-badge) { border-radius: 5px; }
+#page-report :is(#chart-mode-toggle, #legend-mode-toggle, .report-kind-tabs, #seg-period).report-segmented-template { gap: 2px; padding: 2px; border-radius: 999px; }
+#page-report :is(#chart-mode-toggle, #legend-mode-toggle, .report-kind-tabs, #seg-period).report-segmented-template > button:not(.dev-inspector-badge) { border-radius: 999px; }
+.report-swipe-preview { position: fixed; z-index: 18; overflow: hidden; background: #f8fafc; pointer-events: none; }
+.report-swipe-panel { position: absolute; inset: 0; overflow: hidden; background: #f8fafc; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .report-swipe-panel { transition-duration: 0s !important; } }
 
 /* B86 shares the event identity and chronology used by recording. */
 #event-center-history .event-center-filter label { display: grid; }

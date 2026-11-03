@@ -50,6 +50,8 @@
     storage.setItem('v9_event_records', JSON.stringify(events));
     storage.setItem('timebook_dev_inspector_enabled', 'false');
     window.addEventListener('load', () => {
+        const button = document.getElementById('demo-entry-button');
+        if (button) { button.setAttribute('aria-label', '退出10月示例，返回真实数据'); button.title = '退出10月示例'; }
         setTimeout(() => {
             viewDate = '2026-10-15';
             calendarViewYear = 2026;

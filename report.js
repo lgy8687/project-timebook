@@ -607,25 +607,87 @@
         }));
         const reportPage = document.getElementById('page-report');
         let reportSwipeStart = null;
+        let reportSwipePreview = null;
+        let reportSwipeTimer = null;
+        function clearReportSwipe() {
+            clearTimeout(reportSwipeTimer);
+            reportSwipePreview?.root.remove();
+            reportSwipePreview = null;
+        }
+        function makeReportSwipePreview(direction) {
+            clearReportSwipe();
+            const toolbar = document.getElementById('report-period-toolbar').getBoundingClientRect();
+            const main = reportPage.closest('main').getBoundingClientRect();
+            const top = Math.max(main.top, toolbar.bottom);
+            const bottom = main.bottom;
+            if (bottom <= top) return null;
+            const root = document.createElement('div'); root.className = 'report-swipe-preview';
+            Object.assign(root.style, { left: main.left + 'px', top: top + 'px', width: main.width + 'px', height: (bottom - top) + 'px' });
+            root.setAttribute('aria-hidden', 'true');
+            const originalKind = state.kind;
+            const targetKind = direction > 0 ? 'event' : 'time';
+            const makePanel = kind => {
+                state.kind = kind; render();
+                const panel = document.createElement('div'); panel.className = 'report-swipe-panel';
+                panel.style.padding = '0 16px';
+                const selectors = kind === 'time' ? ['report-time-view', 'report-time-detail'] : ['event-report-block', 'event-pattern-block'];
+                selectors.forEach(id => {
+                    const node = document.getElementById(id);
+                    if (!node || node.classList.contains('hidden')) return;
+                    const clone = node.cloneNode(true);
+                    clone.removeAttribute('id'); clone.querySelectorAll('[id]').forEach(child => child.removeAttribute('id'));
+                    clone.querySelectorAll('.dev-inspector-badge').forEach(child => child.remove());
+                    panel.appendChild(clone);
+                });
+                return panel;
+            };
+            const current = makePanel(originalKind);
+            const next = makePanel(targetKind);
+            state.kind = originalKind; render();
+            root.append(current, next); reportPage.appendChild(root);
+            return { root, current, next, targetKind, direction, width: main.width };
+        }
         reportPage?.addEventListener('touchstart', event => {
             if (event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"], .event-pattern-week, .event-pattern-days')) {
                 reportSwipeStart = null;
                 return;
             }
             const touch = event.touches[0];
-            reportSwipeStart = { x: touch.clientX, y: touch.clientY };
+            clearReportSwipe();
+            reportSwipeStart = { x: touch.clientX, y: touch.clientY, axis: null };
         }, { passive: true });
+        reportPage?.addEventListener('touchmove', event => {
+            if (!reportSwipeStart || event.touches.length !== 1) return;
+            const dx = event.touches[0].clientX - reportSwipeStart.x;
+            const dy = event.touches[0].clientY - reportSwipeStart.y;
+            if (!reportSwipeStart.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 8) reportSwipeStart.axis = Math.abs(dx) > Math.abs(dy) * 1.3 ? 'horizontal' : 'vertical';
+            if (reportSwipeStart.axis !== 'horizontal') return;
+            const direction = dx > 0 ? 1 : -1;
+            const targetKind = direction > 0 ? 'event' : 'time';
+            if (targetKind === state.kind) { clearReportSwipe(); return; }
+            if (!reportSwipePreview || reportSwipePreview.direction !== direction) reportSwipePreview = makeReportSwipePreview(direction);
+            if (!reportSwipePreview) return;
+            if (event.cancelable) event.preventDefault();
+            const offset = Math.max(-reportSwipePreview.width, Math.min(reportSwipePreview.width, dx));
+            reportSwipePreview.current.style.transform = `translateX(${offset}px)`;
+            reportSwipePreview.next.style.transform = `translateX(${offset - direction * reportSwipePreview.width}px)`;
+        }, { passive: false });
         reportPage?.addEventListener('touchend', event => {
             if (!reportSwipeStart || event.changedTouches.length !== 1) { reportSwipeStart = null; return; }
             const touch = event.changedTouches[0];
             const dx = touch.clientX - reportSwipeStart.x;
             const dy = touch.clientY - reportSwipeStart.y;
             reportSwipeStart = null;
-            if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-            const kind = dx < 0 ? 'time' : 'event';
-            if (kind !== state.kind) { state.kind = kind; render(); }
+            const preview = reportSwipePreview;
+            if (!preview) return;
+            const commit = Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && Math.sign(dx) === preview.direction;
+            const offset = commit ? preview.direction * preview.width : 0;
+            preview.current.style.transition = preview.next.style.transition = 'transform 240ms ease-out';
+            preview.current.style.transform = `translateX(${offset}px)`;
+            preview.next.style.transform = `translateX(${offset - preview.direction * preview.width}px)`;
+            reportSwipeTimer = setTimeout(() => { if (commit) { state.kind = preview.targetKind; render(); } clearReportSwipe(); }, 240);
         }, { passive: true });
-        reportPage?.addEventListener('touchcancel', () => { reportSwipeStart = null; }, { passive: true });
+        reportPage?.addEventListener('touchcancel', () => { reportSwipeStart = null; clearReportSwipe(); }, { passive: true });
         document.addEventListener('click', e => {
             if (!e.target.closest('.inner-seg, .outer-seg, .scene-coverage-seg, .timeline-block, .timeline-bar-segment')) hideTip();
         });

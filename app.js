@@ -1,5 +1,9 @@
 // --- 安全读取 localStorage ---
 function openDemoMode() {
+    if (window.__timebookDemo) {
+        window.parent.postMessage({ type: 'timebook-close-demo' }, '*');
+        return;
+    }
     document.getElementById('demo-mode-frame').src = location.pathname + '?demo=october2026';
     document.getElementById('demo-mode-layer').classList.remove('hidden');
 }
@@ -7,6 +11,10 @@ function closeDemoMode() {
     document.getElementById('demo-mode-layer').classList.add('hidden');
     document.getElementById('demo-mode-frame').removeAttribute('src');
 }
+window.addEventListener('message', event => {
+    const frame = document.getElementById('demo-mode-frame');
+    if (event.source === frame?.contentWindow && event.data?.type === 'timebook-close-demo') closeDemoMode();
+});
 function safeJSON(key, fallback) {
     try {
         const v = localStorage.getItem(key);
