@@ -659,6 +659,11 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .design-selection { padding: 12px 0; color: var(--ui-muted); font-size: 13px; line-height: 1.5; }
 .design-current-preview { position: sticky; top: 0; z-index: 5; padding: 6px 0; background: #f8fafc; }
 .design-current-preview .design-option { padding: 10px 14px; }
+/* Framed functional areas share the report surface radius; controls retain their own shapes. */
+:is(.flow-panel, .config-grid-card, .flow-calendar-panel, .calendar-day-summary, .event-home-card, .event-pattern-card, .event-pattern-week, .design-option, .swipe-wrap, .swipe-card) { border-radius: var(--ui-report-surface-radius); }
+.unassigned-main-card.swipe-card.log-flow-card--main-log:not(.swiping) { border-radius: var(--ui-report-surface-radius); }
+.unassigned-main-card.swipe-card.log-flow-card--main-log.swiping { border-radius: 0; }
+:is(.config-grid-card, .flow-calendar-panel, .calendar-day-summary, .event-home-card, .event-pattern-card, .event-pattern-week, .design-option) { border-color: var(--ui-border); }
 main:has(> #page-report.active) { padding-top: 0; }
 #page-report #report-period-toolbar { position: sticky; top: 0; z-index: 20; isolation: isolate; padding: 6px 0; background: #f8fafc; }
 #page-report #report-period-toolbar::before { content: ''; position: absolute; inset: 0 -16px; z-index: -1; background: #f8fafc; }

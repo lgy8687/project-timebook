@@ -27,6 +27,16 @@ test('event trends use seven weekday columns and a compact yearly grid', () => {
     assert.match(css, /\.is-year \.event-pattern-days\s*\{[^}]*repeat\(26,/);
 });
 
+test('event overview stays concise and framed areas share the same corner token', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const css = fs.readFileSync(path.join(__dirname, '..', 'design-system.css'), 'utf8');
+    const overview = html.match(/<section class="event-report-block[\s\S]*?<\/section>/)?.[0];
+    assert.ok(overview);
+    assert.doesNotMatch(overview, /事件统计|事件记录与编辑|管理事件/);
+    assert.match(css, /\.event-pattern-card, \.event-pattern-week[\s\S]*?border-radius: var\(--ui-report-surface-radius\)/);
+    assert.match(css, /\.unassigned-main-card\.swipe-card\.log-flow-card--main-log\.swiping\s*\{\s*border-radius:\s*0/);
+});
+
 test('swipe preview does not rerender or detach the active touch target', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
     const preview = source.match(/function makeReportSwipePreview\(direction\) \{([\s\S]*?)\n        reportPage\?\.addEventListener\('touchstart'/)?.[1];
