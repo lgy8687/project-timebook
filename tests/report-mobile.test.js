@@ -20,6 +20,14 @@ test('bottom navigation uses locally bundled line icons', () => {
     assert.equal((nav.match(/class="nav-line-icon /g) || []).length, 4);
 });
 
+test('narrow headers reserve space for the active name and settings share spacing tokens', () => {
+    const css = fs.readFileSync(path.join(__dirname, '..', 'design-system.css'), 'utf8');
+    assert.match(css, /#header-main-status #status-light \{ margin-right: var\(--ui-space-1\) !important/);
+    assert.match(css, /#header-timer \{ font-size: 16px !important/);
+    assert.match(css, /#clock-settings-ui \{ display: grid; gap: var\(--ui-space-2\)/);
+    assert.match(css, /\.event-record-editor-card \{ display: grid; gap: var\(--ui-space-3\)/);
+});
+
 test('event trends open dedicated record and statistics views without changing primary time', () => {
     const report = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
     const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');

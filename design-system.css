@@ -52,6 +52,7 @@ main > .tab-content { max-width: 760px; margin-inline: auto; }
 .free-note-input { min-width: 0; }
 .free-note-event-btn { flex: 0 0 48px; min-height: 48px; border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); color: var(--ui-accent); font-size: 24px; line-height: 1; }
 #header-l2 { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#header-memo:empty { display: none; }
 .keycap-label { font-weight: 600; }
 .keycap--parallel-slot { border-width: 2px; box-shadow: 0 2px 4px rgba(15, 23, 42, .08); }
 .log-flow-name, .log-flow-dur { font-weight: 600; }
@@ -142,7 +143,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #page-report .seg-btn.active { background: var(--ui-accent); color: #fff; }
 .summary-view-toggle, .chart-mode-toggle { min-width: 132px; }
 .summary-block-head, .structure-head, .event-report-head { gap: 8px; margin-bottom: 12px; }
-.summary-block-head { margin-bottom: 7px; }
+.summary-block-head { margin-bottom: var(--ui-space-3); }
 .summary-block-title--main { color: #526a91; }
 .summary-block-title--parallel { color: #856b94; }
 .summary-block .summary-view-toggle { min-width: 128px; padding: 2px; background: #fff; }
@@ -293,7 +294,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .calendar-summary-footer button { width: 32px; height: 32px; flex: none; border: 1px solid var(--ui-border); border-radius: 50%; background: var(--ui-accent-soft); color: var(--ui-accent); font-size: 21px; line-height: 1; }
 .calendar-backfill-modal { position: fixed; inset: 0; z-index: 55; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15,23,42,.43); backdrop-filter: blur(5px); }
 .calendar-backfill-modal.hidden { display: none; }
-.calendar-backfill-card { width: min(100%, 420px); max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 16px; background: #fff; padding: 18px; box-shadow: 0 20px 40px rgba(15,23,42,.16); }
+.calendar-backfill-card { width: min(100%, 420px); max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 16px; background: #fff; padding: var(--ui-space-4); box-shadow: 0 20px 40px rgba(15,23,42,.16); }
 .calendar-backfill-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .calendar-backfill-head h3 { color: var(--ui-ink); font-size: var(--ui-title); font-weight: 700; }
 .calendar-backfill-head span { color: var(--ui-muted); font-size: var(--ui-caption); }
@@ -522,10 +523,10 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #page-report .report-period-nav-range { flex-wrap: wrap; gap: 2px 8px; padding-block: 4px; white-space: normal; text-align: center; }
 #page-report .report-period-today { min-height: 32px; }
 #page-report .summary-block .cards-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 8px; }
-#page-report .summary-block .stat-indigo { min-width: 0; min-height: 84px; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+#page-report .summary-block .stat-indigo { min-width: 0; min-height: 84px; display: flex; flex-direction: column; justify-content: center; gap: var(--ui-space-1); }
 #page-report .summary-block .stat-indigo-value { font-size: var(--ui-heading-3); line-height: 1.4; }
 .summary-scope-note, .event-center-range-label { margin: 8px 0 0; font-size: var(--ui-caption); color: var(--ui-muted); line-height: 1.5; }
-.parallel-duration-chart { display: grid; gap: 18px; }
+.parallel-duration-chart { display: grid; gap: var(--ui-space-4); }
 .parallel-chart-total, .parallel-duration-label { display: flex; align-items: baseline; gap: 12px; color: var(--ui-muted); font-size: var(--ui-body); }
 .parallel-chart-total { justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--ui-border); }
 .parallel-chart-total strong { color: var(--ui-ink); font-size: var(--ui-heading-2); }
@@ -555,7 +556,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #config-expand :is(#config-panel-clock, #config-panel-report, #config-panel-cats, #config-panel-scene, #config-panel-event, #config-panel-mode) .config-panel-title { font-size: var(--ui-heading-3); line-height: 1.4; color: var(--ui-ink); }
 #config-expand :is(#config-panel-clock, #config-panel-report, #config-panel-cats, #config-panel-scene, #config-panel-event, #config-panel-mode) .config-panel-hint { color: #64748b; line-height: 1.6; margin: 8px 0 16px; }
 #config-expand :is(#config-panel-cats, #config-panel-scene, #config-panel-event) .config-panel-head { min-height: 48px; gap: 12px; }
-#clock-settings-ui { display: grid; gap: 10px; }
+#clock-settings-ui { display: grid; gap: var(--ui-space-2); }
 #clock-settings-ui .clock-settings-label { margin-top: 6px; color: var(--ui-ink); font-size: var(--ui-body); font-weight: 600; }
 #clock-settings-ui .clock-settings-row { margin: 0; }
 #clock-settings-ui .clock-settings-btn { min-height: 44px; }
@@ -563,16 +564,16 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #clock-settings-ui .clock-span-row label { min-width: 0; flex: 1; white-space: normal; }
 #clock-settings-ui .clock-span-row .picker-trigger { flex: 0 1 144px; min-width: 90px; min-height: 44px; }
 #report-summary-settings-ui { gap: 16px; }
-#report-summary-settings-ui .summary-control-row { min-height: 48px; gap: 10px; }
+#report-summary-settings-ui .summary-control-row { min-height: 48px; gap: var(--ui-space-2); }
 #report-summary-settings-ui .summary-settings-group { margin: 0; padding-top: 16px; border-top: 1px solid var(--ui-border); }
-#report-summary-settings-ui .summary-settings-group > div:first-child { margin-bottom: 10px; color: var(--ui-ink); font-size: var(--ui-body); }
-#report-summary-settings-ui .summary-slot-row { gap: 10px; margin-top: 8px; }
+#report-summary-settings-ui .summary-settings-group > div:first-child { margin-bottom: var(--ui-space-2); color: var(--ui-ink); font-size: var(--ui-body); }
+#report-summary-settings-ui .summary-slot-row { gap: var(--ui-space-2); margin-top: var(--ui-space-2); }
 #report-summary-settings-ui .summary-slot-row > span { width: 36px; color: #64748b; font-size: var(--ui-caption); }
 #report-summary-settings-ui .summary-slot-row .picker-trigger { min-height: 48px; border-radius: 8px; }
 #config-panel-cats .category-config-tabs button, #config-panel-mode .record-mode-toggle button { min-height: 44px; padding: 6px; white-space: normal; }
 #config-panel-cats .category-group { padding: 0 0 12px; }
 #config-panel-cats .category-group-head { min-height: 52px; }
-#config-panel-cats .category-sub-list { gap: 6px; }
+#config-panel-cats .category-sub-list { gap: var(--ui-space-2); }
 #config-panel-cats .category-sub-row { min-height: 48px; }
 #config-panel-cats .category-selected-list { gap: 8px; }
 #config-panel-cats .category-expand-button, #config-panel-cats .category-delete-button, #config-panel-cats .category-selected-remove, #config-panel-scene .scene-settings-edit, #config-panel-event .scene-settings-edit, #config-panel-event .event-settings-icon { min-width: 44px; min-height: 44px; }
@@ -601,7 +602,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .event-center-stat-row { justify-content: space-between; min-height: 48px; }
 .event-center-stat-row strong { white-space: nowrap; font-size: var(--ui-body); }
 .event-center-link { display: block; width: 100%; text-align: right; }
-.event-record-editor-card { display: grid; gap: 10px; }
+.event-record-editor-card { display: grid; gap: var(--ui-space-3); }
 .event-record-editor-card .event-date-only { display: flex; align-items: center; gap: 8px; min-height: 36px; }
 .event-record-editor-actions { display: flex; gap: 8px; margin-top: 4px; }
 .event-record-editor-actions button { flex: 1; min-height: 44px; border-radius: 8px; background: var(--ui-surface); color: var(--ui-ink); }
@@ -629,11 +630,11 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 
 /* Event center: compact browsing on small screens. */
 #page-events .event-center-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-#event-center-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+#event-center-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-2); }
 #event-center-types .event-manager-item { min-width: 0; border: 1px solid var(--ui-border); border-radius: 8px; background: #fff; }
 #event-center-types .event-manager-item:has(.event-manager-detail:not([hidden])) { grid-column: 1 / -1; }
 #event-center-types .event-manager-heading { min-height: 82px; padding: 12px; }
-#event-center-types .event-manager-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+#event-center-types .event-manager-identity { display: flex; align-items: center; gap: var(--ui-space-2); min-width: 0; }
 #event-center-types .event-manager-type-icon { display: grid; place-items: center; flex: 0 0 40px; height: 40px; border-radius: 8px; background: #eef3f4; font-size: 22px; }
 #event-center-types .event-manager-type-text { display: grid; gap: 4px; min-width: 0; }
 #event-center-types .event-manager-type-text strong { overflow-wrap: anywhere; font-size: 15px; line-height: 1.3; }
@@ -691,6 +692,14 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .config-grid-card, .calendar-day-summary { padding: var(--ui-space-4); }
 .event-detail-header { gap: var(--ui-space-2); margin-bottom: var(--ui-space-4); }
 .event-detail-calendar { gap: var(--ui-space-1); margin: var(--ui-space-3) 0 var(--ui-space-4); }
+@media (max-width: 360px) {
+    #header-main-status { gap: var(--ui-space-1); padding-inline: 6px; }
+    #header-main-status > div:first-child { flex: 1 1 auto; min-width: 0; }
+    #header-main-status > div:first-child > :not([hidden]) ~ :not([hidden]) { margin-left: var(--ui-space-1); }
+    #header-main-status #status-light { margin-right: var(--ui-space-1) !important; }
+    #header-main-status #header-l2 { margin-right: 0 !important; }
+    #header-timer { font-size: 16px !important; }
+}
 main:has(> #page-report.active) { padding-top: 0; }
 #page-report #report-period-toolbar { position: sticky; top: 0; z-index: 20; isolation: isolate; padding: 6px 0; background: #f8fafc; }
 #page-report #report-period-toolbar::before { content: ''; position: absolute; inset: 0 -16px; z-index: -1; background: #f8fafc; }
