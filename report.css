@@ -297,6 +297,10 @@ body#report-standalone {
 .event-overview > div { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; padding:10px 2px; background:#f4f7f8; border-radius:6px; }
 .event-overview strong { color:#304d5c; font-size:19px; font-variant-numeric:tabular-nums; }
 .event-overview span { color:#66798a; font-size:12px; white-space:nowrap; }
+.event-composition { margin: 4px 0 18px; }
+.event-composition-label { margin-bottom: 8px; color: #536979; font-size: 13px; font-weight: 600; }
+.event-composition-bar { display: flex; height: 12px; overflow: hidden; border-radius: 6px; background: #e7edf0; }
+.event-composition-bar span { height: 100%; }
 .event-distribution { margin:12px 0 18px; }
 .event-distribution h3 { margin:0 0 10px; font-size:14px; font-weight:600; color:#405564; }
 .event-distribution-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }

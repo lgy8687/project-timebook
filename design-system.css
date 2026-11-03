@@ -616,3 +616,41 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .event-manager-option button { min-width: 44px; min-height: 44px; }
 .event-manager-option .scene-settings-dot { width: 44px; height: 44px; min-width: 44px; min-height: 44px; border: 14px solid transparent; background-clip: padding-box !important; }
 .event-manager-detail .scene-settings-edit { color: var(--ui-danger); }
+
+/* Event center: compact browsing on small screens. */
+#page-events .event-center-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#event-center-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+#event-center-types .event-manager-item { min-width: 0; border: 1px solid var(--ui-border); border-radius: 8px; background: #fff; }
+#event-center-types .event-manager-item:has(.event-manager-detail:not([hidden])) { grid-column: 1 / -1; }
+#event-center-types .event-manager-heading { min-height: 82px; padding: 12px; }
+#event-center-types .event-manager-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+#event-center-types .event-manager-type-icon { display: grid; place-items: center; flex: 0 0 40px; height: 40px; border-radius: 8px; background: #eef3f4; font-size: 22px; }
+#event-center-types .event-manager-type-text { display: grid; gap: 4px; min-width: 0; }
+#event-center-types .event-manager-type-text strong { overflow-wrap: anywhere; font-size: 15px; line-height: 1.3; }
+#event-center-types .event-manager-type-text small { color: var(--ui-muted); font-size: 12px; font-weight: 400; overflow-wrap: anywhere; }
+#event-center-types .event-manager-heading > span:last-child { font-size: 22px; }
+#event-center-types .event-manager-detail { padding: 0 12px 12px; }
+#page-events .event-center-row { padding: 0; }
+#page-events .event-center-record-button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 68px; padding: 10px 2px; text-align: left; color: var(--ui-ink); }
+#page-events .event-center-record-arrow { color: var(--ui-muted); font-size: 24px; }
+
+/* B86 shares the event identity and chronology used by recording. */
+#event-center-history .event-center-filter label { display: grid; }
+#event-center-history .event-center-filter { margin: 0 0 12px; }
+.event-history-choices { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: thin; }
+.event-history-choices button { flex: 0 0 auto; max-width: 200px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-surface); color: var(--ui-ink); font-size: 14px; overflow-wrap: anywhere; }
+.event-history-choices button[aria-pressed=true] { background: var(--ui-ink); border-color: var(--ui-ink); color: #fff; }
+.event-history-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 18px 0 20px; margin-bottom: 8px; border-bottom: 1px solid var(--ui-border); }
+.event-history-overview > div { display: grid; gap: 6px; text-align: center; }
+.event-history-overview > div + div { border-left: 1px solid var(--ui-border); }
+.event-history-overview strong { font-size: 24px; line-height: 1.2; color: var(--ui-ink); font-variant-numeric: tabular-nums; }
+.event-history-overview span { font-size: 12px; color: var(--ui-muted); }
+#event-center-history .event-record-date { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 20px 0 10px; color: var(--ui-muted); font-size: 13px; }
+#event-center-history .event-record-date small { font-size: 12px; font-weight: 400; }
+#event-center-history .event-center-row { border-bottom: 1px solid var(--ui-border); }
+#event-center-history .event-center-record-button { min-height: 76px; gap: 12px; }
+.event-history-icon { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border-radius: 8px; background: var(--ui-surface); border: 1px solid var(--ui-border); font-size: 23px; }
+#event-center-history .event-center-row-content strong { font-size: 16px; font-weight: 600; }
+.event-history-count { flex: 0 0 auto; color: var(--ui-ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.event-history-empty { text-align: center; padding: 40px 12px; color: var(--ui-muted); font-size: 14px; }
+#event-center-history button:active { background: var(--ui-border); }

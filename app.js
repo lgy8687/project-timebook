@@ -4334,7 +4334,14 @@ function renderEventSettings(hostId = 'event-settings-ui') {
         heading.className = 'event-manager-heading';
         heading.setAttribute('aria-expanded', 'false');
         const headingLabel = document.createElement('span');
-        headingLabel.textContent = `${eventType.icon}  ${eventType.name}${eventType.disabled ? ' · 已停用' : ''}`;
+        if (hostId === 'event-center-types') {
+            headingLabel.className = 'event-manager-identity';
+            const iconLabel = document.createElement('span'); iconLabel.className = 'event-manager-type-icon'; iconLabel.textContent = eventType.icon;
+            const text = document.createElement('span'); text.className = 'event-manager-type-text';
+            const title = document.createElement('strong'); title.textContent = eventType.name;
+            const meta = document.createElement('small'); meta.textContent = eventType.disabled ? '已停用' : (eventType.group || '未分类');
+            text.append(title, meta); headingLabel.append(iconLabel, text);
+        } else headingLabel.textContent = `${eventType.icon}  ${eventType.name}${eventType.disabled ? ' · 已停用' : ''}`;
         const arrow = document.createElement('span'); arrow.textContent = '›';
         heading.append(headingLabel, arrow);
         const detail = document.createElement('div');
@@ -4636,6 +4643,8 @@ let eventCenterTab = 'history', eventCenterPeriod = 0, eventCenterReturn = 'reco
 let eventCenterRange = null;
 function openEventCenter(tab = 'history', range = null) {
     eventCenterRange = range && Number.isFinite(range.start) && Number.isFinite(range.end) ? range : null;
+    const filter = document.getElementById('event-center-filter');
+    if (filter) filter.value = '';
     const active = document.querySelector('main > .tab-content.active');
     if (active && active.id !== 'page-events') eventCenterReturn = active.id.replace('page-', '');
     switchTab('events');
@@ -4664,30 +4673,51 @@ function renderEventCenter() {
     eventRecords.forEach(record => { if (!types.has(String(record.typeId))) types.set(String(record.typeId), record.typeName || '已删除事件'); });
     types.forEach((name, id) => filter.add(new Option(name, id)));
     filter.value = types.has(selected) ? selected : '';
+    const choices = document.getElementById('event-history-choices');
+    choices.replaceChildren();
     const list = document.getElementById('event-center-list');
     list.replaceChildren();
     document.getElementById('event-center-history-range').textContent = eventCenterRange ? `当前范围：${eventCenterRange.label}` : '全部日期';
     const records = eventRecords.filter(item => (!filter.value || String(item.typeId) === filter.value) && (!eventCenterRange || (item.occurredAt >= eventCenterRange.start && item.occurredAt < eventCenterRange.end))).slice().sort((a, b) => b.occurredAt - a.occurredAt);
-    if (!records.length) list.textContent = '暂无事件记录';
+    const overview = document.getElementById('event-history-overview');
+    overview.replaceChildren();
+    const recordDays = new Set(records.map(record => formatBeijingDate(record.occurredAt)));
+    [[records.reduce((sum, record) => sum + (record.count || 1), 0), '发生次数'], [recordDays.size, '记录天数'], [records.length, '记录条数']].forEach(([value, label]) => {
+        const metric = document.createElement('div');
+        const number = document.createElement('strong'); number.textContent = String(value);
+        const caption = document.createElement('span'); caption.textContent = label;
+        metric.append(number, caption); overview.appendChild(metric);
+    });
+    const dayCounts = new Map();
+    records.forEach(record => { const date = formatBeijingDate(record.occurredAt); dayCounts.set(date, (dayCounts.get(date) || 0) + (record.count || 1)); });
+    if (!records.length) {
+        const empty = document.createElement('p'); empty.className = 'event-history-empty';
+        empty.textContent = '当前范围还没有记录'; list.appendChild(empty);
+    }
     let previousEventDate = '';
     records.forEach(record => {
         const recordDate = formatBeijingDate(record.occurredAt);
         if (recordDate !== previousEventDate) {
             const heading = document.createElement('h3');
             heading.className = 'event-record-date';
-            heading.textContent = recordDate;
+            const dateLabel = document.createElement('span'); dateLabel.textContent = recordDate;
+            const dayTotal = document.createElement('small'); dayTotal.textContent = `${dayCounts.get(recordDate)} 次`;
+            heading.append(dateLabel, dayTotal);
             list.appendChild(heading);
             previousEventDate = recordDate;
         }
         const type = eventTypeById(record.typeId);
         const row = document.createElement('div'); row.className = 'event-center-row';
         const content = document.createElement('div'); content.className = 'event-center-row-content';
-        const name = document.createElement('strong'); name.textContent = `${type?.icon || record.icon || '•'} ${type?.name || record.typeName || '已删除事件'} · ${record.count || 1}次`;
-        const detail = document.createElement('span'); detail.textContent = `${formatBeijingDate(record.occurredAt)} ${record.dateOnly ? '仅日期' : formatBeijingClockSec(record.occurredAt)}${record.parentId ? ' · 已关联主线' : ' · 独立事件'}`;
-        detail.textContent = `${record.dateOnly ? '未指定时间' : formatBeijingClockSec(record.occurredAt)}`;
+        const name = document.createElement('strong'); name.textContent = type?.name || record.typeName || '已删除事件';
+        const detail = document.createElement('span');
+        detail.textContent = `${record.dateOnly ? '未指定时间' : formatBeijingClockSec(record.occurredAt)}${type?.group ? ' · ' + type.group : ''}${record.parentId ? ' · 关联主线' : ''}`;
         content.append(name, detail);
-        const edit = document.createElement('button'); edit.type = 'button'; edit.textContent = '›'; edit.setAttribute('aria-label', `查看${type?.name || record.typeName}记录`); edit.addEventListener('click', () => openEventRecordEditor(record.id));
-        row.append(content, edit); list.appendChild(row);
+        const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'event-center-record-button'; edit.setAttribute('aria-label', `查看${type?.name || record.typeName}记录`); edit.addEventListener('click', () => openEventRecordEditor(record.id));
+        const arrow = document.createElement('span'); arrow.className = 'event-center-record-arrow'; arrow.textContent = '›';
+        const badge = document.createElement('span'); badge.className = 'event-history-icon'; badge.textContent = type?.icon || record.icon || '•'; badge.setAttribute('aria-hidden', 'true');
+        const count = document.createElement('span'); count.className = 'event-history-count'; count.textContent = `${record.count || 1} 次`;
+        edit.append(badge, content, count, arrow); row.append(edit); list.appendChild(row);
     });
     document.querySelectorAll('[data-event-period]').forEach(button => button.classList.toggle('active', !eventCenterRange && Number(button.dataset.eventPeriod) === eventCenterPeriod));
     const end = beijingDateStrToDayStart(getTodayDateStr()) + DAY_MS;
@@ -4791,7 +4821,12 @@ function renderEventHome() {
         const latest = eventRecords.filter(record => String(record.typeId) === String(type.id)).reduce((a, b) => !a || b.occurredAt > a.occurredAt ? b : a, null);
         last.textContent = latest ? `上次：${formatBeijingDate(latest.occurredAt)}${latest.dateOnly ? '' : ' ' + formatBeijingClockSec(latest.occurredAt).slice(0, 5)}` : '暂无记录';
         open.append(icon, title, last);
-        open.addEventListener('click', () => { openEventModal(); chooseEventType(type.id); });
+    open.addEventListener('click', () => {
+        openEventCenter('history');
+        const filter = document.getElementById('event-center-filter');
+        filter.value = String(type.id);
+        renderEventCenter();
+    });
         const action = document.createElement('button'); action.type = 'button'; action.className = 'event-home-card-action';
         action.textContent = type.quick ? 'ϟ' : '＋';
         action.setAttribute('aria-label', type.quick ? `快速记录${type.name}` : `记录${type.name}`);
