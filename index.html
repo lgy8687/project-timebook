@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css?v=5.97-demo-fix">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=5.92">
-    <link rel="stylesheet" href="design-system.css?v=5.97">
+    <link rel="stylesheet" href="design-system.css?v=5.98-report-spacing">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -200,8 +200,8 @@
                     <div class="structure-head">
                         <div class="structure-title" id="structure-title">时间结构</div>
                         <div class="chart-mode-toggle report-segmented-template" id="chart-mode-toggle">
-                            <button type="button" class="chart-toggle-btn chart-main active" data-chart="main">主线</button>
-                            <button type="button" class="chart-toggle-btn chart-parallel" data-chart="parallel">并行</button>
+                            <button type="button" class="chart-toggle-btn chart-main active" data-chart="main"><span>主</span><span>线</span></button>
+                            <button type="button" class="chart-toggle-btn chart-parallel" data-chart="parallel"><span>并</span><span>行</span></button>
                         </div>
                     </div>
                     <div class="sunburst-layout">
@@ -807,7 +807,7 @@
     <div id="tip"></div>
 
     <script src="report-metrics.js?v=5.66"></script>
-    <script src="report.js?v=5.92"></script>
+    <script src="report.js?v=5.98-report-spacing"></script>
     <script src="ui-theme.js?v=5.39"></script>
     <script src="app.js?v=5.97-demo-fix"></script>
     <script src="backup.js?v=5"></script>

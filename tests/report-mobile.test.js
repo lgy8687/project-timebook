@@ -59,7 +59,7 @@ test('event overview stays concise and framed areas share the same corner token'
 
 test('swipe preview does not rerender or detach the active touch target', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
-    const preview = source.match(/function makeReportSwipePreview\(direction\) \{([\s\S]*?)\n        reportPage\?\.addEventListener\('touchstart'/)?.[1];
+    const preview = source.match(/function makeReportSwipePreview\(direction\) \{([\s\S]*?)\n        reportScrollArea\?\.addEventListener\('touchstart'/)?.[1];
     assert.ok(preview);
     assert.doesNotMatch(preview, /\brender\(\)/);
     assert.match(preview, /clone\.classList\.remove\('hidden'\)/);
@@ -68,4 +68,6 @@ test('swipe preview does not rerender or detach the active touch target', () => 
     assert.match(source, /const boundary = targetKind === originalKind/);
     assert.match(source, /!preview\.boundary &&/);
     assert.match(source, /touchcancel.*clearReportSwipe/);
+    assert.match(source, /const reportScrollArea = reportPage\?\.closest\('main'\)/);
+    assert.match(source, /!reportPage\.classList\.contains\('active'\)/);
 });

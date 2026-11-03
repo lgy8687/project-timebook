@@ -696,6 +696,7 @@
             render();
         }));
         const reportPage = document.getElementById('page-report');
+        const reportScrollArea = reportPage?.closest('main');
         let reportSwipeStart = null;
         let reportSwipePreview = null;
         let reportSwipeTimer = null;
@@ -746,8 +747,8 @@
             root.append(current, next); reportPage.appendChild(root);
             return { root, current, next, targetKind, direction, boundary, width: main.width };
         }
-        reportPage?.addEventListener('touchstart', event => {
-            if (event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"]')) {
+        reportScrollArea?.addEventListener('touchstart', event => {
+            if (!reportPage.classList.contains('active') || event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"]')) {
                 reportSwipeStart = null;
                 return;
             }
@@ -755,7 +756,7 @@
             clearReportSwipe();
             reportSwipeStart = { x: touch.clientX, y: touch.clientY, axis: null };
         }, { passive: true });
-        reportPage?.addEventListener('touchmove', event => {
+        reportScrollArea?.addEventListener('touchmove', event => {
             if (!reportSwipeStart || event.touches.length !== 1) return;
             const dx = event.touches[0].clientX - reportSwipeStart.x;
             const dy = event.touches[0].clientY - reportSwipeStart.y;
@@ -771,7 +772,7 @@
             reportSwipePreview.current.style.transform = `translateX(${offset}px)`;
             reportSwipePreview.next.style.transform = `translateX(${offset - direction * reportSwipePreview.width}px)`;
         }, { passive: false });
-        reportPage?.addEventListener('touchend', event => {
+        reportScrollArea?.addEventListener('touchend', event => {
             if (!reportSwipeStart || event.changedTouches.length !== 1) { reportSwipeStart = null; clearReportSwipe(); return; }
             const touch = event.changedTouches[0];
             const dx = touch.clientX - reportSwipeStart.x;
@@ -786,7 +787,7 @@
             preview.next.style.transform = `translateX(${offset - preview.direction * preview.width}px)`;
             reportSwipeTimer = setTimeout(() => { if (commit) { state.kind = preview.targetKind; render(); } clearReportSwipe(); }, 240);
         }, { passive: true });
-        reportPage?.addEventListener('touchcancel', () => { reportSwipeStart = null; clearReportSwipe(); }, { passive: true });
+        reportScrollArea?.addEventListener('touchcancel', () => { reportSwipeStart = null; clearReportSwipe(); }, { passive: true });
         document.addEventListener('click', e => {
             if (!e.target.closest('.inner-seg, .outer-seg, .scene-coverage-seg, .timeline-block, .timeline-bar-segment')) hideTip();
         });
