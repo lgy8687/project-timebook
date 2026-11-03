@@ -4797,9 +4797,31 @@ function openEventHome() {
     const active = document.querySelector('main > .tab-content.active');
     if (active && active.id !== 'page-event-home') eventHomeReturn = active.id.replace('page-', '');
     eventHomeGroup = '';
+    document.getElementById('event-home-search').value = '';
+    document.getElementById('event-home-search-wrap').classList.add('hidden');
+    document.querySelector('.event-home-search-toggle').setAttribute('aria-expanded', 'false');
+    document.getElementById('page-event-home').dataset.devAddressBlock = 'B101';
     switchTab('event-home');
 }
 function closeEventHome() { switchTab(eventHomeReturn); }
+function toggleEventHomeSearch() {
+    const wrap = document.getElementById('event-home-search-wrap');
+    const input = document.getElementById('event-home-search');
+    const opening = wrap.classList.contains('hidden');
+    wrap.classList.toggle('hidden', !opening);
+    document.querySelector('.event-home-search-toggle').setAttribute('aria-expanded', String(opening));
+    document.getElementById('page-event-home').dataset.devAddressBlock = opening ? 'B102' : 'B101';
+    if (opening) input.focus();
+    else { input.value = ''; renderEventHome(); }
+}
+function formatEventHomeLatest(record) {
+    if (!record) return '暂无记录';
+    const date = formatBeijingDate(record.occurredAt);
+    const today = getTodayDateStr();
+    const yesterday = formatBeijingDate(beijingDateStrToDayStart(today) - DAY_MS);
+    const dateLabel = date === today ? '今天' : date === yesterday ? '昨天' : date.slice(0, 4) === today.slice(0, 4) ? `${Number(date.slice(5, 7))}月${Number(date.slice(8, 10))}日` : date;
+    return `上次：${dateLabel}${record.dateOnly ? ' · 仅日期' : ' ' + formatBeijingClockSec(record.occurredAt).slice(0, 5)}`;
+}
 function renderEventHome() {
     const groups = document.getElementById('event-home-groups');
     const cards = document.getElementById('event-home-cards');
@@ -4817,8 +4839,11 @@ function renderEventHome() {
         groups.appendChild(button);
     });
     cards.replaceChildren();
-    const shown = types.filter(type => !eventHomeGroup || type.group === eventHomeGroup);
-    document.getElementById('event-home-empty').classList.toggle('hidden', types.length > 0);
+    const query = document.getElementById('event-home-search').value.trim().toLocaleLowerCase();
+    const shown = types.filter(type => (!eventHomeGroup || type.group === eventHomeGroup) && String(type.name || '').toLocaleLowerCase().includes(query));
+    const empty = document.getElementById('event-home-empty');
+    empty.classList.toggle('hidden', shown.length > 0);
+    empty.textContent = query ? '没有找到匹配的事件' : types.length ? '这个分组没有事件' : '还没有事件，点击右下角新建';
     shown.forEach(type => {
         const card = document.createElement('article'); card.className = 'event-home-card';
         const open = document.createElement('button'); open.type = 'button'; open.className = 'event-home-card-main';
@@ -4827,16 +4852,16 @@ function renderEventHome() {
         const title = document.createElement('strong'); title.textContent = type.name;
         const last = document.createElement('small');
         const latest = eventRecords.filter(record => String(record.typeId) === String(type.id)).reduce((a, b) => !a || b.occurredAt > a.occurredAt ? b : a, null);
-        last.textContent = latest ? `上次：${formatBeijingDate(latest.occurredAt)}${latest.dateOnly ? '' : ' ' + formatBeijingClockSec(latest.occurredAt).slice(0, 5)}` : '暂无记录';
+        last.textContent = formatEventHomeLatest(latest);
         open.append(icon, title, last);
-    open.addEventListener('click', () => {
-        openEventCenter('history');
-        const filter = document.getElementById('event-center-filter');
-        filter.value = String(type.id);
-        renderEventCenter();
-    });
+        open.addEventListener('click', () => {
+            openEventCenter('history');
+            const filter = document.getElementById('event-center-filter');
+            filter.value = String(type.id);
+            renderEventCenter();
+        });
         const action = document.createElement('button'); action.type = 'button'; action.className = 'event-home-card-action';
-        action.textContent = type.quick ? 'ϟ' : '＋';
+        const actionIcon = document.createElement('span'); actionIcon.className = `event-home-tool-icon ${type.quick ? 'event-home-tool-icon--quick' : 'event-home-tool-icon--plus'}`; actionIcon.setAttribute('aria-hidden', 'true'); action.appendChild(actionIcon);
         action.setAttribute('aria-label', type.quick ? `快速记录${type.name}` : `记录${type.name}`);
         action.addEventListener('click', () => {
             if (!type.quick) { openEventModal(); chooseEventType(type.id); return; }
