@@ -9,7 +9,7 @@
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="demo-sandbox.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=6.05">
+    <link rel="stylesheet" href="style.css?v=6.06">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=6.05">
     <link rel="stylesheet" href="design-system.css?v=6.05">
@@ -35,7 +35,6 @@
         <button id="scene-entry-btn" type="button" class="scene-zone-tile" title="切换区域">
             <span id="scene-entry-label" class="scene-zone-tile-label">生活区</span>
         </button>
-        <div id="demo-entry-bar" class="demo-entry-bar"><button id="demo-entry-button" type="button" onclick="openDemoMode()" aria-label="打开10月示例" title="打开10月示例">📅</button></div>
         <button id="dev-inspector-shortcut" type="button" class="dev-inspector-shortcut" title="开发者模式" aria-label="开发者模式" aria-pressed="false" onclick="setDevInspectorEnabled(this.getAttribute('aria-pressed') !== 'true')">&lt;/&gt;</button>
     </header>
     <div id="demo-mode-layer" class="demo-mode-layer hidden"><iframe id="demo-mode-frame" title="10月示例模式" sandbox="allow-scripts"></iframe><div id="demo-loading" class="demo-loading" role="status"><p id="demo-loading-message">正在打开10月示例…</p><div><button id="demo-retry-button" type="button" onclick="openDemoMode()" hidden>重试</button><button type="button" onclick="closeDemoMode()">返回真实数据</button></div></div></div>
@@ -398,7 +397,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.05</div>
+            <div id="cache-buster" class="version-in-settings">v6.06</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
@@ -809,6 +808,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=5.77"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=6.05"></script>
+    <script src="dev-inspector.js?v=6.06"></script>
 </body>
 </html>

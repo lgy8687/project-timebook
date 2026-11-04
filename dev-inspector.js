@@ -81,7 +81,6 @@
         ['B101', '事件首页', '#page-event-home[data-dev-address-block="B101"]'],
         ['B103', '事件长按操作菜单', '#event-card-menu-card[data-dev-address-block="B103"]'],
         ['B104', '事件卡片基础设置', '#event-card-menu-card[data-dev-address-block="B104"]'],
-        ['B95', '数据模式入口', '#demo-entry-bar'],
         ['B97', '事件趋势', '#event-pattern-block'],
         ['B98', '设计模块', '#page-design'],
         ['B99', '单事件记录', '#event-detail-block[data-dev-address-block="B99"]'],
@@ -113,7 +112,6 @@
         ['Z33-3', '时间与事件切换', '#report-period-toolbar .report-kind-tabs', 'C02'],
         ['Z34-1', '随手记旁的事件入口', '#free-note-event-btn'],
         ['Z85-1', '未分配主线的事件入口', '.unassigned-live-event-btn'],
-        ['Z95-1', '打开示例模式', '#demo-entry-button'],
     ];
     const floatingBadges = new Map();
     let enabled = localStorage.getItem(STORAGE_KEY) !== 'false';
