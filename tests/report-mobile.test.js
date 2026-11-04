@@ -23,7 +23,7 @@ test('bottom navigation uses locally bundled line icons', () => {
 test('narrow headers reserve space for the active name and settings share spacing tokens', () => {
     const css = fs.readFileSync(path.join(__dirname, '..', 'design-system.css'), 'utf8');
     assert.match(css, /#header-main-status #status-light \{ margin-right: var\(--ui-space-1\) !important/);
-    assert.match(css, /#header-timer \{ font-size: 16px !important/);
+    assert.match(css, /#header-timer \{ font-size: var\(--ui-type-1-3\) !important/);
     assert.match(css, /#clock-settings-ui \{ display: grid; gap: var\(--ui-space-2\)/);
     assert.match(css, /\.event-record-editor-card \{ display: grid; gap: var\(--ui-space-3\)/);
 });

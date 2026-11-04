@@ -1,6 +1,7 @@
 # Interface Rules
 
-- Titles: 16px, weight 700. Body text, control labels and activity names: 14px, weight 600. Secondary descriptions: 12px, normal weight. Timers and primary totals may be larger; chart axes and compact clock captions may be smaller where geometry requires it.
+- Typography source of truth: semantic tokens in design-system.css. Page titles use --ui-heading-1 (16px/700); section titles use --ui-heading-2 or --ui-heading-3 (15px/700); body, control labels and activity names use --ui-body (13px/500-600); secondary descriptions use --ui-caption (11px/400). Line height is 1.4 for titles and controls, 1.5 for body copy. Do not infer text size from its clickable area's dimensions.
+- The --ui-type-* tokens are the existing size palette, not semantic roles. Prefer semantic tokens for new ordinary text. Native text-entry fields may remain 16px to avoid mobile browser focus zoom. Timers, primary totals, chart labels and icons are separate display roles; do not reduce them in a bulk text adjustment. Explicit user appearance preferences remain supported.
 - Use the system sans-serif stack throughout. Numeric times use tabular figures. Letter spacing is zero.
 - Normal text is #334155, secondary text #64748b. Interaction accent is #526a91 with a light #edf2f8 surface. Red is reserved for destructive actions. Category and scene colors continue to represent the user's data.
 - Segmented controls use one shared style for report periods, main/parallel views, category settings, summary settings and recording mode. Equal-width options, 36px minimum inner height, filled selected state.
