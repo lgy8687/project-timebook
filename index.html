@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css?v=6.00">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=6.00">
-    <link rel="stylesheet" href="design-system.css?v=6.01">
+    <link rel="stylesheet" href="design-system.css?v=6.02">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -398,7 +398,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.01</div>
+            <div id="cache-buster" class="version-in-settings">v6.02</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
@@ -658,6 +658,19 @@
             <div class="event-record-editor-actions"><button type="button" onclick="deleteEventCenterRecord(eventEditId)">删除记录</button><button type="button" onclick="saveEventRecordEdit()">保存</button></div>
         </div>
     </div>
+    <div id="event-card-menu" class="event-modal hidden" onclick="if(event.target===this)closeEventCardMenu()">
+        <div id="event-card-menu-card" class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="event-card-menu-title" data-dev-address-block="B103">
+            <div class="event-modal-head"><h3 id="event-card-menu-title"></h3><button id="event-card-menu-close" type="button" onclick="closeEventCardMenu()" aria-label="关闭">×</button></div>
+            <div id="event-card-menu-options" class="event-card-menu-options">
+                <button type="button" onclick="eventCardMenuAction('edit')">编辑</button>
+                <button type="button" onclick="eventCardMenuAction('mode')">记录方式</button>
+                <button type="button" onclick="eventCardMenuAction('order')">调整顺序</button>
+                <button type="button" onclick="eventCardMenuAction('disable')">停用</button>
+                <button type="button" class="event-card-menu-delete" onclick="eventCardMenuAction('delete')">删除</button>
+            </div>
+            <div id="event-card-settings" hidden></div>
+        </div>
+    </div>
     <div id="event-home-create" class="event-modal hidden" onclick="if(event.target===this)this.classList.add('hidden')">
         <div id="event-home-create-card" class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="event-home-create-title">
             <div class="event-modal-head"><h3 id="event-home-create-title">新建事件</h3><button type="button" onclick="document.getElementById('event-home-create').classList.add('hidden')" aria-label="关闭">×</button></div>
@@ -805,14 +818,14 @@
     <div id="tip"></div>
 
     <script src="report-metrics.js?v=5.66"></script>
-    <script src="report.js?v=5.98-swipe-fix"></script>
+    <script src="report.js?v=6.02"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=6.01"></script>
+    <script src="app.js?v=6.02"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=5.77"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=6.01"></script>
+    <script src="dev-inspector.js?v=6.02"></script>
 </body>
 </html>

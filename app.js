@@ -982,6 +982,13 @@ function renderAll() {
     renderReport();
     if (document.getElementById('page-events')?.classList.contains('active')) renderEventCenter();
     if (document.getElementById('page-event-home')?.classList.contains('active')) renderEventHome();
+    if (eventCardMenuType && !document.getElementById('event-card-settings').hidden) {
+        if (!eventTypes.includes(eventCardMenuType) || eventCardMenuType.disabled) closeEventCardMenu();
+        else {
+            document.getElementById('event-card-menu-title').textContent = eventCardMenuType.name;
+            renderEventSettings('event-card-settings', eventCardMenuType.id);
+        }
+    }
     updateUI();
 }
 
@@ -4347,7 +4354,7 @@ function startEventHomeCreate(quick) {
     addEventType({ quick });
 }
 
-function renderEventSettings(hostId = 'event-settings-ui') {
+function renderEventSettings(hostId = 'event-settings-ui', onlyId = null) {
     const host = document.getElementById(hostId);
     if (!host) return;
     host.innerHTML = '';
@@ -4358,7 +4365,7 @@ function renderEventSettings(hostId = 'event-settings-ui') {
         host.appendChild(empty);
         return;
     }
-    eventTypes.forEach((eventType) => {
+    eventTypes.filter(type => onlyId === null || String(type.id) === String(onlyId)).forEach((eventType) => {
         const row = document.createElement('div');
         row.className = 'event-manager-item';
         const heading = document.createElement('button');
@@ -4378,7 +4385,8 @@ function renderEventSettings(hostId = 'event-settings-ui') {
         heading.append(headingLabel, arrow);
         const detail = document.createElement('div');
         detail.className = 'event-manager-detail';
-        detail.hidden = true;
+        detail.hidden = onlyId === null;
+        heading.setAttribute('aria-expanded', String(!detail.hidden));
         heading.addEventListener('click', () => {
             detail.hidden = !detail.hidden;
             heading.setAttribute('aria-expanded', String(!detail.hidden));
@@ -4457,6 +4465,14 @@ function renderEventSettings(hostId = 'event-settings-ui') {
             [eventTypes[index - 1], eventTypes[index]] = [eventTypes[index], eventTypes[index - 1]];
             saveEventTypes(); renderAll();
         });
+        const moveDown = document.createElement('button'); moveDown.type = 'button'; moveDown.className = 'event-manager-action'; moveDown.textContent = '下移';
+        moveDown.disabled = eventTypes.indexOf(eventType) === eventTypes.length - 1;
+        moveDown.addEventListener('click', () => {
+            const index = eventTypes.indexOf(eventType);
+            if (index < 0 || index >= eventTypes.length - 1) return;
+            [eventTypes[index], eventTypes[index + 1]] = [eventTypes[index + 1], eventTypes[index]];
+            saveEventTypes(); renderAll();
+        });
         const group = document.createElement('button');
         group.type = 'button'; group.className = 'event-manager-action';
         group.textContent = `分组：${eventType.group || '未分组'}`;
@@ -4482,7 +4498,7 @@ function renderEventSettings(hostId = 'event-settings-ui') {
             options.appendChild(button);
         });
         mode.append(modeLabel, options);
-        detail.append(mode, colorLabel, iconLabel, name, group, enabled, moveUp, del);
+        detail.append(mode, colorLabel, iconLabel, name, group, enabled, moveUp, moveDown, del);
         row.append(heading, detail);
         host.appendChild(row);
     });
@@ -4839,6 +4855,39 @@ function openEventHome() {
     switchTab('event-home');
 }
 function closeEventHome() { switchTab(eventHomeReturn); }
+let eventCardMenuType = null;
+function closeEventCardMenu() {
+    document.getElementById('event-card-menu').classList.add('hidden');
+    eventCardMenuType = null;
+}
+function openEventCardMenu(type) {
+    eventCardMenuType = type;
+    document.getElementById('event-card-menu-title').textContent = type.name;
+    document.getElementById('event-card-menu-options').hidden = false;
+    document.getElementById('event-card-settings').hidden = true;
+    document.getElementById('event-card-menu-card').dataset.devAddressBlock = 'B103';
+    document.getElementById('event-card-menu').classList.remove('hidden');
+    document.getElementById('event-card-menu-close').focus();
+}
+function editEventCard() {
+    if (!eventCardMenuType) return;
+    document.getElementById('event-card-menu-options').hidden = true;
+    document.getElementById('event-card-settings').hidden = false;
+    document.getElementById('event-card-menu-card').dataset.devAddressBlock = 'B104';
+    renderEventSettings('event-card-settings', eventCardMenuType.id);
+}
+function eventCardMenuAction(action) {
+    const type = eventCardMenuType;
+    if (!type) return;
+    if (['edit', 'mode', 'order'].includes(action)) { editEventCard(); return; }
+    closeEventCardMenu();
+    if (action === 'disable') { type.disabled = true; saveEventTypes(); renderAll(); }
+    if (action === 'delete') showConfirm('删除事件类别', `删除“${type.name}”后，历史事件会保留但不再可新增。`, '删除', ok => {
+        if (!ok) return;
+        eventTypes = eventTypes.filter(item => item.id !== type.id); saveEventTypes(); renderAll();
+    });
+}
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeEventCardMenu(); });
 function formatEventHomeLatest(record) {
     if (!record) return '暂无记录';
     const date = formatBeijingDate(record.occurredAt);
@@ -4878,11 +4927,22 @@ function renderEventHome() {
         const latest = eventRecords.filter(record => String(record.typeId) === String(type.id)).reduce((a, b) => !a || b.occurredAt > a.occurredAt ? b : a, null);
         last.textContent = formatEventHomeLatest(latest);
         open.append(icon, title, last);
-        open.addEventListener('click', () => {
-            openEventCenter('history');
-            const filter = document.getElementById('event-center-filter');
-            filter.value = String(type.id);
-            renderEventCenter();
+        let holdTimer = null, holdStart = null, held = false;
+        const cancelHold = () => { clearTimeout(holdTimer); holdStart = null; };
+        open.addEventListener('pointerdown', event => {
+            cancelHold(); held = false;
+            if (event.button !== 0) return;
+            holdStart = { x: event.clientX, y: event.clientY };
+            holdTimer = setTimeout(() => { held = true; openEventCardMenu(type); }, 500);
+        });
+        open.addEventListener('pointermove', event => {
+            if (holdStart && Math.hypot(event.clientX - holdStart.x, event.clientY - holdStart.y) > 8) cancelHold();
+        });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(name => open.addEventListener(name, cancelHold));
+        open.addEventListener('contextmenu', event => { event.preventDefault(); cancelHold(); held = true; openEventCardMenu(type); });
+        open.addEventListener('click', event => {
+            if (held) { event.preventDefault(); held = false; return; }
+            window.openReportEventDetail(type, latest);
         });
         const action = document.createElement('button'); action.type = 'button'; action.className = 'event-home-card-action';
         const actionIcon = document.createElement('span'); actionIcon.className = `event-home-tool-icon ${type.quick ? 'event-home-tool-icon--quick' : 'event-home-tool-icon--plus'}`; actionIcon.setAttribute('aria-hidden', 'true'); action.appendChild(actionIcon);

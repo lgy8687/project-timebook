@@ -709,6 +709,11 @@ main:has(> #page-event-home.active) { padding-top: 0; }
 .event-record-mode-options { display: grid; grid-template-columns: repeat(2, 1fr); padding: 2px; border: 1px solid var(--ui-border); border-radius: 8px; }
 .event-record-mode-options button { min-height: 40px; padding: 4px 16px; border-radius: 6px; color: var(--ui-muted); }
 .event-record-mode-options button[aria-pressed="true"] { background: var(--ui-accent); color: #fff; }
+.event-card-menu-options { display: grid; }
+.event-card-menu-options[hidden], #event-card-settings[hidden] { display: none; }
+.event-card-menu-options button { min-height: 44px; padding: 10px 4px; text-align: left; border-bottom: 1px solid var(--ui-border); color: var(--ui-ink); font-size: var(--ui-body); }
+.event-card-menu-options .event-card-menu-delete { color: var(--ui-danger); border: 0; }
+#event-card-settings .event-manager-heading { display: none; }
 .config-grid { gap: var(--ui-space-2); }
 .config-grid-card, .calendar-day-summary { padding: var(--ui-space-4); }
 .event-detail-header { gap: var(--ui-space-2); margin-bottom: var(--ui-space-4); }

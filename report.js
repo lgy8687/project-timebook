@@ -229,7 +229,8 @@
         }
     }
 
-    function openEventDetail(item) {
+    function openEventDetail(item, returnTab = null) {
+        state.eventDetailReturn = returnTab;
         state.eventDetail = { id: item.id, name: item.name, icon: item.icon, color: item.color };
         state.eventDetailTab = 'records'; state.eventDetailDate = '';
         render();
@@ -252,7 +253,7 @@
         }
         box.replaceChildren();
         const header = document.createElement('div'); header.className = 'event-detail-header';
-        const back = document.createElement('button'); back.type = 'button'; back.className = 'event-detail-back'; back.textContent = '‹'; back.setAttribute('aria-label', '返回事件趋势'); back.onclick = () => { state.eventDetail = null; state.eventDetailDate = ''; render(); };
+        const back = document.createElement('button'); back.type = 'button'; back.className = 'event-detail-back'; back.textContent = '‹'; back.setAttribute('aria-label', state.eventDetailReturn ? '返回事件首页' : '返回事件趋势'); back.onclick = () => { const target = state.eventDetailReturn; state.eventDetailReturn = null; state.eventDetail = null; state.eventDetailDate = ''; if (target) window.switchTab(target); else render(); };
         const title = document.createElement('h2'); title.textContent = `${item.icon} ${item.name}`;
         const tabs = document.createElement('div'); tabs.className = 'event-detail-tabs report-segmented-template'; tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', '事件详情视图');
         [['records', '记录'], ['statistics', '统计']].forEach(([key, label]) => {
@@ -933,6 +934,14 @@
 
     window.renderReportBillboard = function () {
         render();
+    };
+    window.openReportEventDetail = function (type, latest) {
+        state.kind = 'event'; state.period = 'month';
+        const now = new Date(Date.now() + 8 * 3600000);
+        const target = new Date((latest?.occurredAt || Date.now()) + 8 * 3600000);
+        state.periodOffsets.month = Math.min(0, (target.getUTCFullYear() - now.getUTCFullYear()) * 12 + target.getUTCMonth() - now.getUTCMonth());
+        window.switchTab('report');
+        openEventDetail(type, 'event-home');
     };
 
     window.openReportEventCenter = function (tab = 'stats') {
