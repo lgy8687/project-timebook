@@ -688,7 +688,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 #page-report .event-pattern-cards.is-year .event-pattern-days { gap: 3px; }
 .event-home-cards { gap: var(--ui-space-2); }
 .event-home-card-main { padding: var(--ui-space-3); gap: var(--ui-space-1); }
-#page-event-home .event-home-card { min-height: clamp(112px, 30vw, 144px); border-color: #eef1f3; border-radius: 8px; }
+#page-event-home .event-home-card { min-height: clamp(104px, 27vw, 124px); border-color: #eef1f3; border-radius: 8px; }
 #page-event-home .event-home-card-main { height: 100%; min-height: inherit; padding: 12px; gap: 2px; }
 #page-event-home .event-home-card-icon { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 7px; font-size: 16px; }
 #page-event-home .event-home-card-main strong { font-size: 14px; line-height: 1.4; }
