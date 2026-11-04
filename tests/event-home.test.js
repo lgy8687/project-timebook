@@ -34,3 +34,11 @@ test('event cards use shared report detail and cancel moved long presses', () =>
     assert.match(app, /if \(held\) \{ event\.preventDefault\(\); held = false; return; \}/);
     assert.match(app, /pointerup', 'pointercancel', 'pointerleave/);
 });
+test('long-press menu is card-anchored and each command has a bundled line icon', () => {
+    assert.match(app, /const bounds = anchor\.getBoundingClientRect\(\)/);
+    assert.match(app, /layer\.classList\.add\('is-context-menu'\)/);
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const menu = html.match(/id="event-card-menu-options"[\s\S]*?<\/div>/)[0];
+    assert.equal((menu.match(/class="event-menu-icon"/g) || []).length, 5);
+    for (const match of menu.matchAll(/url\('([^']+)'\)/g)) assert.ok(fs.existsSync(path.join(__dirname, '..', match[1])));
+});

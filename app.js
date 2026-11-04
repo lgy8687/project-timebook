@@ -4856,21 +4856,37 @@ function openEventHome() {
 }
 function closeEventHome() { switchTab(eventHomeReturn); }
 let eventCardMenuType = null;
+let eventCardMenuAnchor = null;
 function closeEventCardMenu() {
     document.getElementById('event-card-menu').classList.add('hidden');
     eventCardMenuType = null;
+    eventCardMenuAnchor?.querySelector('.event-home-card-main')?.focus();
+    eventCardMenuAnchor = null;
 }
-function openEventCardMenu(type) {
+function openEventCardMenu(type, anchor) {
     eventCardMenuType = type;
+    eventCardMenuAnchor = anchor;
     document.getElementById('event-card-menu-title').textContent = type.name;
     document.getElementById('event-card-menu-options').hidden = false;
     document.getElementById('event-card-settings').hidden = true;
     document.getElementById('event-card-menu-card').dataset.devAddressBlock = 'B103';
-    document.getElementById('event-card-menu').classList.remove('hidden');
-    document.getElementById('event-card-menu-close').focus();
+    const layer = document.getElementById('event-card-menu');
+    const menu = document.getElementById('event-card-menu-card');
+    layer.classList.add('is-context-menu');
+    layer.classList.remove('hidden');
+    const bounds = anchor.getBoundingClientRect();
+    const width = menu.offsetWidth, height = menu.offsetHeight;
+    const left = Math.max(12, Math.min(bounds.right - width, window.innerWidth - width - 12));
+    const below = bounds.bottom + 8;
+    const top = below + height <= window.innerHeight - 12 ? below : Math.max(12, bounds.top - height - 8);
+    menu.style.left = left + 'px'; menu.style.top = top + 'px';
+    document.querySelector('#event-card-menu-options button').focus();
 }
 function editEventCard() {
     if (!eventCardMenuType) return;
+    document.getElementById('event-card-menu').classList.remove('is-context-menu');
+    const menu = document.getElementById('event-card-menu-card');
+    menu.style.removeProperty('left'); menu.style.removeProperty('top');
     document.getElementById('event-card-menu-options').hidden = true;
     document.getElementById('event-card-settings').hidden = false;
     document.getElementById('event-card-menu-card').dataset.devAddressBlock = 'B104';
@@ -4933,13 +4949,13 @@ function renderEventHome() {
             cancelHold(); held = false;
             if (event.button !== 0) return;
             holdStart = { x: event.clientX, y: event.clientY };
-            holdTimer = setTimeout(() => { held = true; openEventCardMenu(type); }, 500);
+            holdTimer = setTimeout(() => { held = true; openEventCardMenu(type, card); }, 500);
         });
         open.addEventListener('pointermove', event => {
             if (holdStart && Math.hypot(event.clientX - holdStart.x, event.clientY - holdStart.y) > 8) cancelHold();
         });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(name => open.addEventListener(name, cancelHold));
-        open.addEventListener('contextmenu', event => { event.preventDefault(); cancelHold(); held = true; openEventCardMenu(type); });
+        open.addEventListener('contextmenu', event => { event.preventDefault(); cancelHold(); held = true; openEventCardMenu(type, card); });
         open.addEventListener('click', event => {
             if (held) { event.preventDefault(); held = false; return; }
             window.openReportEventDetail(type, latest);

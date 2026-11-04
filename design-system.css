@@ -711,8 +711,13 @@ main:has(> #page-event-home.active) { padding-top: 0; }
 .event-record-mode-options button[aria-pressed="true"] { background: var(--ui-accent); color: #fff; }
 .event-card-menu-options { display: grid; }
 .event-card-menu-options[hidden], #event-card-settings[hidden] { display: none; }
-.event-card-menu-options button { min-height: 44px; padding: 10px 4px; text-align: left; border-bottom: 1px solid var(--ui-border); color: var(--ui-ink); font-size: var(--ui-body); }
+.event-card-menu-options button { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 10px 14px; text-align: left; border-bottom: 1px solid #f0f2f4; color: var(--ui-ink); font-size: var(--ui-body); }
 .event-card-menu-options .event-card-menu-delete { color: var(--ui-danger); border: 0; }
+.event-menu-icon { flex: 0 0 19px; width: 19px; height: 19px; background: currentColor; mask: var(--menu-icon) center / contain no-repeat; -webkit-mask: var(--menu-icon) center / contain no-repeat; }
+#event-card-menu.is-context-menu { background: transparent; backdrop-filter: none; padding: 0; }
+#event-card-menu.is-context-menu #event-card-menu-card { position: absolute; width: min(200px, calc(100vw - 24px)); padding: 4px 0; border: 1px solid #eef0f2; border-radius: var(--ui-report-surface-radius); box-shadow: 0 2px 8px #0f172a12; max-height: calc(100dvh - 24px); }
+#event-card-menu.is-context-menu .event-modal-head { display: none; }
+.event-card-menu-options button:hover, .event-card-menu-options button:focus-visible { background: #f6f8fa; }
 #event-card-settings .event-manager-heading { display: none; }
 .config-grid { gap: var(--ui-space-2); }
 .config-grid-card, .calendar-day-summary { padding: var(--ui-space-4); }
