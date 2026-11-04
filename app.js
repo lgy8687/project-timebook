@@ -4371,7 +4371,7 @@ function renderEventSettings(hostId = 'event-settings-ui') {
             const iconLabel = document.createElement('span'); iconLabel.className = 'event-manager-type-icon'; iconLabel.textContent = eventType.icon;
             const text = document.createElement('span'); text.className = 'event-manager-type-text';
             const title = document.createElement('strong'); title.textContent = eventType.name;
-            const meta = document.createElement('small'); meta.textContent = eventType.disabled ? '已停用' : (eventType.group || '未分类');
+            const meta = document.createElement('small'); meta.textContent = `${eventType.disabled ? '已停用' : (eventType.group || '未分类')} · ${eventType.quick ? '快速记录' : '详细记录'}`;
             text.append(title, meta); headingLabel.append(iconLabel, text);
         } else headingLabel.textContent = `${eventType.icon}  ${eventType.name}${eventType.disabled ? ' · 已停用' : ''}`;
         const arrow = document.createElement('span'); arrow.textContent = '›';
@@ -4464,11 +4464,25 @@ function renderEventSettings(hostId = 'event-settings-ui') {
             if (value === null || value === undefined) return;
             eventType.group = String(value).trim(); saveEventTypes(); renderAll();
         }));
-        const mode = document.createElement('button');
-        mode.type = 'button'; mode.className = 'event-manager-action';
-        mode.textContent = eventType.quick ? '记录方式：快速' : '记录方式：详细';
-        mode.addEventListener('click', () => { eventType.quick = !eventType.quick; saveEventTypes(); renderAll(); });
-        detail.append(colorLabel, iconLabel, name, group, mode, enabled, moveUp, del);
+        const mode = document.createElement('div'); mode.className = 'event-record-mode';
+        const modeLabel = document.createElement('span'); modeLabel.textContent = '记录方式';
+        const options = document.createElement('div'); options.className = 'event-record-mode-options';
+        options.setAttribute('role', 'group'); options.setAttribute('aria-label', `${eventType.name}记录方式`);
+        [[true, '快速'], [false, '详细']].forEach(([quick, label]) => {
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
+            button.setAttribute('aria-pressed', String(eventType.quick === quick));
+            button.addEventListener('click', () => {
+                eventType.quick = quick;
+                saveEventTypes();
+                options.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+                const meta = headingLabel.querySelector('small');
+                if (meta) meta.textContent = `${eventType.disabled ? '已停用' : (eventType.group || '未分类')} · ${quick ? '快速记录' : '详细记录'}`;
+                renderEventHome();
+            });
+            options.appendChild(button);
+        });
+        mode.append(modeLabel, options);
+        detail.append(mode, colorLabel, iconLabel, name, group, enabled, moveUp, del);
         row.append(heading, detail);
         host.appendChild(row);
     });
