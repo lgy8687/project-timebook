@@ -21,6 +21,20 @@
     };
     let getPeriodData = null;
     let eventsBound = false;
+    let eventDetailContext = null;
+    function rememberEventDetailContext() {
+        if (!eventDetailContext) eventDetailContext = { kind: state.kind, period: state.period, offsets: { ...state.periodOffsets } };
+    }
+    function closeEventDetail() {
+        const target = state.eventDetailReturn;
+        state.eventDetailReturn = null; state.eventDetail = null; state.eventDetailDate = '';
+        if (eventDetailContext) {
+            state.kind = eventDetailContext.kind; state.period = eventDetailContext.period;
+            state.periodOffsets = eventDetailContext.offsets; eventDetailContext = null;
+        }
+        render();
+        if (target) window.switchTab(target);
+    }
     const REPORT_COLORS = ['#2563eb', '#f97316', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#eab308', '#ec4899', '#14b8a6', '#f43f5e', '#6366f1', '#84cc16'];
     const ACTIVITY_COLORS = ['#2563eb', '#f97316', '#0f9f8c', '#8b5cf6', '#dc2626', '#ca8a04', '#0891b2', '#c026d3', '#65a30d', '#4f46e5', '#be123c', '#0f766e'];
 
@@ -230,6 +244,8 @@
     }
 
     function openEventDetail(item, returnTab = null) {
+        rememberEventDetailContext();
+        state.period = 'month';
         state.eventDetailReturn = returnTab;
         state.eventDetail = { id: item.id, name: item.name, icon: item.icon, color: item.color };
         state.eventDetailTab = 'records'; state.eventDetailDate = '';
@@ -253,13 +269,28 @@
         }
         box.replaceChildren();
         const header = document.createElement('div'); header.className = 'event-detail-header';
-        const back = document.createElement('button'); back.type = 'button'; back.className = 'event-detail-back'; back.textContent = '‹'; back.setAttribute('aria-label', state.eventDetailReturn ? '返回事件首页' : '返回事件趋势'); back.onclick = () => { const target = state.eventDetailReturn; state.eventDetailReturn = null; state.eventDetail = null; state.eventDetailDate = ''; if (target) window.switchTab(target); else render(); };
+        const back = document.createElement('button'); back.type = 'button'; back.className = 'event-detail-back'; back.textContent = '‹'; back.setAttribute('aria-label', state.eventDetailReturn ? '返回事件首页' : '返回事件趋势'); back.onclick = closeEventDetail;
         const title = document.createElement('h2'); title.textContent = `${item.icon} ${item.name}`;
         const tabs = document.createElement('div'); tabs.className = 'event-detail-tabs report-segmented-template'; tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', '事件详情视图');
         [['records', '记录'], ['statistics', '统计']].forEach(([key, label]) => {
-            const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.setAttribute('role', 'tab'); button.setAttribute('aria-selected', String(state.eventDetailTab === key)); button.classList.toggle('active', state.eventDetailTab === key); button.onclick = () => { state.eventDetailTab = key; state.eventDetailDate = ''; render(); }; tabs.appendChild(button);
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.setAttribute('role', 'tab'); button.setAttribute('aria-selected', String(state.eventDetailTab === key)); button.classList.toggle('active', state.eventDetailTab === key); button.onclick = () => { state.eventDetailTab = key; state.eventDetailDate = ''; if (key === 'records') state.period = 'month'; render(); }; tabs.appendChild(button);
         });
         header.append(back, title, tabs); box.appendChild(header);
+        if (state.eventDetailTab === 'statistics') {
+            const periods = document.createElement('div'); periods.className = 'event-detail-periods'; periods.setAttribute('role', 'group'); periods.setAttribute('aria-label', '事件统计周期');
+            [['week', '周'], ['month', '月'], ['year', '年']].forEach(([period, label]) => {
+                const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.setAttribute('aria-pressed', String(state.period === period));
+                button.onclick = () => { state.period = period; state.eventDetailDate = ''; render(); }; periods.appendChild(button);
+            });
+            box.appendChild(periods);
+        }
+        const nav = document.createElement('div'); nav.className = 'event-detail-date-nav';
+        const range = document.createElement('span'); range.textContent = getPeriodRangeLabel(state.period, state.periodOffsets[state.period] || 0);
+        const prev = document.createElement('button'); prev.type = 'button'; prev.textContent = '‹'; prev.setAttribute('aria-label', '事件上一周期');
+        const next = document.createElement('button'); next.type = 'button'; next.textContent = '›'; next.setAttribute('aria-label', '事件下一周期'); next.disabled = state.periodOffsets[state.period] >= 0;
+        prev.onclick = () => { state.periodOffsets[state.period]--; state.eventDetailDate = ''; render(); };
+        next.onclick = () => { state.periodOffsets[state.period] = Math.min(0, state.periodOffsets[state.period] + 1); state.eventDetailDate = ''; render(); };
+        nav.append(prev, range, next); box.appendChild(nav);
         const calendar = document.createElement('div'); calendar.className = 'event-detail-calendar';
         const days = state.period === 'year' ? Array.from({length: 12}, (_, i) => ({ date: dates[0]?.date.slice(0, 4) + '-' + String(i + 1).padStart(2, '0'), label: `${i + 1}月` })) : dates.map(day => ({ date: day.date, label: String(Number(day.date.slice(-2))) }));
         if (state.period === 'month' && days.length) {
@@ -272,7 +303,7 @@
             const count = records.filter(record => record.date.startsWith(day.date)).reduce((sum, record) => sum + record.count, 0);
             const button = document.createElement('button'); button.type = 'button'; button.className = 'event-detail-day'; button.textContent = day.label; button.classList.toggle('has-records', count > 0); button.classList.toggle('active', state.eventDetailDate === day.date); button.setAttribute('aria-label', `${day.date}，${count}次`); button.setAttribute('aria-pressed', String(state.eventDetailDate === day.date));
             button.onclick = () => { state.eventDetailDate = day.date; renderEventDetail(data); };
-            if (count) { const dot = document.createElement('small'); dot.textContent = String(count); button.appendChild(dot); }
+            if (count) { const dot = document.createElement('small'); dot.className = 'event-detail-dot'; dot.setAttribute('aria-hidden', 'true'); button.appendChild(dot); }
             calendar.appendChild(button);
         });
         if (state.eventDetailTab === 'records') {
@@ -293,10 +324,11 @@
                 const arrow = document.createElement('span'); arrow.className = 'event-detail-record-arrow'; arrow.textContent = '›'; arrow.setAttribute('aria-hidden', 'true');
                 row.append(details, count, arrow); row.setAttribute('aria-label', `${record.date} ${time.textContent}，${record.count}次，编辑记录`); row.onclick = () => window.openEventRecordEditor(record.id); box.appendChild(row);
             });
+            const add = document.createElement('button'); add.type = 'button'; add.className = 'event-detail-add'; add.textContent = '+'; add.setAttribute('aria-label', `补录${item.name}`);
+            add.onclick = () => { window.openEventModal(); window.chooseEventType(item.id); }; box.appendChild(add);
         } else {
             const overview = document.createElement('div'); overview.className = 'event-detail-metrics';
-            [[item.count, '发生次数'], [item.days, '发生天数'], [records.length, '记录条数']].forEach(([value, label]) => { const block = document.createElement('div'); const number = document.createElement('strong'); number.textContent = String(value); const caption = document.createElement('span'); caption.textContent = label; block.append(number, caption); overview.appendChild(block); });
-            box.appendChild(overview);
+            [[item.count, '总次数'], [item.days, '发生天数']].forEach(([value, label]) => { const block = document.createElement('div'); const number = document.createElement('strong'); number.textContent = String(value); const caption = document.createElement('span'); caption.textContent = label; block.append(number, caption); overview.appendChild(block); });
             const label = document.createElement('h3'); label.className = 'event-detail-subtitle'; label.textContent = state.period === 'year' ? '每月记录' : '发生分布'; box.appendChild(label);
             const values = days.map(day => ({ ...day, count: records.filter(record => record.date.startsWith(day.date)).reduce((sum, record) => sum + record.count, 0) }));
             if (values.length) {
@@ -306,7 +338,15 @@
                 box.appendChild(chart);
                 const scale = document.createElement('div'); scale.className = 'event-detail-chart-scale'; const first = document.createElement('span'); first.textContent = values[0].label; const last = document.createElement('span'); last.textContent = values[values.length - 1].label; scale.append(first, last); box.appendChild(scale);
             }
-            box.appendChild(calendar);
+            box.appendChild(overview);
+            const heatmap = document.createElement('div'); heatmap.className = 'event-detail-heatmap';
+            if (state.period === 'month' && values.length) {
+                const offset = (new Date(values[0].date + 'T00:00:00Z').getUTCDay() + 6) % 7;
+                for (let i = 0; i < offset; i++) { const blank = document.createElement('span'); blank.className = 'event-detail-heatmap-blank'; blank.setAttribute('aria-hidden', 'true'); heatmap.appendChild(blank); }
+            }
+            values.forEach(day => { const cell = document.createElement('span'); cell.title = `${day.date}：${day.count}次`; cell.setAttribute('aria-label', cell.title); if (day.count) { cell.style.background = reportColor(item.color, item.name); cell.textContent = String(day.count); } heatmap.appendChild(cell); });
+            if (state.period === 'year') heatmap.classList.add('is-year');
+            box.appendChild(heatmap);
         }
     }
 
@@ -419,6 +459,8 @@
         }
         renderEventReport(periodData.events);
         const detailVisible = state.kind === 'event' && !!state.eventDetail;
+        document.getElementById('page-report').classList.toggle('event-detail-active', detailVisible);
+        document.getElementById('report-period-toolbar').hidden = detailVisible;
         document.getElementById('event-report-block').classList.toggle('hidden', state.kind !== 'event' || detailVisible);
         document.getElementById('event-pattern-block').classList.toggle('hidden', state.kind !== 'event' || detailVisible);
         renderEventDetail(periodData.events);
@@ -755,7 +797,7 @@
             return { root, current, next, targetKind, direction, boundary, width: main.width };
         }
         reportScrollArea?.addEventListener('touchstart', event => {
-            if (!reportPage.classList.contains('active') || event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"]')) {
+            if (state.eventDetail || !reportPage.classList.contains('active') || event.touches.length !== 1 || event.target.closest('button, input, select, textarea, a, [role="button"]')) {
                 reportSwipeStart = null;
                 return;
             }
@@ -936,6 +978,7 @@
         render();
     };
     window.openReportEventDetail = function (type, latest) {
+        rememberEventDetailContext();
         state.kind = 'event'; state.period = 'month';
         const now = new Date(Date.now() + 8 * 3600000);
         const target = new Date((latest?.occurredAt || Date.now()) + 8 * 3600000);

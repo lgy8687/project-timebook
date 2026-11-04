@@ -719,6 +719,34 @@ main:has(> #page-event-home.active) { padding-top: 0; }
 #event-card-menu.is-context-menu .event-modal-head { display: none; }
 .event-card-menu-options button:hover, .event-card-menu-options button:focus-visible { background: #f6f8fa; }
 #event-card-settings .event-manager-heading { display: none; }
+#page-report #report-period-toolbar[hidden] { display: none; }
+#page-report.event-detail-active .event-detail { margin: 0; padding: 8px 0 80px; }
+.event-detail-active .event-detail-header { min-height: 44px; gap: 8px; margin-bottom: 8px; }
+.event-detail-active .event-detail-header h2 { font-size: var(--ui-body); font-weight: 600; }
+.event-detail-active .event-detail-tabs { min-width: 128px; }
+#page-report.event-detail-active .event-detail-tabs,
+#page-report.event-detail-active .event-detail-tabs button { border-radius: 999px; }
+.event-detail-periods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; margin: 8px 0; background: #edf0f2; border-radius: 999px; }
+.event-detail-periods button { min-height: 32px; border-radius: 999px; font-size: var(--ui-body); color: var(--ui-muted); }
+.event-detail-periods button[aria-pressed="true"] { background: #fff; color: var(--ui-ink); }
+.event-detail-date-nav { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; text-align: center; min-height: 44px; margin-bottom: 8px; font-size: var(--ui-body); color: var(--ui-ink); }
+.event-detail-date-nav button { min-height: 40px; font-size: 26px; color: var(--ui-accent); }
+.event-detail-date-nav button:disabled { opacity: .3; }
+.event-detail-active .event-detail-calendar { gap: 4px; margin: 0 0 16px; }
+.event-detail-active .event-detail-day { position: relative; min-height: 36px; padding: 4px; border: 0; background: transparent; border-radius: 50%; font-size: var(--ui-body); }
+.event-detail-active .event-detail-day.active { background: var(--ui-accent); color: #fff; }
+.event-detail-active .event-detail-day .event-detail-dot { display: block; width: 4px; height: 4px; margin: 2px auto 0; border-radius: 50%; background: var(--ui-accent); }
+.event-detail-active .event-detail-day.active .event-detail-dot { background: #fff; }
+.event-detail-active .event-detail-section-head { margin: 0; padding: 12px 0 4px; border-top: 1px solid var(--ui-border); }
+.event-detail-active .event-detail-record { min-height: 48px; }
+.event-detail-active .event-detail-metrics { display: grid; grid-template-columns: repeat(2, 1fr); margin: 16px 0; }
+.event-detail-active .event-detail-chart { height: 140px; margin-top: 8px; }
+.event-detail-heatmap { display: grid; grid-template-columns: repeat(7, 24px); justify-content: center; gap: 4px; margin-top: 16px; }
+.event-detail-heatmap span { display: grid; place-items: center; aspect-ratio: 1; border-radius: 3px; background: #edf0f2; color: #fff; font-size: var(--ui-caption); }
+.event-detail-heatmap.is-year { grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 2px; }
+.event-detail-heatmap .event-detail-heatmap-blank { background: transparent; }
+.event-detail-heatmap.is-year span { font-size: 0; }
+.event-detail-add { position: fixed; right: max(20px, calc((100vw - 760px)/2 + 20px)); bottom: calc(80px + env(safe-area-inset-bottom)); width: 48px; height: 48px; border-radius: 50%; background: var(--ui-accent); color: #fff; font-size: 26px; }
 .config-grid { gap: var(--ui-space-2); }
 .config-grid-card, .calendar-day-summary { padding: var(--ui-space-4); }
 .event-detail-header { gap: var(--ui-space-2); margin-bottom: var(--ui-space-4); }

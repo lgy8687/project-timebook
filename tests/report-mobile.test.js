@@ -76,3 +76,11 @@ test('swipe preview does not rerender or detach the active touch target', () => 
     assert.match(css, /\[data-swipe-source-id="chart-mode-toggle"\]/);
     assert.match(css, /\[data-swipe-source-id="legend-mode-toggle"\]/);
 });
+test('single-event detail separates its navigation and restores the parent context', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'report.js'), 'utf8');
+    assert.match(source, /getElementById\('report-period-toolbar'\)\.hidden = detailVisible/);
+    assert.match(source, /state\.periodOffsets = eventDetailContext\.offsets/);
+    assert.match(source, /event-detail-periods/);
+    assert.match(source, /\[\[item\.count, '总次数'\], \[item\.days, '发生天数'\]\]/);
+    assert.match(source, /window\.chooseEventType\(item\.id\)/);
+});
