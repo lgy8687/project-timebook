@@ -16,6 +16,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebResourceResponse;
+import androidx.webkit.WebViewAssetLoader;
 import android.widget.Toast;
 
 import java.io.OutputStream;
@@ -23,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 
 public class MainActivity extends Activity {
-    private static final String APP_URL = "https://lgy8687.github.io/project-timebook/";
+    private static final String APP_URL = "https://appassets.androidplatform.net/assets/index.html";
     private static final int REQUEST_BACKUP = 101;
     private static final int REQUEST_IMPORT = 102;
     private WebView webView;
@@ -93,6 +95,7 @@ public class MainActivity extends Activity {
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAllowFileAccess(false);
         webView.getSettings().setAllowContentAccess(false);
+        webView.getSettings().setBlockNetworkLoads(true);
         webView.addJavascriptInterface(new BackupBridge(), "TimeBookAndroid");
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -110,16 +113,36 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                WebResourceResponse local = assetLoader.shouldInterceptRequest(request.getUrl());
+                if (local != null) {
+                    // The isolated demo has an opaque origin; CSS masks still need local icons.
+                    java.util.Map<String, String> headers = new java.util.HashMap<>();
+                    if (local.getResponseHeaders() != null) headers.putAll(local.getResponseHeaders());
+                    headers.put("Access-Control-Allow-Origin", "*");
+                    local.setResponseHeaders(headers);
+                    return local;
+                }
+                return new WebResourceResponse("text/plain", "UTF-8", 403, "Offline only",
+                    java.util.Collections.emptyMap(), new java.io.ByteArrayInputStream(new byte[0]));
+            }
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 if ("https".equals(uri.getScheme())
-                        && "lgy8687.github.io".equals(uri.getHost())
-                        && uri.getPath() != null && uri.getPath().startsWith("/project-timebook/")) {
+                        && "appassets.androidplatform.net".equals(uri.getHost())
+                        && uri.getPath() != null && uri.getPath().startsWith("/assets/")) {
                     return false;
                 }
-                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                if ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                    catch (android.content.ActivityNotFoundException ignored) { }
+                }
                 return true;
             }
 

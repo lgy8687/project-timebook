@@ -1,28 +1,25 @@
-# Android self-test build
+# Android offline test build (0.11)
 
-This is a small Android WebView shell for the live TimeBook site. It does not
-replace the HTML/CSS or require publishing to an app store.
+The APK now bundles HTML/JS/CSS/icons and uses AndroidX WebViewAssetLoader.
+Tailwind is compiled at build time. No INTERNET permission is requested.
+Cloud authentication/sync scripts are excluded and their settings are hidden.
+The October demo runs locally with isolated temporary data.
 
-The locally built APK is at `app/build/outputs/apk/release/app-release.apk`. A copy
-is published at `https://lgy8687.github.io/timebook/downloads/timebook-android-test.apk`
-for installation on a phone. Android may ask you to allow installation from
-that source. To rebuild, open this `android` directory in Android Studio and
-run the `assembleRelease` task. This self-test APK uses the local debug signing
-key but is not a debuggable build. Use the same machine for later builds so its
-debug signing key stays the same and updates can retain app data.
+Build requirements: Node.js/npm, Java 17, Gradle 8.11.1, Android SDK 35.
+Run `npm ci` in `android/tools`, then `gradle assembleRelease` in `android`.
+`prepareWebAssets` regenerates `app/build/generated/webAssets` before each build.
+Output: `app/build/outputs/apk/release/app-release.apk`.
 
-The app requires internet access. Its WebView storage is separate from the
-phone browser's storage: existing browser records are **not** copied into the
-app automatically. The website's My > More settings now has Export backup and
-Import backup. Export on the original phone, transfer the JSON file yourself,
-then import it in the app on the other phone. The backup is never uploaded by
-TimeBook. Do not delete the original browser copy until the imported records
-have been checked. The app still loads the live website and needs internet.
+The APK uses the existing debug signing key for internal testing, not production.
+Website publishing no longer changes this APK; rebuild/install to update it.
+Old online-origin data is intentionally not migrated. Local records survive
+same-signature upgrades, but uninstalling/clearing app data deletes them.
+JSON backup export/import remains available through the Android document picker.
 
-The Android home-screen widget shows daily main activity totals. Tap the widget
-to choose activities; supported Android launchers may also expose settings on
-long press. A running activity uses a chronometer and its activity color. Open the app
-to sync the current day and activity list. Background changes from other devices
-are not reflected until the app is opened; after a day change, the widget asks
-for a refresh rather than guessing the new day's totals. Widget refresh timing
-depends on the Android launcher and battery restrictions.
+The widget still uses foreground snapshots and a native running chronometer.
+This release does not introduce a shared native database/background reconciliation.
+Samsung launcher behavior and long-running battery restrictions need device tests.
+
+Acceptance: cold start in airplane mode; record activities/events; force-stop and
+reopen; check reports; enter/exit demo; export/import; install an update over the
+offline APK. Run shared tests and `tests/android-offline.test.js` before delivery.

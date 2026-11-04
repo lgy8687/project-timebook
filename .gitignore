@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 node_modules/
 package-lock.json
+!android/tools/package-lock.json
 patch_v*.py
 test-calendar.mjs
 历史版本/

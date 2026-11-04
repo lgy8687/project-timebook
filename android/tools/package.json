@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "scripts": { "prepare": "node prepare-web-assets.mjs" },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.1.18",
+    "tailwindcss": "4.1.18"
+  }
+}
