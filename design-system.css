@@ -689,6 +689,11 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .event-home-cards { gap: var(--ui-space-2); }
 .event-home-card-main { padding: var(--ui-space-3); gap: var(--ui-space-1); }
 #page-event-home.event-home { padding: 4px 4px 96px; }
+main:has(> #page-event-home.active) { padding-top: 0; }
+.event-home-filter-row { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; min-height: 40px; }
+.event-home-back { flex: 0 0 28px; width: 28px; min-height: 40px; font-size: 26px; color: var(--ui-accent); }
+#page-event-home .event-home-groups { flex: 1; min-width: 0; padding: 4px 0; gap: 6px; }
+#page-event-home .event-home-groups button { min-height: 28px; padding: 0 12px; border-radius: 999px; }
 #page-event-home .event-home-header h2 { font-size: var(--ui-heading-1); line-height: 1.4; }
 #page-event-home .event-home-header button:not(:first-child),
 #page-event-home .event-home-groups button { font-size: var(--ui-body); font-weight: 500; line-height: 1.4; }

@@ -21,3 +21,10 @@ test('event home latest record uses short dates and preserves date-only status',
     assert.equal(ctx.formatEventHomeLatest({ occurredAt: Date.parse('2026-11-02T00:00:00Z'), dateOnly: true }), '上次：昨天 · 仅日期');
     assert.equal(ctx.formatEventHomeLatest({ occurredAt: Date.parse('2026-10-13T00:00:00Z') }), '上次：10月13日 09:30');
 });
+test('event home uses one compact filter row without search or management header', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const home = html.match(/<section id="page-event-home"[\s\S]*?<\/section>/)[0];
+    assert.match(home, /event-home-filter-row/);
+    assert.match(home, /aria-label="返回"/);
+    assert.doesNotMatch(home, /event-home-header|event-home-search|搜索事件|管理/);
+});

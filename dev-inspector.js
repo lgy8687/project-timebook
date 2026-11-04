@@ -80,7 +80,6 @@
         ['B91', '事件确认和补录选择', '#event-modal[data-dev-address-block="B91"] #event-modal-card'],
         ['B92', '并行时长排行', '#report-structure-card[data-dev-address-block="B92"]', 'C01'],
         ['B101', '事件首页', '#page-event-home[data-dev-address-block="B101"]'],
-        ['B102', '事件首页搜索', '#page-event-home[data-dev-address-block="B102"]'],
         ['B94', '新建事件方式选择', '#event-home-create-card'],
         ['B95', '数据模式入口', '#demo-entry-bar'],
         ['B96', '示例模式状态栏', '#demo-mode-header'],

@@ -4835,23 +4835,10 @@ function openEventHome() {
     const active = document.querySelector('main > .tab-content.active');
     if (active && active.id !== 'page-event-home') eventHomeReturn = active.id.replace('page-', '');
     eventHomeGroup = '';
-    document.getElementById('event-home-search').value = '';
-    document.getElementById('event-home-search-wrap').classList.add('hidden');
-    document.querySelector('.event-home-search-toggle').setAttribute('aria-expanded', 'false');
     document.getElementById('page-event-home').dataset.devAddressBlock = 'B101';
     switchTab('event-home');
 }
 function closeEventHome() { switchTab(eventHomeReturn); }
-function toggleEventHomeSearch() {
-    const wrap = document.getElementById('event-home-search-wrap');
-    const input = document.getElementById('event-home-search');
-    const opening = wrap.classList.contains('hidden');
-    wrap.classList.toggle('hidden', !opening);
-    document.querySelector('.event-home-search-toggle').setAttribute('aria-expanded', String(opening));
-    document.getElementById('page-event-home').dataset.devAddressBlock = opening ? 'B102' : 'B101';
-    if (opening) input.focus();
-    else { input.value = ''; renderEventHome(); }
-}
 function formatEventHomeLatest(record) {
     if (!record) return '暂无记录';
     const date = formatBeijingDate(record.occurredAt);
@@ -4877,11 +4864,10 @@ function renderEventHome() {
         groups.appendChild(button);
     });
     cards.replaceChildren();
-    const query = document.getElementById('event-home-search').value.trim().toLocaleLowerCase();
-    const shown = types.filter(type => (!eventHomeGroup || type.group === eventHomeGroup) && String(type.name || '').toLocaleLowerCase().includes(query));
+    const shown = types.filter(type => !eventHomeGroup || type.group === eventHomeGroup);
     const empty = document.getElementById('event-home-empty');
     empty.classList.toggle('hidden', shown.length > 0);
-    empty.textContent = query ? '没有找到匹配的事件' : types.length ? '这个分组没有事件' : '还没有事件，点击右下角新建';
+    empty.textContent = types.length ? '这个分组没有事件' : '还没有事件，点击右下角新建';
     shown.forEach(type => {
         const card = document.createElement('article'); card.className = 'event-home-card';
         const open = document.createElement('button'); open.type = 'button'; open.className = 'event-home-card-main';

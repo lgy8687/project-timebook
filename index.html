@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="style.css?v=6.00">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=6.00">
-    <link rel="stylesheet" href="design-system.css?v=6.00">
+    <link rel="stylesheet" href="design-system.css?v=6.01">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -398,13 +398,11 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.00</div>
+            <div id="cache-buster" class="version-in-settings">v6.01</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
-            <header class="event-home-header"><button type="button" onclick="closeEventHome()" aria-label="返回">‹</button><h2>事件</h2><button type="button" class="event-home-search-toggle" onclick="toggleEventHomeSearch()" aria-label="搜索事件" aria-expanded="false" title="搜索事件"><span class="event-home-tool-icon event-home-tool-icon--search" aria-hidden="true"></span></button><button type="button" onclick="openEventCenter('manage')">管理</button></header>
-            <div id="event-home-search-wrap" class="event-home-search-wrap hidden"><input id="event-home-search" type="search" placeholder="搜索事件" aria-label="搜索事件" oninput="renderEventHome()"><button type="button" onclick="toggleEventHomeSearch()" aria-label="关闭搜索">×</button></div>
-            <div id="event-home-groups" class="event-home-groups" aria-label="事件分组"></div>
+            <div class="event-home-filter-row"><button type="button" class="event-home-back" onclick="closeEventHome()" aria-label="返回">‹</button><div id="event-home-groups" class="event-home-groups" aria-label="事件分组"></div></div>
             <div id="event-home-cards" class="event-home-cards"></div>
             <p id="event-home-empty" class="event-home-empty hidden">还没有事件，点击右下角新建</p>
             <button type="button" class="event-home-add" onclick="document.getElementById('event-home-create').classList.remove('hidden')" aria-label="新建事件" title="新建事件">＋</button>
@@ -809,12 +807,12 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=5.98-swipe-fix"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=5.99"></script>
+    <script src="app.js?v=6.01"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=5.77"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=5.97"></script>
+    <script src="dev-inspector.js?v=6.01"></script>
 </body>
 </html>
