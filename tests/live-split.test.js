@@ -10,7 +10,7 @@ function setup() {
     let id = 0;
     const context = { current: { id: 'active', startTime: 0, l1: '出行', l2: '网约车', journal: true },
         logs: [], parallelHistory: [], parallelCurrent: null, eventRecords: [
-            { parentId: 'active', occurredAt: 1800000 }, { parentId: 'active', occurredAt: 5400000 }, { parentId: 'active', occurredAt: 9000000 }
+            { occurredAt: 1800000 }, { occurredAt: 5400000 }, { occurredAt: 9000000 }
         ], prompts: [], genId: () => `new-${++id}`, getCat: () => ({ color: '#123456' }),
         document: { getElementById: () => ({ value: '' }) }, localStorage: { setItem() {} },
         saveEventRecords() {}, closeDrawer() {}, renderAll() {},
@@ -24,7 +24,7 @@ test('cutting a past interval keeps the remaining active activity running', () =
     assert.equal(c.current.startTime, 7200000);
     assert.equal(c.current.l2, '网约车');
     assert.deepEqual(Array.from(c.logs, x => [x.startTime, x.endTime, x.l2]), [[3600000, 7200000, '吃饭'], [0, 3600000, '网约车']]);
-    assert.deepEqual(Array.from(c.eventRecords, e => e.parentId), [c.logs[1].id, c.logs[0].id, 'active']);
+    assert.deepEqual(Array.from(c.eventRecords, e => e.occurredAt), [1800000, 5400000, 9000000]);
 });
 test('rejects future, stale and parallel-associated cuts without modifying records', () => {
     for (const kind of ['future', 'stale', 'parallel', 'history']) {

@@ -51,8 +51,6 @@ body#report-standalone {
 .event-count-stepper button { width:44px; height:44px; background:#edf2f5; border-radius:8px; font-size:22px; }
 .event-time-field .event-count-stepper input { flex:1; width:1px; min-width:0; text-align:center; }
 .event-count-stepper button { flex-shrink:0; }
-.event-assignment-actions { display:flex; gap:8px; margin-bottom:8px; }
-.event-assignment-actions button { padding:10px 12px; border:1px solid #dbe3e8; border-radius:6px; font-size: var(--ui-type-1-5); }
 .event-record-date { font-size: var(--ui-type-1-5); color:#657584; padding:16px 0 8px; border-bottom:1px solid #e2e8ed; }
 .report-period-nav-range { position:relative; }
 #report-date-picker { position:absolute; inset:0; width:100%; height:28px; opacity:0; cursor:pointer; }

@@ -9,10 +9,10 @@
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="demo-sandbox.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=6.00">
+    <link rel="stylesheet" href="style.css?v=6.05">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
-    <link rel="stylesheet" href="report.css?v=6.00">
-    <link rel="stylesheet" href="design-system.css?v=6.04">
+    <link rel="stylesheet" href="report.css?v=6.05">
+    <link rel="stylesheet" href="design-system.css?v=6.05">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -398,14 +398,14 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.04</div>
+            <div id="cache-buster" class="version-in-settings">v6.05</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
             <div class="event-home-filter-row"><button type="button" class="event-home-back" onclick="closeEventHome()" aria-label="返回">‹</button><div id="event-home-groups" class="event-home-groups" aria-label="事件分组"></div></div>
             <div id="event-home-cards" class="event-home-cards"></div>
             <p id="event-home-empty" class="event-home-empty hidden">还没有事件，点击右下角新建</p>
-            <button type="button" class="event-home-add" onclick="document.getElementById('event-home-create').classList.remove('hidden')" aria-label="新建事件" title="新建事件">＋</button>
+            <button type="button" class="event-home-add" onclick="addEventType()" aria-label="新建事件" title="新建事件">＋</button>
             <div id="event-home-success" class="event-home-success hidden" role="status" aria-live="polite"><span>✓</span><span class="sr-only">记录成功</span></div>
         </section>
         <section id="page-events" class="tab-content event-center pb-8">
@@ -663,18 +663,11 @@
             <div class="event-modal-head"><h3 id="event-card-menu-title"></h3><button id="event-card-menu-close" type="button" onclick="closeEventCardMenu()" aria-label="关闭">×</button></div>
             <div id="event-card-menu-options" class="event-card-menu-options">
                 <button type="button" onclick="eventCardMenuAction('edit')"><span>编辑</span><span class="event-menu-icon" style="--menu-icon:url('assets/lucide/pencil.svg')" aria-hidden="true"></span></button>
-                <button type="button" onclick="eventCardMenuAction('mode')"><span>记录方式</span><span class="event-menu-icon" style="--menu-icon:url('assets/lucide/sliders-horizontal.svg')" aria-hidden="true"></span></button>
                 <button type="button" onclick="eventCardMenuAction('order')"><span>调整顺序</span><span class="event-menu-icon" style="--menu-icon:url('assets/lucide/arrow-down-up.svg')" aria-hidden="true"></span></button>
                 <button type="button" onclick="eventCardMenuAction('disable')"><span>停用</span><span class="event-menu-icon" style="--menu-icon:url('assets/lucide/archive.svg')" aria-hidden="true"></span></button>
                 <button type="button" class="event-card-menu-delete" onclick="eventCardMenuAction('delete')"><span>删除</span><span class="event-menu-icon" style="--menu-icon:url('assets/lucide/trash-2.svg')" aria-hidden="true"></span></button>
             </div>
             <div id="event-card-settings" hidden></div>
-        </div>
-    </div>
-    <div id="event-home-create" class="event-modal hidden" onclick="if(event.target===this)this.classList.add('hidden')">
-        <div id="event-home-create-card" class="event-modal-card" role="dialog" aria-modal="true" aria-labelledby="event-home-create-title">
-            <div class="event-modal-head"><h3 id="event-home-create-title">新建事件</h3><button type="button" onclick="document.getElementById('event-home-create').classList.add('hidden')" aria-label="关闭">×</button></div>
-            <div class="event-home-create-options"><button type="button" onclick="startEventHomeCreate(true)"><strong>快速记录</strong><span>点击一次记录一次</span></button><button type="button" onclick="startEventHomeCreate(false)"><strong>详细记录</strong><span>填写日期和次数</span></button></div>
         </div>
     </div>
     <div id="event-modal" class="event-modal hidden" onclick="if(event.target===this)closeEventModal()">
@@ -691,17 +684,7 @@
                 <p id="event-search-empty" class="event-empty-hint hidden">没有找到匹配的事件</p>
                 <button type="button" class="event-center-link" onclick="closeEventModal();openEventCenter('history')">事件记录与管理 ›</button>
             </div>
-            <div id="event-stage-confirm" class="hidden">
-                <div id="event-confirm-preview" class="event-confirm-preview"></div>
-                <div class="event-modal-actions event-modal-actions--three">
-                    <button type="button" class="event-btn event-btn--primary" onclick="confirmCurrentEvent()">确定</button>
-                    <button type="button" class="event-btn event-btn--quiet" onclick="beginEventParentSelection()">归属主线</button>
-                    <button type="button" class="event-btn event-btn--quiet" onclick="openIndependentEventTime()">独立事件</button>
-                </div>
-            </div>
             <div id="event-stage-time" class="hidden">
-                <div class="event-assignment-actions"><button type="button" onclick="beginEventParentSelection()">选择关联主线</button><button type="button" onclick="clearEventParent()">不关联</button></div>
-                <div id="event-time-parent" class="event-time-parent"></div>
                 <label class="event-time-field">发生日期<input id="event-date-input" type="date"></label>
                 <label id="event-use-time-row" class="event-supplement-check"><input id="event-use-time" type="checkbox" onchange="toggleEventSupplementTime()">指定发生时间</label>
                 <label id="event-time-input-row" class="event-time-field">发生时间<input id="event-time-input" type="time" step="1"></label>
@@ -820,12 +803,12 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=6.04"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=6.03"></script>
+    <script src="app.js?v=6.05"></script>
     <script src="backup.js?v=5"></script>
     <script src="sync-config.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="sync.js?v=5.77"></script>
     <script src="dev-appearance.js?v=5.39"></script>
-    <script src="dev-inspector.js?v=6.02"></script>
+    <script src="dev-inspector.js?v=6.05"></script>
 </body>
 </html>

@@ -386,7 +386,7 @@ test('calendar event supplements remain available in continuous mode', () => {
     context.saveCalendarBackfill();
     assert.equal(saved[0].count, 3);
     assert.equal(saved[0].dateOnly, true);
-    assert.equal(saved[0].parentId, null);
+    assert.equal(saved[0].parentId, undefined);
 });
 
 test('ending a journal main records it and leaves no active main', () => {

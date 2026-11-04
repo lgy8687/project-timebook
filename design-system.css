@@ -195,7 +195,7 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .scene-color-toggle.is-on, .summary-share-switch.is-on { background: var(--ui-accent); border-color: var(--ui-accent); }
 .scene-action-btn--switch, .report-choice-item.is-selected { background: var(--ui-accent-soft); color: var(--ui-accent); border-color: #a6b6cc; }
 .scene-choice-item, .scene-action-btn, .report-choice-item, .event-choice-item b,
-.event-confirm-preview, .event-time-parent, .event-time-field { font-size: var(--ui-body); font-weight: 600; line-height: 1.5; }
+.event-time-field { font-size: var(--ui-body); font-weight: 600; line-height: 1.5; }
 .event-btn, .calendar-ym-btn { min-height: 44px; font-size: var(--ui-body); font-weight: 600; }
 .event-btn--primary { background: var(--ui-accent); }
 .scene-action-btn--primary, .calendar-ym-btn--ok { color: var(--ui-accent); }
@@ -705,10 +705,6 @@ main:has(> #page-event-home.active) { padding-top: 0; }
 #page-event-home .event-home-card-action { top: 4px; right: 4px; background: transparent; }
 #page-event-home .event-home-card-action::before { content: ''; position: absolute; width: 28px; height: 28px; border-radius: 50%; background: #f6f7f8; }
 #page-event-home .event-home-card-action .event-home-tool-icon { position: relative; width: 16px; height: 16px; }
-.event-record-mode { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; color: var(--ui-ink); font-size: var(--ui-type-1-6); }
-.event-record-mode-options { display: grid; grid-template-columns: repeat(2, 1fr); padding: 2px; border: 1px solid var(--ui-border); border-radius: 8px; }
-.event-record-mode-options button { min-height: 40px; padding: 4px 16px; border-radius: 6px; color: var(--ui-muted); }
-.event-record-mode-options button[aria-pressed="true"] { background: var(--ui-accent); color: #fff; }
 .event-card-menu-options { display: grid; }
 .event-card-menu-options[hidden], #event-card-settings[hidden] { display: none; }
 .event-card-menu-options button { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 10px 14px; text-align: left; border-bottom: 1px solid #f0f2f4; color: var(--ui-ink); font-size: var(--ui-body); }

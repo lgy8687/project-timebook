@@ -238,12 +238,11 @@ eventTypes = eventTypes
         icon: item.icon || '•',
         disabled: !!item.disabled,
         group: typeof item.group === 'string' ? item.group.trim() : '',
-        quick: item.quick === true,
         color: safeColor(item.color, EVENT_COLORS[index % EVENT_COLORS.length]),
     }));
 eventRecords = eventRecords
     .filter((item) => item && item.typeId && Number.isFinite(Number(item.occurredAt)))
-    .map((item) => ({ ...item, occurredAt: Number(item.occurredAt), parentId: item.parentId || null, count: Number.isInteger(item.count) && item.count > 0 ? item.count : 1 }));
+    .map(({ parentId, ...item }) => ({ ...item, occurredAt: Number(item.occurredAt), count: Number.isInteger(item.count) && item.count > 0 ? item.count : 1 }));
 if (eventTypes.length) localStorage.setItem('v9_event_types', JSON.stringify(eventTypes));
 if (eventRecords.length) localStorage.setItem('v9_event_records', JSON.stringify(eventRecords));
 if (current) localStorage.setItem('v9_current', JSON.stringify(current));
@@ -2067,7 +2066,7 @@ function saveCalendarBackfill() {
             Object.assign(record, { typeId: type.id, typeName: type.name, icon: type.icon, color: type.color, count });
             saveEventRecords();
         } else {
-            saveEventRecord({ typeId, occurredAt: beijingDateStrToDayStart(viewDate), parentId: null, count, dateOnly: true });
+            saveEventRecord({ typeId, occurredAt: beijingDateStrToDayStart(viewDate), count, dateOnly: true });
         }
     } else if (calendarBackfillKind === 'untimed') {
         const hours = Number(document.getElementById('calendar-backfill-hours').value);
@@ -3507,8 +3506,6 @@ function clearLogEntryToUnassigned(target) {
         parallelCurrent = { ...parallelCurrent, parentId: null };
         localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
     }
-    eventRecords = eventRecords.map((item) =>
-        String(item.parentId) === targetId ? { ...item, parentId: null } : item);
     localStorage.setItem('v9_logs', JSON.stringify(logs));
     localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
     saveEventRecords();
@@ -4332,7 +4329,7 @@ function eventNameAvailable(name, exceptId) {
         && !eventTypes.some((item) => item.id !== exceptId && item.name === normalized);
 }
 
-function addEventType(options = {}) {
+function addEventType() {
     showPrompt('新增事件', '例如：上厕所、吃饭、喝水', '', (name) => {
         const next = String(name || '').trim();
         if (!next) return;
@@ -4342,17 +4339,13 @@ function addEventType(options = {}) {
         }
         showCategoryPicker('选择事件图标', (icon) => {
             if (!icon) return;
-            eventTypes.push({ id: genId(), name: next, icon, color: EVENT_COLORS[eventTypes.length % EVENT_COLORS.length], quick: options.quick === true, group: '' });
+            eventTypes.push({ id: genId(), name: next, icon, color: EVENT_COLORS[eventTypes.length % EVENT_COLORS.length], group: '' });
             saveEventTypes();
             renderAll();
         });
     });
 }
 window.addEventType = addEventType;
-function startEventHomeCreate(quick) {
-    document.getElementById('event-home-create').classList.add('hidden');
-    addEventType({ quick });
-}
 
 function renderEventSettings(hostId = 'event-settings-ui', onlyId = null) {
     const host = document.getElementById(hostId);
@@ -4378,7 +4371,7 @@ function renderEventSettings(hostId = 'event-settings-ui', onlyId = null) {
             const iconLabel = document.createElement('span'); iconLabel.className = 'event-manager-type-icon'; iconLabel.textContent = eventType.icon;
             const text = document.createElement('span'); text.className = 'event-manager-type-text';
             const title = document.createElement('strong'); title.textContent = eventType.name;
-            const meta = document.createElement('small'); meta.textContent = `${eventType.disabled ? '已停用' : (eventType.group || '未分类')} · ${eventType.quick ? '快速记录' : '详细记录'}`;
+            const meta = document.createElement('small'); meta.textContent = eventType.disabled ? '已停用' : (eventType.group || '未分类');
             text.append(title, meta); headingLabel.append(iconLabel, text);
         } else headingLabel.textContent = `${eventType.icon}  ${eventType.name}${eventType.disabled ? ' · 已停用' : ''}`;
         const arrow = document.createElement('span'); arrow.textContent = '›';
@@ -4480,25 +4473,7 @@ function renderEventSettings(hostId = 'event-settings-ui', onlyId = null) {
             if (value === null || value === undefined) return;
             eventType.group = String(value).trim(); saveEventTypes(); renderAll();
         }));
-        const mode = document.createElement('div'); mode.className = 'event-record-mode';
-        const modeLabel = document.createElement('span'); modeLabel.textContent = '记录方式';
-        const options = document.createElement('div'); options.className = 'event-record-mode-options';
-        options.setAttribute('role', 'group'); options.setAttribute('aria-label', `${eventType.name}记录方式`);
-        [[true, '快速'], [false, '详细']].forEach(([quick, label]) => {
-            const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
-            button.setAttribute('aria-pressed', String(eventType.quick === quick));
-            button.addEventListener('click', () => {
-                eventType.quick = quick;
-                saveEventTypes();
-                options.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-                const meta = headingLabel.querySelector('small');
-                if (meta) meta.textContent = `${eventType.disabled ? '已停用' : (eventType.group || '未分类')} · ${quick ? '快速记录' : '详细记录'}`;
-                renderEventHome();
-            });
-            options.appendChild(button);
-        });
-        mode.append(modeLabel, options);
-        detail.append(mode, colorLabel, iconLabel, name, group, enabled, moveUp, moveDown, del);
+        detail.append(colorLabel, iconLabel, name, group, enabled, moveUp, moveDown, del);
         row.append(heading, detail);
         host.appendChild(row);
     });
@@ -4693,9 +4668,6 @@ function buildLogFlowBar(color, muted) {
 }
 
 let eventDraft = null;
-let eventConfirmationDraft = null;
-let eventParentSelecting = false;
-let eventParentCandidate = null;
 
 function eventTypeById(id) {
     return eventTypes.find((item) => String(item.id) === String(id)) || null;
@@ -4773,7 +4745,7 @@ function renderEventCenter() {
         const content = document.createElement('div'); content.className = 'event-center-row-content';
         const name = document.createElement('strong'); name.textContent = type?.name || record.typeName || '已删除事件';
         const detail = document.createElement('span');
-        detail.textContent = `${record.dateOnly ? '未指定时间' : formatBeijingClockSec(record.occurredAt)}${type?.group ? ' · ' + type.group : ''}${record.parentId ? ' · 关联主线' : ''}`;
+        detail.textContent = `${record.dateOnly ? '未指定时间' : formatBeijingClockSec(record.occurredAt)}${type?.group ? ' · ' + type.group : ''}`;
         content.append(name, detail);
         const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'event-center-record-button'; edit.setAttribute('aria-label', `查看${type?.name || record.typeName}记录`); edit.addEventListener('click', () => openEventRecordEditor(record.id));
         const arrow = document.createElement('span'); arrow.className = 'event-center-record-arrow'; arrow.textContent = '›';
@@ -4818,10 +4790,6 @@ function saveEventRecordEdit() {
     const time = dateOnly ? '00:00:00' : document.getElementById('event-edit-time').value;
     const occurredAt = parseTimeOnBeijingDateParts(date, time), count = Number(document.getElementById('event-edit-count').value);
     if (!Number.isFinite(occurredAt) || !Number.isInteger(count) || count < 1 || count > 999) { showConfirm('信息不正确', '请检查日期、时间和次数（1–999）。', '知道了', () => {}); return; }
-    if (record.parentId && (dateOnly !== !!record.dateOnly || occurredAt !== record.occurredAt)) {
-        const parent = logs.find(item => String(item.id) === String(record.parentId)) || (current && String(current.id) === String(record.parentId) ? current : null);
-        if (!parent || dateOnly || occurredAt < parent.startTime || occurredAt > logEndMs(parent, parent === current ? nowSecondMs() : undefined)) { showConfirm('时间超出归属主线', '请将时间调整到原主线范围内；若主线已不存在，请保留原时间。', '知道了', () => {}); return; }
-    }
     const typeId = document.getElementById('event-edit-type').value, type = eventTypeById(typeId);
     record.typeId = type ? type.id : record.typeId;
     if (type) { record.typeName = type.name; record.icon = type.icon; record.color = type.color; }
@@ -4835,11 +4803,11 @@ function deleteEventCenterRecord(id) {
 }
 
 function setEventStage(stage) {
-    const stageBlocks = { choose: 'B22', confirm: 'B91', time: 'B77' };
+    const stageBlocks = { choose: 'B22', time: 'B77' };
     const blockCode = stageBlocks[stage];
     if (!blockCode) throw new Error(`Unregistered event interface stage: ${stage}`);
     document.getElementById('event-modal').dataset.devAddressBlock = blockCode;
-    ['choose', 'confirm', 'time'].forEach((name) => {
+    ['choose', 'time'].forEach((name) => {
         document.getElementById('event-stage-' + name)?.classList.toggle('hidden', name !== stage);
     });
 }
@@ -4895,7 +4863,7 @@ function editEventCard() {
 function eventCardMenuAction(action) {
     const type = eventCardMenuType;
     if (!type) return;
-    if (['edit', 'mode', 'order'].includes(action)) { editEventCard(); return; }
+    if (['edit', 'order'].includes(action)) { editEventCard(); return; }
     closeEventCardMenu();
     if (action === 'disable') { type.disabled = true; saveEventTypes(); renderAll(); }
     if (action === 'delete') showConfirm('删除事件类别', `删除“${type.name}”后，历史事件会保留但不再可新增。`, '删除', ok => {
@@ -4961,11 +4929,10 @@ function renderEventHome() {
             window.openReportEventDetail(type, latest);
         });
         const action = document.createElement('button'); action.type = 'button'; action.className = 'event-home-card-action';
-        const actionIcon = document.createElement('span'); actionIcon.className = `event-home-tool-icon ${type.quick ? 'event-home-tool-icon--quick' : 'event-home-tool-icon--plus'}`; actionIcon.setAttribute('aria-hidden', 'true'); action.appendChild(actionIcon);
-        action.setAttribute('aria-label', type.quick ? `快速记录${type.name}` : `记录${type.name}`);
+        const actionIcon = document.createElement('span'); actionIcon.className = 'event-home-tool-icon event-home-tool-icon--plus'; actionIcon.setAttribute('aria-hidden', 'true'); action.appendChild(actionIcon);
+        action.setAttribute('aria-label', `快速记录${type.name}`);
         action.addEventListener('click', () => {
-            if (!type.quick) { openEventModal(); chooseEventType(type.id); return; }
-            if (saveEventRecord({ typeId: type.id, occurredAt: nowSecondMs(), parentId: null })) {
+            if (saveEventRecord({ typeId: type.id, occurredAt: nowSecondMs() })) {
                 renderEventHome();
                 const feedback = document.getElementById('event-home-success');
                 feedback.classList.remove('hidden');
@@ -4980,10 +4947,7 @@ function renderEventHome() {
 function openEventModal() {
     document.getElementById('event-modal-title').innerText = '记录事件';
     document.getElementById('event-choice-search').value = '';
-    eventParentSelecting = false;
-    eventParentCandidate = null;
     eventDraft = null;
-    eventConfirmationDraft = null;
     renderEventChoiceGrid();
     setEventStage('choose');
     document.getElementById('event-modal')?.classList.remove('hidden');
@@ -4993,12 +4957,6 @@ window.openEventModal = openEventModal;
 function closeEventModal() {
     document.getElementById('event-modal')?.classList.add('hidden');
     eventDraft = null;
-    eventConfirmationDraft = null;
-    eventParentCandidate = null;
-    if (eventParentSelecting) {
-        eventParentSelecting = false;
-        renderAll();
-    }
 }
 window.closeEventModal = closeEventModal;
 
@@ -5037,11 +4995,8 @@ function renderEventChoiceGrid() {
 function chooseEventType(typeId) {
     const type = eventTypeById(typeId);
     if (!type) return;
-    eventDraft = { typeId, parentId: null, occurredAt: nowSecondMs() };
-    eventConfirmationDraft = { ...eventDraft };
-    document.getElementById('event-confirm-preview').innerText = `记录「${type.icon} ${type.name}」\n归属：当前主线 ${current ? '· ' + displayName(current) : '· 未开启主线'}`;
+    eventDraft = { typeId, occurredAt: nowSecondMs() };
     document.getElementById('event-modal-title').innerText = `记录${type.name}`;
-    document.getElementById('event-time-parent').innerText = '不关联主线';
     fillEventTimeInputs(eventDraft.occurredAt);
     document.getElementById('event-use-time-row').classList.remove('hidden');
     document.getElementById('event-use-time').checked = true;
@@ -5050,20 +5005,12 @@ function chooseEventType(typeId) {
     toggleEventSupplementTime();
 }
 
-function clearEventParent() {
-    if (!eventDraft) return;
-    eventDraft.parentId = null;
-    document.getElementById('event-time-parent').innerText = '不关联主线';
-    document.getElementById('event-use-time-row').classList.remove('hidden');
-    toggleEventSupplementTime();
-}
-
 function stepEventCount(delta) {
     const input = document.getElementById('event-supplement-count');
     input.value = String(Math.max(1, Math.min(999, (Number(input.value) || 1) + delta)));
 }
 
-function saveEventRecord({ typeId, occurredAt, parentId, count = 1, dateOnly = false }) {
+function saveEventRecord({ typeId, occurredAt, count = 1, dateOnly = false }) {
     const type = eventTypeById(typeId);
     if (!type || !Number.isFinite(occurredAt)) return false;
     eventRecords.unshift({
@@ -5073,7 +5020,6 @@ function saveEventRecord({ typeId, occurredAt, parentId, count = 1, dateOnly = f
         icon: type.icon,
         color: type.color,
         occurredAt: toSecondMs(occurredAt),
-        parentId: parentId || null,
         count,
         dateOnly,
         createdAt: nowSecondMs(),
@@ -5082,106 +5028,28 @@ function saveEventRecord({ typeId, occurredAt, parentId, count = 1, dateOnly = f
     return true;
 }
 
-function confirmCurrentEvent() {
-    if (!eventDraft) return;
-    if (saveEventRecord(eventDraft)) {
-        closeEventModal();
-        renderAll();
-    }
-}
-window.confirmCurrentEvent = confirmCurrentEvent;
-
-function returnToEventConfirmation() {
-    if (!eventConfirmationDraft) return;
-    eventDraft = { ...eventConfirmationDraft };
-    setEventStage('confirm');
-}
-
 function fillEventTimeInputs(ms) {
     const time = toSecondMs(ms || nowSecondMs());
     document.getElementById('event-date-input').value = formatBeijingDate(time);
     document.getElementById('event-time-input').value = formatBeijingClockSec(time);
 }
 
-function openIndependentEventTime() {
-    if (!eventDraft) return;
-    eventDraft.parentId = null;
-    eventDraft.occurredAt = nowSecondMs();
-    eventDraft.dateOnly = true;
-    document.getElementById('event-time-parent').innerText = '独立事件 · 不归属任何主线';
-    fillEventTimeInputs(eventDraft.occurredAt);
-    document.getElementById('event-use-time-row').classList.remove('hidden');
-    document.getElementById('event-use-time').checked = false;
-    document.getElementById('event-supplement-count').value = '1';
-    setEventStage('time');
-    toggleEventSupplementTime();
-}
-window.openIndependentEventTime = openIndependentEventTime;
-
 function toggleEventSupplementTime() {
-    const useTime = !!eventDraft?.parentId || document.getElementById('event-use-time').checked;
+    const useTime = document.getElementById('event-use-time').checked;
     document.getElementById('event-time-input-row').classList.toggle('hidden', !useTime);
     document.getElementById('event-modal').dataset.devAddressBlock = useTime ? 'B77' : 'B90';
 }
 
-function beginEventParentSelection() {
-    if (!eventDraft) return;
-    eventParentSelecting = true;
-    eventParentCandidate = null;
-    document.getElementById('event-modal')?.classList.add('hidden');
-    renderAll();
-}
-window.beginEventParentSelection = beginEventParentSelection;
-
-function cancelEventParentSelection() {
-    eventParentSelecting = false;
-    eventParentCandidate = null;
-    document.getElementById('event-modal')?.classList.remove('hidden');
-    renderAll();
-}
-window.cancelEventParentSelection = cancelEventParentSelection;
-
-function selectEventParent(parent) {
-    if (!eventParentSelecting || !eventDraft || !parent || parent.parallel) return false;
-    eventParentCandidate = parent;
-    renderAll();
-    return true;
-}
-
-function confirmEventParentSelection() {
-    const parent = eventParentCandidate;
-    if (!eventParentSelecting || !eventDraft || !parent) return;
-    eventParentSelecting = false;
-    eventParentCandidate = null;
-    eventDraft.parentId = parent.id;
-    eventDraft.dateOnly = false;
-    eventDraft.occurredAt = parent.startTime;
-    document.getElementById('event-time-parent').innerText = `归属主线 · ${displayName(parent)}`;
-    fillEventTimeInputs(parent.startTime);
-    document.getElementById('event-use-time-row').classList.add('hidden');
-    document.getElementById('event-modal')?.classList.remove('hidden');
-    setEventStage('time');
-    toggleEventSupplementTime();
-    renderAll();
-}
-window.confirmEventParentSelection = confirmEventParentSelection;
-
 function saveTimedEvent() {
     if (!eventDraft) return;
     const date = document.getElementById('event-date-input').value;
-    const dateOnly = !eventDraft.parentId && !document.getElementById('event-use-time').checked;
+    const dateOnly = !document.getElementById('event-use-time').checked;
     const time = dateOnly ? '00:00:00' : document.getElementById('event-time-input').value;
     const count = Number(document.getElementById('event-supplement-count').value);
     const occurredAt = parseTimeOnBeijingDateParts(date, time);
     if (!Number.isFinite(occurredAt) || !Number.isInteger(count) || count < 1 || count > 999) {
         showConfirm('信息不正确', '请选择日期，并填写 1 至 999 的次数；指定时间时请填写时间。', '知道了', () => {});
         return;
-    }
-    if (eventDraft.parentId) {
-        const parent = logs.find(item => String(item.id) === String(eventDraft.parentId)) || (current && String(current.id) === String(eventDraft.parentId) ? current : null);
-        if (!parent || occurredAt < parent.startTime || occurredAt > logEndMs(parent, parent === current ? nowSecondMs() : undefined)) {
-            showConfirm('时间超出归属主线', '请选择该主线范围内的时间。', '知道了', () => {}); return;
-        }
     }
     eventDraft.occurredAt = occurredAt;
     eventDraft.dateOnly = dateOnly;
@@ -5266,27 +5134,8 @@ function appendLogFlowNote(body, log) {
 function renderLogs(listId, dateStr) {
     const list = document.getElementById(listId);
     if (!list) return;
-    document.getElementById('page-record')?.classList.toggle('event-parent-select-mode', eventParentSelecting);
     const moreWrap = listId === 'log-list' ? document.getElementById('load-more-wrap') : null;
     list.innerHTML = "";
-    if (eventParentSelecting) {
-        const notice = document.createElement('div');
-        notice.className = 'event-parent-notice';
-        const text = document.createElement('span');
-        text.innerText = eventParentCandidate ? `已选择：${displayName(eventParentCandidate)}` : '请选择要归属的主线';
-        const cancel = document.createElement('button');
-        cancel.type = 'button';
-        cancel.innerText = '取消';
-        cancel.addEventListener('click', cancelEventParentSelection);
-        const confirm = document.createElement('button');
-        confirm.type = 'button';
-        confirm.innerText = '确认归属';
-        confirm.disabled = !eventParentCandidate;
-        confirm.className = eventParentCandidate ? 'event-parent-confirm' : 'event-parent-confirm is-disabled';
-        confirm.addEventListener('click', confirmEventParentSelection);
-        notice.append(text, cancel, confirm);
-        list.appendChild(notice);
-    }
 
     // ── 实时卡片（仅查看今天） ──
     if (isDateToday(dateStr) && current) {
@@ -5294,8 +5143,6 @@ function renderLogs(listId, dateStr) {
         liveWrap.className = "swipe-wrap";
         const liveCard = document.createElement('div');
         liveCard.className = logFlowCardClass('main-live');
-        if (eventParentSelecting) liveCard.classList.add('event-parent-selectable');
-        if (eventParentCandidate === current) liveCard.classList.add('event-parent-selected');
         applySceneFlowCardTheme(liveCard, current);
         const inner = document.createElement('div');
         inner.className = "log-flow-inner";
@@ -5317,7 +5164,7 @@ function renderLogs(listId, dateStr) {
         liveCard.title = recordMode === 'journal' && !current.scene ? '修改当前主线' : '补录一段已结束的并行活动';
         let livePressTimer = null, liveLongPressed = false, livePressX = 0, livePressY = 0;
         liveCard.addEventListener('pointerdown', (event) => {
-            if (eventParentSelecting || event.target.closest('button') || current?.scene) return;
+            if (event.target.closest('button') || current?.scene) return;
             liveLongPressed = false;
             livePressX = event.clientX; livePressY = event.clientY;
             livePressTimer = setTimeout(() => {
@@ -5334,10 +5181,6 @@ function renderLogs(listId, dateStr) {
         liveCard.addEventListener('contextmenu', (event) => event.preventDefault());
         liveCard.addEventListener('click', () => {
             if (liveLongPressed) { liveLongPressed = false; return; }
-            if (eventParentSelecting) {
-                selectEventParent(current);
-                return;
-            }
             if (current?.scene) openSceneParallelBackfillDrawer(current);
             else if (recordMode === 'journal') openEdit(0, 'current');
             else openBackfillDrawer(current, { liveParent: true });
@@ -5514,13 +5357,10 @@ function createLogRow(list, log, idx) {
     const card = document.createElement('div');
     card.className = logFlowCardClass(log.parallel ? 'parallel-log' : 'main-log');
     applySceneFlowCardTheme(card, log);
-    if (eventParentSelecting && !log.parallel) card.classList.add('event-parent-selectable');
-    if (eventParentCandidate === log) card.classList.add('event-parent-selected');
 
     let startX = 0, startY = 0, isSwiping = false, currentDx = 0;
     let _wasLongPress = false, _lpTimer = null;
     card.addEventListener('touchstart', (e) => {
-        if (eventParentSelecting) return;
         const touch = e.touches[0];
         startX = touch.clientX;
         startY = touch.clientY;
@@ -5529,7 +5369,6 @@ function createLogRow(list, log, idx) {
         card.classList.add('swiping');
     }, { passive: true });
     card.addEventListener('touchmove', (e) => {
-        if (eventParentSelecting) return;
         const touch = e.touches[0];
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
@@ -5544,7 +5383,6 @@ function createLogRow(list, log, idx) {
         }
     }, { passive: false });
     card.addEventListener('touchend', (e) => {
-        if (eventParentSelecting) return;
         card.classList.remove('swiping');
         card.style.transform = '';
         if (isSwiping) {
@@ -5562,7 +5400,7 @@ function createLogRow(list, log, idx) {
     }, { passive: true });
 
     if (!log.parallel && !log._crossDay) {
-        if (!eventParentSelecting) {
+        {
             card.addEventListener('pointerdown', (e) => {
                 if (isSwiping) return;
                 _wasLongPress = false;
@@ -5578,10 +5416,6 @@ function createLogRow(list, log, idx) {
         }
         card.addEventListener('click', (e) => {
             if (isSwiping || _wasLongPress) return;
-            if (eventParentSelecting) {
-                selectEventParent(log);
-                return;
-            }
             openBackfillDrawer(log);
         });
     }
@@ -5835,10 +5669,6 @@ function executeLiveSplit(parentLog, capturedEnd, l1, l2, selectedRange) {
         ...(parentLog.journal ? { journal: true } : {}) };
     if (before) logs.unshift(before);
     logs.unshift(cut);
-    eventRecords.forEach(event => {
-        if (String(event.parentId) !== String(parentId) || event.occurredAt >= splitEnd) return;
-        event.parentId = event.occurredAt < splitStart && before ? before.id : cut.id;
-    });
     current = { ...current, startTime: splitEnd };
     localStorage.setItem('v9_logs', JSON.stringify(logs));
     localStorage.setItem('v9_current', JSON.stringify(current));
@@ -7345,7 +7175,7 @@ function tick() {
     if (sec !== lastSecondTs) {
         lastSecondTs = sec;
         const liveUnassigned = getActiveUnassignedSegment(todayStr, now);
-        if (liveUnassigned && !eventParentSelecting && document.getElementById('page-record')?.classList.contains('active')
+        if (liveUnassigned && document.getElementById('page-record')?.classList.contains('active')
             && !document.querySelector('#log-list #live-unassigned-duration')) {
             renderHomeHistory();
         }
@@ -7379,7 +7209,7 @@ function tick() {
             if (badge && !badge._pinned) badge.classList.add('hidden');
         }
         renderDayRemain();
-        if (recordMode === 'journal' && !current && !eventParentSelecting
+        if (recordMode === 'journal' && !current
             && sec % 60 === 0 && document.getElementById('page-record')?.classList.contains('active')) {
             renderHomeHistory();
         }

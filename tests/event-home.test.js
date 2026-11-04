@@ -39,6 +39,15 @@ test('long-press menu is card-anchored and each command has a bundled line icon'
     assert.match(app, /layer\.classList\.add\('is-context-menu'\)/);
     const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     const menu = html.match(/id="event-card-menu-options"[\s\S]*?<\/div>/)[0];
-    assert.equal((menu.match(/class="event-menu-icon"/g) || []).length, 5);
+    assert.equal((menu.match(/class="event-menu-icon"/g) || []).length, 4);
     for (const match of menu.matchAll(/url\('([^']+)'\)/g)) assert.ok(fs.existsSync(path.join(__dirname, '..', match[1])));
+});
+
+test('all event cards record immediately without record-mode or main-link choices', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const render = app.slice(app.indexOf('function renderEventHome()'), app.indexOf('\nfunction openEventModal()', app.indexOf('function renderEventHome()')));
+    assert.match(render, /saveEventRecord\(\{ typeId: type\.id, occurredAt: nowSecondMs\(\) \}\)/);
+    assert.doesNotMatch(render, /type\.quick|chooseEventType/);
+    assert.doesNotMatch(html, /startEventHomeCreate|beginEventParentSelection|event-assignment-actions|eventCardMenuAction\('mode'\)/);
+    assert.doesNotMatch(app, /eventParentSelecting|eventParentCandidate/);
 });

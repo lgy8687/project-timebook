@@ -101,7 +101,7 @@ test('editing a gap creates a classified main only within the selected interval'
 test('clearing a classified main preserves its time as an unassigned gap and detaches child records', () => {
     const target = { id: 'main', startTime: gap.start, endTime: gap.end, l1: '生活', l2: '散步' };
     const child = { id: 'parallel', parentId: 'main', parallel: true };
-    const event = { id: 'event', parentId: 'main', occurredAt: gap.start };
+    const event = { id: 'event', occurredAt: gap.start };
     const saved = new Map();
     let rendered = false;
     const context = {
@@ -115,7 +115,7 @@ test('clearing a classified main preserves its time as an unassigned gap and det
     context.clearLogEntryToUnassigned(target);
     assert.deepEqual(context.logs.map(item => item.id), ['parallel']);
     assert.equal(context.logs[0].parentId, null);
-    assert.equal(context.eventRecords[0].parentId, null);
+    assert.equal(context.eventRecords[0].occurredAt, gap.start);
     assert.deepEqual(JSON.parse(saved.get('v9_logs')).map(item => item.id), ['parallel']);
     assert.equal(rendered, true);
 });
