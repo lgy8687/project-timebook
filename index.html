@@ -389,7 +389,7 @@
                         <button type="button" onclick="exportTimebookBackup()" class="w-full py-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-lg">导出备份</button>
                         <button type="button" onclick="document.getElementById('backup-file-input').click()" class="w-full py-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-lg">导入备份</button>
                         <input id="backup-file-input" type="file" accept=".json,application/json" class="hidden" onchange="importTimebookBackup(this)">
-                        <p class="text-xs text-slate-400">导入可按日期选择；完整恢复会替换本机记录。</p>
+                        <p class="text-xs text-slate-400">导入可按日期选择。网页和安卓是两套账本，互不同步。按日期导入不会搬走进行中的计时和分类设置；完整恢复会换掉这台设备上的全部 v9_ 数据。</p>
                     </div>
                     <div class="space-y-2 border-t border-slate-100 pt-3">
                         <button type="button" onclick="requestTimebookReset('records')" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg">清空记录</button>

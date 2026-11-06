@@ -52,7 +52,13 @@ function makeEditor(parent, start, end) {
         showConfirm(title, message) { prompts.push({ title, message }); },
         getCat() { return { color: '#123456' }; },
         genId() { return `test-${++nextId}`; },
-        logEndMs(log) { return log.endTime; },
+        sameId(a, b) { return a != null && b != null && String(a) === String(b); },
+        logEndMs(log) {
+            if (!log) return 0;
+            if (log.endTime != null) return log.endTime;
+            if (log.duration != null) return log.startTime + Math.round(log.duration * 60000);
+            return log.startTime;
+        },
         formatBeijingDate() { return '1970-01-01'; },
         parallelCurrent: null,
         renderAll() {},
@@ -222,4 +228,105 @@ test('an edit confirmation keeps its selected category when another picker chang
     assert.equal(log.l1, 'Work');
     assert.equal(log.l2, 'Meeting');
     assert.equal(log.color, '#123456');
+});
+
+test('split matches a string parentId to a numeric main id and keeps a one-minute duration', () => {
+    const parent = { id: 1747651200000.123, startTime: 0, endTime: 7200000, l1: 'Life', l2: 'Rest' };
+    const parallel = {
+        id: 'parallel', startTime: 1800000, duration: 1,
+        l1: 'Work', l2: 'Call', parallel: true, parentId: '1747651200000.123'
+    };
+    const blocked = makeEditor(parent, 1800000, 2400000);
+    blocked.context.logs.push(parallel);
+    blocked.context.drawerPick('Work', 'Meeting');
+    assert.equal(blocked.prompts.length, 1);
+    assert.equal(blocked.context.logs.includes(parent), true);
+
+    const allowed = makeEditor({ ...parent }, 3600000, 4200000);
+    allowed.context.logs.push({ ...parallel });
+    allowed.context.drawerPick('Work', 'Meeting');
+    assert.equal(allowed.prompts.length, 0);
+    const child = allowed.context.logs.find((log) => log.parallel);
+    const host = allowed.context.logs.find((log) => !log.parallel && log.startTime === 0);
+    assert.equal(String(child.parentId), String(host.id));
+});
+
+test('open split reads the record end and does not invent 60 minutes', () => {
+    const openSplit = source.slice(source.indexOf('function openSplitDrawer('), source.indexOf('\nfunction executeLiveSplit('));
+    assert.match(openSplit, /logEndMs\(parentLog\)/);
+    assert.doesNotMatch(openSplit, /\|\| 60/);
+    assert.match(openSplit, /缺少结束时间/);
+});
+
+test('a 20 second parallel is not stored as one minute', () => {
+    const toggle = source.slice(source.indexOf('function toggleParallel('), source.indexOf('\nfunction updateParallelStatus('));
+    const now = 1000000000000;
+    const context = {
+        current: { id: 'main', l2: '' },
+        parallelCurrent: { id: 'p', startTime: now - 20000, l1: '工作', l2: '办公', parentId: 'main', note: '' },
+        parallelHistory: [],
+        nowSecondMs: () => now,
+        localStorage: { setItem() {}, removeItem() {} },
+        renderParallelShortcuts() {},
+        renderAll() {},
+        showConfirm() { throw new Error('unexpected confirm'); },
+        genId: () => 'new'
+    };
+    vm.createContext(context);
+    vm.runInContext(toggle, context);
+    context.toggleParallel('工作', '办公', '📝');
+    assert.equal(context.parallelHistory[0].duration, 0);
+    assert.equal(context.parallelHistory[0].endTime - context.parallelHistory[0].startTime, 20000);
+});
+
+test('flushing a parallel slice keeps distinct ids and both residual ranges', () => {
+    const flushSource = source.slice(
+        source.indexOf('function flushParallelHistoryForSlice('),
+        source.indexOf('\n// 已结束并行不应长期停在临时队列里')
+    );
+    const repairSource = source.slice(
+        source.indexOf('function repairOrphanedParallelParents('),
+        source.indexOf('\nfunction getSceneContainerId(')
+    );
+    const hour = 3600000;
+    let nextId = 0;
+    const context = {
+        logs: [
+            { id: 'main', startTime: 8 * hour, endTime: 12 * hour, parallel: false, l1: '工作', l2: '办公' },
+            { id: 'p1', startTime: 0, endTime: hour, parallel: true, parentId: 'other', l1: '其他', l2: '已占用' }
+        ],
+        parallelHistory: [{
+            id: 'p1', startTime: 8 * hour, endTime: 12 * hour,
+            l1: '工作', l2: '办公', parallel: true, parentId: 'main'
+        }],
+        genId: () => `new-${++nextId}`,
+        sameId(a, b) { return a != null && b != null && String(a) === String(b); },
+        logEndMs(log) {
+            if (!log) return 0;
+            if (log.endTime != null) return log.endTime;
+            if (log.duration != null) return log.startTime + Math.round(log.duration * 60000);
+            return log.startTime;
+        },
+        localStorage: { setItem() {} }
+    };
+    vm.createContext(context);
+    vm.runInContext(`${flushSource}\n${repairSource}`, context);
+    context.flushParallelHistoryForSlice('main', 9 * hour, 11 * hour);
+    const middle = context.logs.find((item) => item.parallel && item.startTime === 9 * hour);
+    assert.ok(middle);
+    assert.notEqual(String(middle.id), 'p1');
+    assert.equal(context.parallelHistory.length, 2);
+    for (const residual of context.parallelHistory) assert.notEqual(String(residual.id), 'p1');
+    assert.equal(new Set([middle.id, ...context.parallelHistory.map((item) => item.id)]).size, 3);
+    assert.deepEqual(
+        Array.from(context.parallelHistory, (item) => [item.startTime, item.endTime]).sort((a, b) => a[0] - b[0]),
+        [[8 * hour, 9 * hour], [11 * hour, 12 * hour]]
+    );
+    context.logs.push(...Array.from(context.parallelHistory, (item) => ({ ...item, parallel: true, parentId: 'main' })));
+    context.repairOrphanedParallelParents();
+    const ranges = Array.from(context.logs)
+        .filter((item) => item.parallel && item.l2 === '办公')
+        .map((item) => [item.startTime, context.logEndMs(item)])
+        .sort((a, b) => a[0] - b[0]);
+    assert.deepEqual(ranges, [[8 * hour, 9 * hour], [9 * hour, 11 * hour], [11 * hour, 12 * hour]]);
 });
