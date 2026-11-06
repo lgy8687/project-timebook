@@ -114,7 +114,7 @@
         ['Z85-1', '未分配主线的事件入口', '.unassigned-live-event-btn'],
     ];
     const floatingBadges = new Map();
-    let enabled = localStorage.getItem(STORAGE_KEY) !== 'false';
+    let enabled = localStorage.getItem(STORAGE_KEY) === 'true';
     let scheduled = false;
     let toastTimer;
 

@@ -20,11 +20,12 @@
 
     const el = (id) => document.getElementById(id);
     const setStatus = (text) => { if (el('sync-status')) el('sync-status').textContent = text; };
+    const snapshotKey = (key) => /^v9_[A-Za-z0-9_]+$/.test(String(key));
     const allKeys = () => {
         const data = {};
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (/^v9_[A-Za-z0-9_]+$/.test(key)) data[key] = localStorage.getItem(key);
+            if (snapshotKey(key)) data[key] = localStorage.getItem(key);
         }
         return data;
     };
@@ -147,16 +148,23 @@
             return;
         }
         if (initial && !window.confirm('这会先在本机保存一份安全快照，然后用云端数据替换本机全部 v9_ 数据。是否继续？')) return;
-        const safety = { savedAt: new Date().toISOString(), data: allKeys() };
-        localStorage.setItem('timebook_sync_safety_backup', JSON.stringify(safety));
+        clearTimeout(pendingTimer);
+        pendingTimer = null;
+        busy = true;
+        let safety = null;
         try {
+            safety = { savedAt: new Date().toISOString(), data: allKeys() };
+            localStorage.setItem('timebook_sync_safety_backup', JSON.stringify(safety));
             Object.keys(safety.data).forEach((key) => localStorage.removeItem(key));
             Object.entries(data.payload || {}).forEach(([key, value]) => {
-                if (/^v9_[A-Za-z0-9_]+$/.test(key) && typeof value === 'string') localStorage.setItem(key, value);
+                if (snapshotKey(key) && typeof value === 'string') localStorage.setItem(key, value);
             });
         } catch (writeError) {
-            Object.keys(allKeys()).forEach((key) => localStorage.removeItem(key));
-            Object.entries(safety.data).forEach(([key, value]) => localStorage.setItem(key, value));
+            if (safety) {
+                Object.keys(allKeys()).forEach((key) => localStorage.removeItem(key));
+                Object.entries(safety.data).forEach(([key, value]) => localStorage.setItem(key, value));
+            }
+            busy = false;
             setStatus(`本机存储空间不足，下载未完成；本机数据已恢复。${writeError.message}`);
             return;
         }
@@ -181,6 +189,7 @@
     }
 
     function queueUpload() {
+        if (busy) return;
         if (!activeForCurrentUser() || conflict) return;
         clearTimeout(pendingTimer);
         pendingTimer = setTimeout(() => { if (!busy) pushLocal(false); }, 1200);
@@ -215,12 +224,12 @@
     const originalSetItem = Storage.prototype.setItem;
     Storage.prototype.setItem = function (key, value) {
         originalSetItem.call(this, key, value);
-        if (this === localStorage && /^v9_[A-Za-z0-9_]+$/.test(String(key))) queueUpload();
+        if (this === localStorage && snapshotKey(key)) queueUpload();
     };
     const originalRemoveItem = Storage.prototype.removeItem;
     Storage.prototype.removeItem = function (key) {
         originalRemoveItem.call(this, key);
-        if (this === localStorage && /^v9_[A-Za-z0-9_]+$/.test(String(key))) queueUpload();
+        if (this === localStorage && snapshotKey(key)) queueUpload();
     };
 
     window.timebookSyncSignIn = () => authenticate('signin');

@@ -207,6 +207,18 @@ function importSelectedBackupDates() {
         showConfirm('时间段发生冲突', `备份中的「${overlap.l2 || overlap.l1 || '主线'}」与所选日期外保留的主线时间重叠。为保证时间不冲突，本次导入已停止。`, '知道了', () => {});
         return;
     }
+    const activeParallel = (() => { try { return JSON.parse(storage.getItem('v9_parallel') || 'null'); } catch (_) { return null; } })();
+    const runningParallel = activeParallel && activeParallel.startTime != null
+        ? [{ ...activeParallel, endTime: Date.now() }]
+        : [];
+    const incomingParallel = selection.parallelHistory.concat(selection.logs.filter((record) => record.parallel));
+    const parallelOverlap = incomingParallel.find((incoming) => runningParallel.some((local) =>
+        Number(incoming.startTime) < backupRecordEndMs(local) && backupRecordEndMs(incoming) > Number(local.startTime)));
+    if (parallelOverlap) {
+        closeBackupImportPicker();
+        showConfirm('时间段发生冲突', `备份中的「${parallelOverlap.l2 || parallelOverlap.l1 || '并行'}」与本机正在进行的并行时间重叠。为保证时间不冲突，本次导入已停止。`, '知道了', () => {});
+        return;
+    }
     const replaceCount = replacedLogs.length + replacedParallel.length + replacedUntimed.length + replacedEvents.length;
     const importCount = selection.logs.length + selection.parallelHistory.length + selection.unlocated.length + selection.events.length;
     const message = replaceCount
