@@ -26,6 +26,8 @@ test('source page has no Supabase client, sync scripts, or cloud login', () => {
     assert.equal(fs.existsSync(path.join(root, 'supabase')), false);
     assert.doesNotMatch(read('android/tools/offline.css'), /timebook-sync-panel/);
     assert.doesNotMatch(read('android/tools/prepare-web-assets.mjs'), /supabase|sync\.js/);
+    assert.match(read('android/tools/prepare-web-assets.mjs'), /dev-inspector-shortcut/);
+    assert.match(read('android/tools/prepare-web-assets.mjs'), /demo-mode-layer/);
 });
 
 test('generated page contains local resources, demo and backup but no cloud dependencies', {
@@ -39,7 +41,8 @@ test('generated page contains local resources, demo and backup but no cloud depe
     assert.doesNotMatch(html, /<script src="sync(?:-config)?\.js/);
     assert.doesNotMatch(html, /supabase|云端同步|timebookSync/i);
     assert.match(html, /src="backup.js/);
-    assert.match(html, /src="demo-sandbox.js/);
+    assert.doesNotMatch(html, /dev-inspector-shortcut|demo-mode-layer|10月示例/);
+    assert.doesNotMatch(html, /src="demo-sandbox\.js/);
     for (const match of html.matchAll(/(?:src|href)="([^"?#]+)(?:[?#][^"]*)?"/g)) {
         assert.ok(fs.existsSync(path.join(root, dir, match[1])), `Missing asset: ${match[1]}`);
     }

@@ -10,8 +10,8 @@ android {
         applicationId 'io.github.lgy8687.timebook'
         minSdk 24
         targetSdk 34
-        versionCode 11
-        versionName '0.11-offline-test'
+        versionCode 12
+        versionName '0.12-offline-test'
     }
 
     compileOptions {
