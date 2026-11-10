@@ -2797,7 +2797,7 @@ document.getElementById('free-input')?.addEventListener('keydown', (event) => {
     }
 });
 document.getElementById('drawer-note')?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') finishDrawerNote(event);
+    if (event.key === 'Enter') saveDrawerNote(event);
 });
 document.getElementById('calendar-backfill-note')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
@@ -3980,9 +3980,53 @@ function setDrawerNoteVisible(visible) {
     if (form) form.classList.toggle('hidden', !visible);
 }
 
-function finishDrawerNote(event) {
+let drawerNoteParent = null;
+
+function rememberDrawerNoteParent(parent) {
+    drawerNoteParent = parent || null;
+}
+
+function persistActivityNote(record, text) {
+    if (!record) return false;
+    record.note = text;
+    if (record === current) localStorage.setItem('v9_current', JSON.stringify(current));
+    else if (record === parallelCurrent) localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
+    else if (parallelHistory.includes(record)) localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
+    else localStorage.setItem('v9_logs', JSON.stringify(logs));
+    return true;
+}
+
+function saveDrawerNote(event) {
     if (event) event.preventDefault();
-    document.getElementById('drawer-note')?.blur();
+    const input = document.getElementById('drawer-note');
+    const text = input ? input.value : '';
+    if (drawerNoteParent && pickerMode === 'parallel-backfill') persistActivityNote(drawerNoteParent, text);
+    input?.blur();
+    document.getElementById('ime-confirm-bar')?.classList.add('hidden');
+    renderAll();
+}
+
+function saveEditedActivityNote() {
+    if (!editTarget) return;
+    const text = document.getElementById('edit-note-input').value;
+    let record = null;
+    if (editTarget.source === 'current') record = current;
+    else if (editTarget.source === 'parallelCurrent') record = parallelCurrent;
+    else if (editTarget.source === 'parallelHistory') record = parallelHistory.find((item) => item.id === editTarget.id);
+    else if (editTarget.source === 'logs') record = logs.find((item) => item.id === editTarget.id);
+    if (!record) {
+        confirmEdit();
+        return;
+    }
+    persistActivityNote(record, text);
+    document.getElementById('edit-note-input')?.blur();
+    document.getElementById('edit-modal').classList.add('hidden');
+    document.getElementById('ime-confirm-bar')?.classList.add('hidden');
+    editIndex = null;
+    editTarget = null;
+    editOldL1 = null;
+    editOldL2 = null;
+    renderAll();
 }
 
 const imeNoteFields = ['drawer-note', 'edit-note-input', 'calendar-backfill-note'];
@@ -3996,7 +4040,7 @@ function placeImeConfirmBar() {
 function showImeConfirmBar(input) {
     const bar = document.getElementById('ime-confirm-bar');
     if (!bar) return;
-    bar.dataset.for = input.id;
+    bar.dataset.target = input.id;
     bar.classList.remove('hidden');
     placeImeConfirmBar();
 }
@@ -4008,8 +4052,12 @@ function hideImeConfirmBar() {
 }
 function confirmImeNote() {
     const bar = document.getElementById('ime-confirm-bar');
-    const input = document.getElementById(bar?.dataset.for || '');
-    if (input) input.blur();
+    const active = document.activeElement;
+    const id = active && imeNoteFields.includes(active.id) ? active.id : (bar?.dataset.target || '');
+    if (id === 'drawer-note') saveDrawerNote();
+    else if (id === 'edit-note-input') saveEditedActivityNote();
+    else if (id === 'calendar-backfill-note') saveCalendarBackfill();
+    else document.getElementById(id)?.blur();
     bar?.classList.add('hidden');
 }
 imeNoteFields.forEach((id) => {
@@ -5673,8 +5721,9 @@ function openBackfillDrawer(parentLog, options = {}) {
     document.getElementById('parallel-date').onchange = null;
     document.getElementById('drawer-footer').classList.remove('hidden');
     setDrawerNoteVisible(true);
-    document.getElementById('drawer-note').value = '';
-    document.getElementById('drawer-note').placeholder = '备注（选填）';
+    rememberDrawerNoteParent(parentLog);
+    document.getElementById('drawer-note').value = parentLog.note || '';
+    document.getElementById('drawer-note').placeholder = '给这条已结束的活动写备注';
     const parentEnd = liveParent ? nowSecondMs() : logEndMs(parentLog);
     _backfillRange = { start: parentLog.startTime, end: parentEnd };
     setTimeInFields('ps', new Date(parentLog.startTime));
@@ -7844,6 +7893,7 @@ function closeDrawer() {
         editDrawerPreviousViewMode = null;
     }
     pickerMode = 'record';
+    drawerNoteParent = null;
     _parallelCallback = null;
     if (wasClassify) {
         _classifyPromptOpen = false;

@@ -274,6 +274,9 @@ test('parallel backfill note uses the keyboard done key without changing the qui
     assert.match(index, /id="ime-confirm-bar"/);
     assert.match(index, /id="ime-confirm-btn">确认</);
     assert.match(app, /function showImeConfirmBar\(/);
+    assert.match(app, /function saveDrawerNote\(/);
+    assert.match(app, /function saveEditedActivityNote\(/);
+    assert.match(app, /persistActivityNote\(drawerNoteParent, text\)/);
     assert.match(app, /imeNoteFields = \['drawer-note'/);
     assert.doesNotMatch(app, /function confirmCurrentActivityNote\(/);
 });
