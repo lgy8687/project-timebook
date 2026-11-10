@@ -3957,7 +3957,7 @@ function openDrawer() {
     showDrawer();
     renderDrawerToggle();
     setDrawerNoteVisible(false);
-    document.getElementById('drawer-footer').classList.remove('hidden');
+    document.getElementById('drawer-footer').classList.add('hidden');
     renderPicker();
 }
 function openDrawerForRecord() {
@@ -3966,7 +3966,7 @@ function openDrawerForRecord() {
     _parallelCallback = null;
     document.getElementById('drawer-title').innerText = "记一笔活动";
     document.getElementById('parallel-time-row').classList.add('hidden');
-    document.getElementById('drawer-footer').classList.remove('hidden');
+    document.getElementById('drawer-footer').classList.add('hidden');
     setDrawerNoteVisible(false);
     showDrawer();
     renderPicker();
