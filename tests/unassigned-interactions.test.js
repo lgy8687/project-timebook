@@ -268,12 +268,11 @@ test('quick note scrolls above the visible keyboard area when focused', () => {
     assert.equal(scroll, 0);
 });
 
-test('adding a drawer note has a confirm button and the done key submits it', () => {
-    assert.match(index, /id="drawer-note"[^>]*enterkeyhint="done"/);
-    assert.match(index, /id="drawer-note-confirm"[^>]*>确认</);
-    assert.match(index, /id="free-input"[^>]*enterkeyhint="done"/);
-    assert.match(index, /id="edit-note-input"[^>]*enterkeyhint="done"/);
-    assert.match(app, /function confirmDrawerNote\(/);
-    assert.match(app, /getElementById\('drawer-note'\)\?\.addEventListener\('keydown'/);
-    assert.match(app, /if \(event\.key === 'Enter'\) \{\s*event\.preventDefault\(\);\s*handleFreeInput\(\);/s);
+test('the note under the activity buttons confirms onto the current activity', () => {
+    assert.match(index, /id="free-note-action"[^>]*onclick="submitFreeNote\(\)"/);
+    assert.doesNotMatch(index, /drawer-note-confirm/);
+    assert.match(app, /function confirmCurrentActivityNote\(/);
+    assert.match(app, /current\.note = text/);
+    assert.match(app, /button\.textContent = noting \? '确认' : '随手记'/);
+    assert.match(app, /setDrawerNoteVisible\(false\)/);
 });

@@ -1024,6 +1024,7 @@ function renderAll() {
         }
     }
     updateUI();
+    syncFreeNoteButton();
 }
 
 function formatDuration(ms) {
@@ -2414,6 +2415,7 @@ function flushUncategorizedClassifyPrompt() {
     document.getElementById('drawer-title').innerText = '请为未分类记录选择归档';
     document.getElementById('parallel-time-row').classList.add('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     const noteEl = document.getElementById('drawer-note');
     if (noteEl) {
         noteEl.value = log.note || '';
@@ -2792,13 +2794,7 @@ document.getElementById('free-input')?.addEventListener('focus', () => {
 document.getElementById('free-input')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
-        handleFreeInput();
-    }
-});
-document.getElementById('drawer-note')?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        confirmDrawerNote();
+        submitFreeNote();
     }
 });
 document.getElementById('calendar-backfill-note')?.addEventListener('keydown', (event) => {
@@ -3958,7 +3954,7 @@ function openDrawer() {
     document.getElementById('parallel-time-row').classList.add('hidden');
     showDrawer();
     renderDrawerToggle();
-    document.getElementById('drawer-note').value = "";
+    setDrawerNoteVisible(false);
     document.getElementById('drawer-footer').classList.remove('hidden');
     renderPicker();
 }
@@ -3969,34 +3965,40 @@ function openDrawerForRecord() {
     document.getElementById('drawer-title').innerText = "记一笔活动";
     document.getElementById('parallel-time-row').classList.add('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
-    document.getElementById('drawer-note').placeholder = "选填备注...";
-    document.getElementById('drawer-note').value = "";
+    setDrawerNoteVisible(false);
     showDrawer();
     renderPicker();
     renderDrawerToggle();
 }
 
-function confirmDrawerNote() {
-    const noteEl = document.getElementById('drawer-note');
-    const note = noteEl ? noteEl.value : '';
-    noteEl?.blur();
-    if (pickerMode === 'classify-log') {
-        const log = logs.find((item) => item.id === _classifyTargetLogId);
-        if (log) {
-            log.note = note;
-            localStorage.setItem('v9_logs', JSON.stringify(logs));
-        }
-        return;
-    }
-    if (pickerMode !== 'record') return;
-    const text = note.trim();
-    if (!text) return;
-    const match = matchCategoryFromInput(text);
-    if (!match.l1) {
-        showConfirm('请选择活动', '备注先留在输入框里。点一个活动后，会和备注一起记下。', '知道了', () => {});
-        return;
-    }
-    executeRecord(match.l1, match.l2, match.tag, match.note);
+function setDrawerNoteVisible(visible) {
+    const note = document.getElementById('drawer-note');
+    if (!note) return;
+    note.classList.toggle('hidden', !visible);
+}
+
+function submitFreeNote() {
+    if (current && (current.l1 || current.l2)) confirmCurrentActivityNote();
+    else handleFreeInput();
+}
+
+function confirmCurrentActivityNote() {
+    const input = document.getElementById('free-input');
+    const text = input.value.trim();
+    current.note = text;
+    if (text && current.l1) rememberInputAlias(text, current.l1, current.l2);
+    localStorage.setItem('v9_current', JSON.stringify(current));
+    input.value = '';
+    renderAll();
+}
+
+function syncFreeNoteButton() {
+    const button = document.getElementById('free-note-action');
+    const input = document.getElementById('free-input');
+    if (!button || !input) return;
+    const noting = !!(current && (current.l1 || current.l2));
+    button.textContent = noting ? '确认' : '随手记';
+    input.placeholder = noting ? '备注' : '#标签 或内容…';
 }
 
 function editShortcut(idx) {
@@ -5568,6 +5570,7 @@ function openSceneParallelBackfillDrawer(sceneLog, options = {}) {
     document.getElementById('drawer-title').innerText = `补录场景活动于 ${displayName(sceneLog)}`;
     document.getElementById('parallel-time-row').classList.remove('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
     document.getElementById('drawer-note').placeholder = '备注（选填）';
     dateRow.classList.remove('hidden');
@@ -5647,6 +5650,7 @@ function openBackfillDrawer(parentLog, options = {}) {
     document.getElementById('parallel-date-row').classList.add('hidden');
     document.getElementById('parallel-date').onchange = null;
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
     document.getElementById('drawer-note').placeholder = '备注（选填）';
     const parentEnd = liveParent ? nowSecondMs() : logEndMs(parentLog);
@@ -5718,6 +5722,7 @@ function openSplitDrawer(parentLog, options = {}) {
     document.getElementById('drawer-title').innerText = `✂️ 切割 — ${displayName(parentLog)}`;
     document.getElementById('parallel-time-row').classList.remove('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
     document.getElementById('drawer-note').placeholder = '备注（选填）';
     _backfillRange = { start: pStart, end: pEnd };
