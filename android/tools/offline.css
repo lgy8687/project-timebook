@@ -2,4 +2,3 @@
 @source "../../index.html";
 @source "../../*.js";
 @source inline("grid-cols-{1..8}");
-.timebook-sync-panel { display: none !important; }
