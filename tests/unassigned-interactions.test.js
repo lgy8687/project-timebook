@@ -267,3 +267,13 @@ test('quick note scrolls above the visible keyboard area when focused', () => {
     context.keepFreeInputVisible();
     assert.equal(scroll, 0);
 });
+
+test('adding a drawer note has a confirm button and the done key submits it', () => {
+    assert.match(index, /id="drawer-note"[^>]*enterkeyhint="done"/);
+    assert.match(index, /id="drawer-note-confirm"[^>]*>确认</);
+    assert.match(index, /id="free-input"[^>]*enterkeyhint="done"/);
+    assert.match(index, /id="edit-note-input"[^>]*enterkeyhint="done"/);
+    assert.match(app, /function confirmDrawerNote\(/);
+    assert.match(app, /getElementById\('drawer-note'\)\?\.addEventListener\('keydown'/);
+    assert.match(app, /if \(event\.key === 'Enter'\) \{\s*event\.preventDefault\(\);\s*handleFreeInput\(\);/s);
+});

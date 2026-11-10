@@ -2789,6 +2789,24 @@ function keepFreeInputVisible() {
 document.getElementById('free-input')?.addEventListener('focus', () => {
     setTimeout(keepFreeInputVisible, 350);
 });
+document.getElementById('free-input')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        handleFreeInput();
+    }
+});
+document.getElementById('drawer-note')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        confirmDrawerNote();
+    }
+});
+document.getElementById('calendar-backfill-note')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        saveCalendarBackfill();
+    }
+});
 window.visualViewport?.addEventListener('resize', () => {
     setTimeout(keepFreeInputVisible, 100);
 });
@@ -3956,6 +3974,29 @@ function openDrawerForRecord() {
     showDrawer();
     renderPicker();
     renderDrawerToggle();
+}
+
+function confirmDrawerNote() {
+    const noteEl = document.getElementById('drawer-note');
+    const note = noteEl ? noteEl.value : '';
+    noteEl?.blur();
+    if (pickerMode === 'classify-log') {
+        const log = logs.find((item) => item.id === _classifyTargetLogId);
+        if (log) {
+            log.note = note;
+            localStorage.setItem('v9_logs', JSON.stringify(logs));
+        }
+        return;
+    }
+    if (pickerMode !== 'record') return;
+    const text = note.trim();
+    if (!text) return;
+    const match = matchCategoryFromInput(text);
+    if (!match.l1) {
+        showConfirm('请选择活动', '备注先留在输入框里。点一个活动后，会和备注一起记下。', '知道了', () => {});
+        return;
+    }
+    executeRecord(match.l1, match.l2, match.tag, match.note);
 }
 
 function editShortcut(idx) {

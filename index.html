@@ -9,7 +9,7 @@
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="demo-sandbox.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=6.06">
+    <link rel="stylesheet" href="style.css?v=6.08">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=6.05">
     <link rel="stylesheet" href="design-system.css?v=6.07">
@@ -61,7 +61,7 @@
             </div>
             <div class="free-note-row" id="free-note-module">
                 <button type="button" onclick="handleFreeInput()" class="free-note-label btn-active">随手记</button>
-                <input type="text" id="free-input" placeholder="#标签 或内容…" class="free-note-input flex-1 bg-white border-none rounded-2xl px-4 py-4 shadow-sm text-base focus:ring-2 focus:ring-indigo-100">
+                <input type="text" id="free-input" enterkeyhint="done" placeholder="#标签 或内容…" class="free-note-input flex-1 bg-white border-none rounded-2xl px-4 py-4 shadow-sm text-base focus:ring-2 focus:ring-indigo-100">
                 <button type="button" id="free-note-event-btn" class="free-note-event-btn" onclick="openEventHome()" aria-label="事件首页" title="事件首页">＋</button>
             </div>
             <div id="free-backfill" class="hidden space-y-2">
@@ -371,7 +371,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.07</div>
+            <div id="cache-buster" class="version-in-settings">v6.08</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
@@ -510,7 +510,7 @@
                     <label>花费分钟<input id="calendar-backfill-minutes" type="text" inputmode="numeric" maxlength="2" value="0" oninput="sanitizeCalendarDurationInput(this, 59)"></label>
                     <p id="calendar-backfill-remaining"></p>
                 </div>
-                <label id="calendar-backfill-note-field">备注<input id="calendar-backfill-note" type="text" maxlength="160" placeholder="选填"></label>
+                <label id="calendar-backfill-note-field">备注<input id="calendar-backfill-note" type="text" maxlength="160" enterkeyhint="done" placeholder="选填"></label>
                 <div class="calendar-backfill-actions">
                     <button type="button" onclick="showCalendarBackfillForm(null)">返回</button>
                     <button type="button" onclick="saveCalendarBackfill()">保存</button>
@@ -581,7 +581,10 @@
                         </div>
                     </div>
                 </div>
-                <input type="text" id="drawer-note" placeholder="选填备注..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
+                <div class="drawer-note-row">
+                    <input type="text" id="drawer-note" enterkeyhint="done" placeholder="选填备注..." class="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <button type="button" id="drawer-note-confirm" class="drawer-note-confirm" onclick="confirmDrawerNote()">确认</button>
+                </div>
             </div>
         </div>
     </div>
@@ -741,7 +744,7 @@
                     <input id="ee-s" type="text" inputmode="numeric" maxlength="2" class="time-edit-part bg-transparent text-center text-sm font-mono font-bold text-slate-700 border-none focus:outline-none focus:bg-indigo-50 rounded" placeholder="秒" autocomplete="off">
                 </div>
                 </div>
-                <input type="text" id="edit-note-input" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="备注" autocomplete="off">
+                <input type="text" id="edit-note-input" enterkeyhint="done" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="备注" autocomplete="off">
             </div>
             <button id="edit-current-backfill" type="button" class="edit-current-backfill hidden" onclick="openBackfillFromCurrentEdit()">补录并行</button>
             <div class="flex space-x-3 mt-4">
@@ -776,7 +779,7 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=6.04"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=6.05"></script>
+    <script src="app.js?v=6.08"></script>
     <script src="backup.js?v=5"></script>
     <script src="dev-appearance.js?v=5.39"></script>
     <script src="dev-inspector.js?v=6.06"></script>
