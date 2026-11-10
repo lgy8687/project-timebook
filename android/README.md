@@ -2,7 +2,7 @@
 
 The APK now bundles HTML/JS/CSS/icons and uses AndroidX WebViewAssetLoader.
 Tailwind is compiled at build time. No INTERNET permission is requested.
-Cloud authentication/sync scripts are excluded and their settings are hidden.
+The packaged page has no account or cloud sync. JSON export and import is the only way to move records.
 The October demo runs locally with isolated temporary data.
 
 Build requirements: Node.js/npm, Java 17, Gradle 8.11.1, Android SDK 35.

@@ -83,16 +83,6 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
     color: var(--ui-muted);
 }
 .config-panel-head { min-height: 40px; gap: 12px; }
-.timebook-sync-panel { display: grid; gap: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); }
-.timebook-sync-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--ui-ink); font-size: var(--ui-body); }
-.timebook-sync-heading span, .timebook-sync-account { color: var(--ui-muted); font-size: var(--ui-caption); }
-.timebook-sync-auth { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.timebook-sync-auth label { display: grid; gap: 5px; color: var(--ui-muted); font-size: var(--ui-caption); }
-.timebook-sync-auth input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--ui-border); border-radius: 7px; background: white; color: var(--ui-ink); font-size: var(--ui-body); }
-.timebook-sync-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.timebook-sync-actions button { min-height: 38px; padding: 8px 12px; border: 1px solid var(--ui-border); border-radius: 7px; background: white; color: var(--ui-ink); font-size: var(--ui-caption); font-weight: 600; }
-.timebook-sync-actions button:first-child { border-color: #cbd6e5; background: var(--ui-accent-soft); }
-@media (max-width: 420px) { .timebook-sync-auth { grid-template-columns: 1fr; } }
 .config-panel-title { margin-bottom: 8px; }
 .config-panel-head .config-panel-title { margin-bottom: 0; }
 .config-grid { gap: 12px 8px; }
