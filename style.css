@@ -894,43 +894,20 @@ body.compact-wheel-open { overflow: hidden; }
 #app-bottom-nav {
     position: fixed;
     left: 50%;
-    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
-    width: min(720px, calc(100% - 28px));
-    height: 62px;
-    padding: 4px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.72);
-    border-radius: 28px;
-    background: rgba(255, 255, 255, 0.34);
-    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.65);
-    -webkit-backdrop-filter: blur(32px) saturate(1.8);
-    backdrop-filter: blur(32px) saturate(1.8);
+    width: min(640px, calc(100% - 64px));
+    height: 46px;
+    padding: 0 8px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 23px;
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    backdrop-filter: blur(16px) saturate(1.5);
 }
-.ime-confirm-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    z-index: 80;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 44px;
-    padding: 0 12px 0 16px;
-    background: rgba(242, 242, 247, 0.96);
-    border-top: 1px solid rgba(60, 60, 67, 0.12);
-}
-.ime-confirm-bar.hidden { display: none; }
-.ime-confirm-bar span { color: #64748b; font-size: var(--ui-caption); }
-.ime-confirm-bar button {
-    min-width: 72px;
-    height: 32px;
-    border: 0;
-    border-radius: 8px;
-    background: #4f46e5;
-    color: #fff;
-    font-size: var(--ui-body);
-    font-weight: 700;
-}
+#app-bottom-nav .nav-line-icon { width: 18px; height: 18px; }
+#app-bottom-nav button span:last-child { font-size: var(--ui-type-1-9); line-height: 1.1; }
 .log-day-header {
     font-size: var(--ui-type-1-4);
     font-weight: 900;

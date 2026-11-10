@@ -2418,7 +2418,7 @@ function flushUncategorizedClassifyPrompt() {
     const noteEl = document.getElementById('drawer-note');
     if (noteEl) {
         noteEl.value = log.note || '';
-        noteEl.placeholder = '可补充备注…';
+        noteEl.placeholder = '备注';
     }
     if (drawerViewMode === 'columns') drawerViewMode = 'flat';
     showDrawer();
@@ -4002,7 +4002,6 @@ function saveDrawerNote(event) {
     const text = input ? input.value : '';
     if (drawerNoteParent && pickerMode === 'parallel-backfill') persistActivityNote(drawerNoteParent, text);
     input?.blur();
-    document.getElementById('ime-confirm-bar')?.classList.add('hidden');
     renderAll();
 }
 
@@ -4021,55 +4020,12 @@ function saveEditedActivityNote() {
     persistActivityNote(record, text);
     document.getElementById('edit-note-input')?.blur();
     document.getElementById('edit-modal').classList.add('hidden');
-    document.getElementById('ime-confirm-bar')?.classList.add('hidden');
     editIndex = null;
     editTarget = null;
     editOldL1 = null;
     editOldL2 = null;
     renderAll();
 }
-
-const imeNoteFields = ['drawer-note', 'edit-note-input', 'calendar-backfill-note'];
-function placeImeConfirmBar() {
-    const bar = document.getElementById('ime-confirm-bar');
-    if (!bar || bar.classList.contains('hidden')) return;
-    const viewport = window.visualViewport;
-    const keyboard = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
-    bar.style.bottom = keyboard + 'px';
-}
-function showImeConfirmBar(input) {
-    const bar = document.getElementById('ime-confirm-bar');
-    if (!bar) return;
-    bar.dataset.target = input.id;
-    bar.classList.remove('hidden');
-    placeImeConfirmBar();
-}
-function hideImeConfirmBar() {
-    const bar = document.getElementById('ime-confirm-bar');
-    const active = document.activeElement;
-    if (!bar || (active && imeNoteFields.includes(active.id))) return;
-    bar.classList.add('hidden');
-}
-function confirmImeNote() {
-    const bar = document.getElementById('ime-confirm-bar');
-    const active = document.activeElement;
-    const id = active && imeNoteFields.includes(active.id) ? active.id : (bar?.dataset.target || '');
-    if (id === 'drawer-note') saveDrawerNote();
-    else if (id === 'edit-note-input') saveEditedActivityNote();
-    else if (id === 'calendar-backfill-note') saveCalendarBackfill();
-    else document.getElementById(id)?.blur();
-    bar?.classList.add('hidden');
-}
-imeNoteFields.forEach((id) => {
-    const input = document.getElementById(id);
-    if (!input) return;
-    input.addEventListener('focus', () => showImeConfirmBar(input));
-    input.addEventListener('blur', () => setTimeout(hideImeConfirmBar, 160));
-});
-document.getElementById('ime-confirm-btn')?.addEventListener('mousedown', (event) => event.preventDefault());
-document.getElementById('ime-confirm-btn')?.addEventListener('click', confirmImeNote);
-window.visualViewport?.addEventListener('resize', placeImeConfirmBar);
-window.visualViewport?.addEventListener('scroll', placeImeConfirmBar);
 
 function editShortcut(idx) {
     const s = shortcuts[idx];
@@ -5642,7 +5598,7 @@ function openSceneParallelBackfillDrawer(sceneLog, options = {}) {
     document.getElementById('drawer-footer').classList.remove('hidden');
     setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
-    document.getElementById('drawer-note').placeholder = '备注（选填）';
+    document.getElementById('drawer-note').placeholder = '备注';
     dateRow.classList.remove('hidden');
     const bounds = getSceneBackfillDateBounds(sceneName);
     dateInput.min = bounds.min;
@@ -5723,7 +5679,7 @@ function openBackfillDrawer(parentLog, options = {}) {
     setDrawerNoteVisible(true);
     rememberDrawerNoteParent(parentLog);
     document.getElementById('drawer-note').value = parentLog.note || '';
-    document.getElementById('drawer-note').placeholder = '给这条已结束的活动写备注';
+    document.getElementById('drawer-note').placeholder = '备注';
     const parentEnd = liveParent ? nowSecondMs() : logEndMs(parentLog);
     _backfillRange = { start: parentLog.startTime, end: parentEnd };
     setTimeInFields('ps', new Date(parentLog.startTime));
@@ -5795,7 +5751,7 @@ function openSplitDrawer(parentLog, options = {}) {
     document.getElementById('drawer-footer').classList.remove('hidden');
     setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
-    document.getElementById('drawer-note').placeholder = '备注（选填）';
+    document.getElementById('drawer-note').placeholder = '备注';
     _backfillRange = { start: pStart, end: pEnd };
     setTimeInFields('ps', new Date(pStart));
     const endAtMidnight = pEnd === beijingDateStrToDayStart(formatBeijingDate(pStart)) + DAY_MS;

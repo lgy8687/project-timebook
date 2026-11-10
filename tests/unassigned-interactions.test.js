@@ -268,15 +268,14 @@ test('quick note scrolls above the visible keyboard area when focused', () => {
     assert.equal(scroll, 0);
 });
 
-test('parallel backfill note uses the keyboard done key without changing the quick note button', () => {
+test('finished activity note confirms beside the field and the floating bar is gone', () => {
     assert.match(index, /onclick="handleFreeInput\(\)"[^>]*>随手记</);
-    assert.match(index, /id="drawer-note"[^>]*enterkeyhint="done"/);
-    assert.match(index, /id="ime-confirm-bar"/);
-    assert.match(index, /id="ime-confirm-btn">确认</);
-    assert.match(app, /function showImeConfirmBar\(/);
+    assert.match(index, /id="drawer-note"[^>]*placeholder="备注"/);
+    assert.match(index, /id="drawer-note-confirm">确认</);
+    assert.doesNotMatch(index, /ime-confirm-bar/);
+    assert.doesNotMatch(app, /function showImeConfirmBar\(/);
     assert.match(app, /function saveDrawerNote\(/);
     assert.match(app, /function saveEditedActivityNote\(/);
     assert.match(app, /persistActivityNote\(drawerNoteParent, text\)/);
-    assert.match(app, /imeNoteFields = \['drawer-note'/);
-    assert.doesNotMatch(app, /function confirmCurrentActivityNote\(/);
+    assert.doesNotMatch(app, /给这条已结束的活动写备注/);
 });
