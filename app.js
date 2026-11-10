@@ -1024,7 +1024,6 @@ function renderAll() {
         }
     }
     updateUI();
-    syncFreeNoteButton();
 }
 
 function formatDuration(ms) {
@@ -2794,8 +2793,11 @@ document.getElementById('free-input')?.addEventListener('focus', () => {
 document.getElementById('free-input')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
-        submitFreeNote();
+        handleFreeInput();
     }
+});
+document.getElementById('drawer-note')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') finishDrawerNote(event);
 });
 document.getElementById('calendar-backfill-note')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
@@ -3973,32 +3975,14 @@ function openDrawerForRecord() {
 
 function setDrawerNoteVisible(visible) {
     const note = document.getElementById('drawer-note');
-    if (!note) return;
-    note.classList.toggle('hidden', !visible);
+    const form = document.getElementById('drawer-note-form');
+    if (note) note.classList.toggle('hidden', !visible);
+    if (form) form.classList.toggle('hidden', !visible);
 }
 
-function submitFreeNote() {
-    if (current && (current.l1 || current.l2)) confirmCurrentActivityNote();
-    else handleFreeInput();
-}
-
-function confirmCurrentActivityNote() {
-    const input = document.getElementById('free-input');
-    const text = input.value.trim();
-    current.note = text;
-    if (text && current.l1) rememberInputAlias(text, current.l1, current.l2);
-    localStorage.setItem('v9_current', JSON.stringify(current));
-    input.value = '';
-    renderAll();
-}
-
-function syncFreeNoteButton() {
-    const button = document.getElementById('free-note-action');
-    const input = document.getElementById('free-input');
-    if (!button || !input) return;
-    const noting = !!(current && (current.l1 || current.l2));
-    button.textContent = noting ? '确认' : '随手记';
-    input.placeholder = noting ? '备注' : '#标签 或内容…';
+function finishDrawerNote(event) {
+    if (event) event.preventDefault();
+    document.getElementById('drawer-note')?.blur();
 }
 
 function editShortcut(idx) {

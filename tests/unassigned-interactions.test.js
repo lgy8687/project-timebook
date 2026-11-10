@@ -268,11 +268,10 @@ test('quick note scrolls above the visible keyboard area when focused', () => {
     assert.equal(scroll, 0);
 });
 
-test('the note under the activity buttons confirms onto the current activity', () => {
-    assert.match(index, /id="free-note-action"[^>]*onclick="submitFreeNote\(\)"/);
-    assert.doesNotMatch(index, /drawer-note-confirm/);
-    assert.match(app, /function confirmCurrentActivityNote\(/);
-    assert.match(app, /current\.note = text/);
-    assert.match(app, /button\.textContent = noting \? '确认' : '随手记'/);
-    assert.match(app, /setDrawerNoteVisible\(false\)/);
+test('parallel backfill note uses the keyboard done key without changing the quick note button', () => {
+    assert.match(index, /onclick="handleFreeInput\(\)"[^>]*>随手记</);
+    assert.match(index, /id="drawer-note"[^>]*enterkeyhint="done"/);
+    assert.match(app, /function finishDrawerNote\(/);
+    assert.match(app, /drawer-note'\)\?\.blur\(\)/);
+    assert.doesNotMatch(app, /function confirmCurrentActivityNote\(/);
 });

@@ -9,7 +9,7 @@
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="demo-sandbox.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=6.09">
+    <link rel="stylesheet" href="style.css?v=6.10">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=6.05">
     <link rel="stylesheet" href="design-system.css?v=6.07">
@@ -60,7 +60,7 @@
                 <div id="parallel-shortcuts"></div>
             </div>
             <div class="free-note-row" id="free-note-module">
-                <button type="button" id="free-note-action" onclick="submitFreeNote()" class="free-note-label btn-active">随手记</button>
+                <button type="button" onclick="handleFreeInput()" class="free-note-label btn-active">随手记</button>
                 <input type="text" id="free-input" enterkeyhint="done" placeholder="#标签 或内容…" class="free-note-input flex-1 bg-white border-none rounded-2xl px-4 py-4 shadow-sm text-base focus:ring-2 focus:ring-indigo-100">
                 <button type="button" id="free-note-event-btn" class="free-note-event-btn" onclick="openEventHome()" aria-label="事件首页" title="事件首页">＋</button>
             </div>
@@ -371,7 +371,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.09</div>
+            <div id="cache-buster" class="version-in-settings">v6.10</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
@@ -581,7 +581,9 @@
                         </div>
                     </div>
                 </div>
-                <input type="text" id="drawer-note" placeholder="选填备注..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
+                <form id="drawer-note-form" class="w-full" action="javascript:void(0)" onsubmit="finishDrawerNote(event)">
+                    <input type="text" id="drawer-note" enterkeyhint="done" placeholder="选填备注..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" autocomplete="off">
+                </form>
             </div>
         </div>
     </div>
@@ -776,7 +778,7 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=6.04"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=6.09"></script>
+    <script src="app.js?v=6.10"></script>
     <script src="backup.js?v=5"></script>
     <script src="dev-appearance.js?v=5.39"></script>
     <script src="dev-inspector.js?v=6.06"></script>
