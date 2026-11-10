@@ -13,7 +13,18 @@ test('offline APK has no internet permission and loads only packaged assets', ()
     assert.match(activity, /WebViewAssetLoader.AssetsPathHandler/);
     assert.match(activity, /headers.put\("Access-Control-Allow-Origin", "\*"\)/);
     assert.doesNotMatch(activity, /github.io/);
-    assert.match(read('android/app/build.gradle'), /dependsOn prepareWebAssets/);
+    const gradle = read('android/app/build.gradle');
+    assert.match(gradle, /dependsOn prepareWebAssets/);
+    assert.match(gradle, /keystore\/timebook-debug\.keystore/);
+    assert.match(gradle, /signingConfig signingConfigs\.internalDebug/);
+    assert.doesNotMatch(gradle, /signingConfig signingConfigs\.debug/);
+});
+
+test('release signing keystore stays local and documented', () => {
+    assert.match(read('android/keystore/README.md'), /timebook-debug\.keystore/);
+    assert.match(read('android/tools/install-local-signing-keystore.sh'), /\.android\/debug\.keystore/);
+    assert.match(read('.gitignore'), /android\/keystore\/\*\.keystore/);
+    assert.equal(fs.existsSync(path.join(root, 'android/keystore/timebook-debug.keystore')), false);
 });
 
 test('source page has no Supabase client, sync scripts, or cloud login', () => {
