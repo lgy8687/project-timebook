@@ -271,7 +271,9 @@ test('quick note scrolls above the visible keyboard area when focused', () => {
 test('parallel backfill note uses the keyboard done key without changing the quick note button', () => {
     assert.match(index, /onclick="handleFreeInput\(\)"[^>]*>随手记</);
     assert.match(index, /id="drawer-note"[^>]*enterkeyhint="done"/);
-    assert.match(app, /function finishDrawerNote\(/);
-    assert.match(app, /drawer-note'\)\?\.blur\(\)/);
+    assert.match(index, /id="ime-confirm-bar"/);
+    assert.match(index, /id="ime-confirm-btn">确认</);
+    assert.match(app, /function showImeConfirmBar\(/);
+    assert.match(app, /imeNoteFields = \['drawer-note'/);
     assert.doesNotMatch(app, /function confirmCurrentActivityNote\(/);
 });

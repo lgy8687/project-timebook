@@ -3985,6 +3985,44 @@ function finishDrawerNote(event) {
     document.getElementById('drawer-note')?.blur();
 }
 
+const imeNoteFields = ['drawer-note', 'edit-note-input', 'calendar-backfill-note'];
+function placeImeConfirmBar() {
+    const bar = document.getElementById('ime-confirm-bar');
+    if (!bar || bar.classList.contains('hidden')) return;
+    const viewport = window.visualViewport;
+    const keyboard = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
+    bar.style.bottom = keyboard + 'px';
+}
+function showImeConfirmBar(input) {
+    const bar = document.getElementById('ime-confirm-bar');
+    if (!bar) return;
+    bar.dataset.for = input.id;
+    bar.classList.remove('hidden');
+    placeImeConfirmBar();
+}
+function hideImeConfirmBar() {
+    const bar = document.getElementById('ime-confirm-bar');
+    const active = document.activeElement;
+    if (!bar || (active && imeNoteFields.includes(active.id))) return;
+    bar.classList.add('hidden');
+}
+function confirmImeNote() {
+    const bar = document.getElementById('ime-confirm-bar');
+    const input = document.getElementById(bar?.dataset.for || '');
+    if (input) input.blur();
+    bar?.classList.add('hidden');
+}
+imeNoteFields.forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.addEventListener('focus', () => showImeConfirmBar(input));
+    input.addEventListener('blur', () => setTimeout(hideImeConfirmBar, 160));
+});
+document.getElementById('ime-confirm-btn')?.addEventListener('mousedown', (event) => event.preventDefault());
+document.getElementById('ime-confirm-btn')?.addEventListener('click', confirmImeNote);
+window.visualViewport?.addEventListener('resize', placeImeConfirmBar);
+window.visualViewport?.addEventListener('scroll', placeImeConfirmBar);
+
 function editShortcut(idx) {
     const s = shortcuts[idx];
     if (!s) return;
