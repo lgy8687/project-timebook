@@ -47,14 +47,15 @@ public class MainActivityWidget extends AppWidgetProvider {
             if (rows != null && !stale) for (int i = 0; i < rows.length(); i++) {
                 JSONObject row = rows.optJSONObject(i);
                 if (row == null || (selected != null && !selected.contains(row.optString("id")))) continue;
-                long ms = Math.max(0, row.optLong("ms"));
+                long totalMs = row.has("totalMs") ? Math.max(0, row.optLong("totalMs")) : Math.max(0, row.optLong("ms"));
                 boolean live = row.optBoolean("live");
-                if (selected == null && ms == 0 && !live) continue;
+                if (selected == null && totalMs == 0 && !live) continue;
                 visibleRows.add(row);
             }
             for (int i = 0; i < visibleRows.size(); i++) {
                 JSONObject row = visibleRows.get(i);
-                long ms = Math.max(0, row.optLong("ms"));
+                long totalMs = row.has("totalMs") ? Math.max(0, row.optLong("totalMs")) : Math.max(0, row.optLong("ms"));
+                long segmentMs = row.has("segmentMs") ? Math.max(0, row.optLong("segmentMs")) : totalMs;
                 boolean live = row.optBoolean("live");
                 RemoteViews item = new RemoteViews(context.getPackageName(), R.layout.main_widget_row);
                 item.setInt(R.id.row_background, "setImageAlpha", backgroundAlpha);
@@ -66,9 +67,9 @@ public class MainActivityWidget extends AppWidgetProvider {
                     try { color = android.graphics.Color.parseColor(row.optString("color", "#526A91")); }
                     catch (IllegalArgumentException error) { color = android.graphics.Color.rgb(82, 106, 145); }
                     item.setTextColor(R.id.row_timer, color);
-                    item.setChronometer(R.id.row_timer, SystemClock.elapsedRealtime() - Math.max(0, System.currentTimeMillis() - at) - ms, null, true);
+                    item.setChronometer(R.id.row_timer, SystemClock.elapsedRealtime() - Math.max(0, System.currentTimeMillis() - at) - segmentMs, null, true);
                 }
-                else item.setTextViewText(R.id.row_duration, String.format(java.util.Locale.ROOT, "%d:%02d:%02d", ms / 3600000, ms / 60000 % 60, ms / 1000 % 60));
+                else item.setTextViewText(R.id.row_duration, String.format(java.util.Locale.ROOT, "%d:%02d:%02d", totalMs / 3600000, totalMs / 60000 % 60, totalMs / 1000 % 60));
                 views.addView(R.id.widget_rows, item);
             }
             views.setTextViewText(R.id.widget_empty, stale ? "点击打开应用更新" : "暂无显示的活动，点击打开应用");

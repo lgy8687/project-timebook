@@ -64,3 +64,21 @@ test('independent supplement saves count without inventing a time', () => {
     assert.equal(saved.dateOnly, true);
     assert.equal(saved.count, 3);
 });
+
+test('event parentId is stripped once and an unchanged record is left alone', () => {
+    const fn = app.slice(app.indexOf('function normalizeEventRecord('), app.indexOf('\n// --- 数据模型'));
+    const context = {};
+    vm.createContext(context);
+    vm.runInContext(fn, context);
+    const plain = { id: 'a', typeId: 'water', occurredAt: 5, count: 1 };
+    assert.equal(context.normalizeEventRecord(plain, false), plain);
+    assert.equal(context.normalizeEventRecord(plain, true), plain);
+    const legacy = { id: 'b', typeId: 'water', parentId: 'main', occurredAt: 5, count: 2 };
+    const stripped = context.normalizeEventRecord(legacy, true);
+    assert.equal(stripped.parentId, undefined);
+    assert.equal(stripped.count, 2);
+    assert.equal(legacy.parentId, 'main');
+    assert.match(app, /v9_event_record_migration_v1/);
+    assert.match(app, /JSON\.stringify\(logs\) !== storedLogs/);
+    assert.doesNotMatch(app, /\.map\(\(\{ parentId, \.\.\.item \}\)/);
+});
