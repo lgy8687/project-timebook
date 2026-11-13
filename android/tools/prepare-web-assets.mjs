@@ -9,7 +9,7 @@ const output = join(root, 'android/app/build/generated/webAssets');
 rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
 for (const file of readdirSync(root)) {
-    if (/\.(js|css)$/.test(file) && !['sync.js', 'sync-config.js'].includes(file)) {
+    if (/\.(js|css)$/.test(file)) {
         cpSync(join(root, file), join(output, file));
     }
 }
@@ -20,11 +20,13 @@ cpSync(join(root, 'assets'), join(output, 'assets'), { recursive: true });
 let html = readFileSync(join(root, 'index.html'), 'utf8');
 html = html.replace('<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>',
     '<link rel="stylesheet" href="offline.css">');
-html = html.replace(/\s*<script src="(?:sync(?:-config)?\.js[^" ]*|https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2)"><\/script>/g, '');
+html = html.replace(/\s*<button id="dev-inspector-shortcut"[\s\S]*?<\/button>/, '');
+html = html.replace(/\s*<label class="dev-inspector-setting">[\s\S]*?<\/label>/, '');
+html = html.replace(/\s*<div id="demo-mode-layer"[\s\S]*?<\/div><\/div><\/div>/, '');
 html = html.replace('<script src="demo-sandbox.js?v=3"></script>',
-    '<script>window.__timebookOffline = true;</script>\n    <script src="demo-sandbox.js?v=3"></script>');
+    '<script>window.__timebookOffline = true;</script>');
 html = html.replace(/(<div id="cache-buster"[^>]*>)([^<]+)/,
-    '$1$2 · Android 0.11 单机内测');
+    '$1$2 · Android 0.12 单机内测');
 if (/(?:src|href)="https?:\/\//.test(html)) throw new Error('Remote HTML dependency found');
 writeFileSync(join(output, 'index.html'), html);
 execFileSync(process.execPath, [join(here, 'node_modules/@tailwindcss/cli/dist/index.mjs'),

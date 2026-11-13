@@ -9,10 +9,10 @@
     <title>TimeBook Pro - 稳如老狗版</title>
     <script src="demo-sandbox.js?v=3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="style.css?v=6.06">
+    <link rel="stylesheet" href="style.css?v=6.14">
     <link rel="stylesheet" href="dev-theme.css?v=4.70">
     <link rel="stylesheet" href="report.css?v=6.05">
-    <link rel="stylesheet" href="design-system.css?v=6.05">
+    <link rel="stylesheet" href="design-system.css?v=6.07">
     <link rel="stylesheet" href="dev-inspector.css?v=5.39">
 </head>
 <body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden select-none font-sans text-base">
@@ -61,7 +61,7 @@
             </div>
             <div class="free-note-row" id="free-note-module">
                 <button type="button" onclick="handleFreeInput()" class="free-note-label btn-active">随手记</button>
-                <input type="text" id="free-input" placeholder="#标签 或内容…" class="free-note-input flex-1 bg-white border-none rounded-2xl px-4 py-4 shadow-sm text-base focus:ring-2 focus:ring-indigo-100">
+                <input type="text" id="free-input" enterkeyhint="done" placeholder="#标签 或内容…" class="free-note-input flex-1 bg-white border-none rounded-2xl px-4 py-4 shadow-sm text-base focus:ring-2 focus:ring-indigo-100">
                 <button type="button" id="free-note-event-btn" class="free-note-event-btn" onclick="openEventHome()" aria-label="事件首页" title="事件首页">＋</button>
             </div>
             <div id="free-backfill" class="hidden space-y-2">
@@ -359,37 +359,11 @@
                 </div>
                 <div id="config-panel-data" class="config-panel hidden space-y-3">
                     <h3 class="config-panel-title">数据管理</h3>
-                    <div class="timebook-sync-panel">
-                        <div class="timebook-sync-heading">
-                            <strong>云端同步</strong>
-                            <span id="sync-status" role="status">尚未连接</span>
-                        </div>
-                        <p class="config-panel-hint">使用 Supabase 账号同步不同设备的数据。首次连接时，请明确选择以本机数据或云端数据为准。</p>
-                        <div id="sync-auth-form" class="timebook-sync-auth">
-                            <label>邮箱<input id="sync-email" type="email" autocomplete="email" placeholder="name@example.com"></label>
-                            <label>密码<input id="sync-password" type="password" autocomplete="current-password" placeholder="至少 8 位"></label>
-                            <div class="timebook-sync-actions">
-                                <button type="button" onclick="timebookSyncSignIn()">登录</button>
-                                <button type="button" onclick="timebookSyncSignUp()">注册</button>
-                            </div>
-                        </div>
-                        <div id="sync-connected" class="hidden">
-                            <div id="sync-account" class="timebook-sync-account"></div>
-                            <div id="sync-choice" class="timebook-sync-actions hidden">
-                                <button type="button" onclick="timebookSyncPush(true)">上传本机数据</button>
-                                <button type="button" onclick="timebookSyncPull(true)">下载云端数据</button>
-                            </div>
-                            <div id="sync-active-actions" class="timebook-sync-actions hidden">
-                                <button type="button" onclick="timebookSyncNow()">立即同步</button>
-                                <button type="button" onclick="timebookSyncSignOut()">退出账号</button>
-                            </div>
-                        </div>
-                    </div>
                     <div class="space-y-2">
                         <button type="button" onclick="exportTimebookBackup()" class="w-full py-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-lg">导出备份</button>
                         <button type="button" onclick="document.getElementById('backup-file-input').click()" class="w-full py-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-lg">导入备份</button>
                         <input id="backup-file-input" type="file" accept=".json,application/json" class="hidden" onchange="importTimebookBackup(this)">
-                        <p class="text-xs text-slate-400">导入可按日期选择；完整恢复会替换本机记录。</p>
+                        <p class="text-xs text-slate-400">导入可按日期选择。网页和安卓是两套账本，互不同步。按日期导入不会搬走进行中的计时和分类设置；完整恢复会换掉这台设备上的全部 v9_ 数据。</p>
                     </div>
                     <div class="space-y-2 border-t border-slate-100 pt-3">
                         <button type="button" onclick="requestTimebookReset('records')" class="w-full py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg">清空记录</button>
@@ -397,7 +371,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cache-buster" class="version-in-settings">v6.06</div>
+            <div id="cache-buster" class="version-in-settings">v6.14</div>
         </section>
 
         <section id="page-event-home" class="tab-content event-home pb-8" data-dev-address-block="B101">
@@ -454,7 +428,7 @@
         </section>
     </main>
 
-    <nav id="app-bottom-nav" class="app-bottom-nav bg-white border-t border-slate-100 fixed bottom-0 w-full h-16 grid grid-cols-4 items-center px-2 z-40 shadow-sm">
+    <nav id="app-bottom-nav" class="app-bottom-nav grid grid-cols-4 items-center z-40">
         <button onclick="switchTab('record')" class="flex flex-col items-center text-indigo-600" id="nav-record">
             <span class="nav-line-icon nav-line-icon--home" aria-hidden="true"></span><span class="text-[10px] mt-0.5 font-bold">流水</span>
         </button>
@@ -536,7 +510,7 @@
                     <label>花费分钟<input id="calendar-backfill-minutes" type="text" inputmode="numeric" maxlength="2" value="0" oninput="sanitizeCalendarDurationInput(this, 59)"></label>
                     <p id="calendar-backfill-remaining"></p>
                 </div>
-                <label id="calendar-backfill-note-field">备注<input id="calendar-backfill-note" type="text" maxlength="160" placeholder="选填"></label>
+                <label id="calendar-backfill-note-field">备注<input id="calendar-backfill-note" type="text" maxlength="160" enterkeyhint="done" placeholder="选填"></label>
                 <div class="calendar-backfill-actions">
                     <button type="button" onclick="showCalendarBackfillForm(null)">返回</button>
                     <button type="button" onclick="saveCalendarBackfill()">保存</button>
@@ -607,7 +581,10 @@
                         </div>
                     </div>
                 </div>
-                <input type="text" id="drawer-note" placeholder="选填备注..." class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500">
+                <form id="drawer-note-form" class="drawer-note-row" action="javascript:void(0)" onsubmit="saveDrawerNote(event)">
+                    <input type="text" id="drawer-note" enterkeyhint="done" placeholder="备注" class="bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" autocomplete="off">
+                    <button type="submit" id="drawer-note-confirm">确认</button>
+                </form>
             </div>
         </div>
     </div>
@@ -767,7 +744,7 @@
                     <input id="ee-s" type="text" inputmode="numeric" maxlength="2" class="time-edit-part bg-transparent text-center text-sm font-mono font-bold text-slate-700 border-none focus:outline-none focus:bg-indigo-50 rounded" placeholder="秒" autocomplete="off">
                 </div>
                 </div>
-                <input type="text" id="edit-note-input" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="备注" autocomplete="off">
+                <input type="text" id="edit-note-input" enterkeyhint="done" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500" placeholder="备注" autocomplete="off">
             </div>
             <button id="edit-current-backfill" type="button" class="edit-current-backfill hidden" onclick="openBackfillFromCurrentEdit()">补录并行</button>
             <div class="flex space-x-3 mt-4">
@@ -802,11 +779,8 @@
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=6.04"></script>
     <script src="ui-theme.js?v=5.39"></script>
-    <script src="app.js?v=6.05"></script>
+    <script src="app.js?v=6.14"></script>
     <script src="backup.js?v=5"></script>
-    <script src="sync-config.js?v=1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="sync.js?v=5.77"></script>
     <script src="dev-appearance.js?v=5.39"></script>
     <script src="dev-inspector.js?v=6.06"></script>
 </body>

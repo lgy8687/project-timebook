@@ -267,3 +267,15 @@ test('quick note scrolls above the visible keyboard area when focused', () => {
     context.keepFreeInputVisible();
     assert.equal(scroll, 0);
 });
+
+test('finished activity note confirms beside the field and the floating bar is gone', () => {
+    assert.match(index, /onclick="handleFreeInput\(\)"[^>]*>随手记</);
+    assert.match(index, /id="drawer-note"[^>]*placeholder="备注"/);
+    assert.match(index, /id="drawer-note-confirm">确认</);
+    assert.doesNotMatch(index, /ime-confirm-bar/);
+    assert.doesNotMatch(app, /function showImeConfirmBar\(/);
+    assert.match(app, /function saveDrawerNote\(/);
+    assert.match(app, /function saveEditedActivityNote\(/);
+    assert.match(app, /persistActivityNote\(drawerNoteParent, text\)/);
+    assert.doesNotMatch(app, /给这条已结束的活动写备注/);
+});

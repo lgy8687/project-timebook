@@ -27,11 +27,10 @@ test('October example has complete non-overlapping days and separate event recor
     assert.equal(real.get('v9_logs'), 'REAL');
 });
 
-test('example frame has an opaque origin and cloud sync is disabled', () => {
+test('example frame has an opaque origin and the page does not load cloud sync', () => {
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-    const sync = fs.readFileSync(path.join(root, 'sync.js'), 'utf8');
     assert.match(html, /id="demo-mode-frame"[^>]*sandbox="allow-scripts"/);
-    assert.match(sync, /if \(window\.__timebookDemo\) return/);
+    assert.doesNotMatch(html, /supabase|sync(?:-config)?\.js|云端同步|timebookSync/i);
 });
 
 test('local files use the hosted example while websites keep their own origin', () => {

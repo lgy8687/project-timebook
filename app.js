@@ -62,6 +62,20 @@ function genId() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
     return Date.now() * 1000 + (++_idCounter % 1000);
 }
+function sameId(a, b) {
+    return a != null && b != null && String(a) === String(b);
+}
+function normalizeEventRecord(item, stripParentId) {
+    const occurredAt = Number(item.occurredAt);
+    const count = Number.isInteger(item.count) && item.count > 0 ? item.count : 1;
+    if (stripParentId && Object.prototype.hasOwnProperty.call(item, 'parentId')) {
+        const rest = { ...item };
+        delete rest.parentId;
+        return { ...rest, occurredAt, count };
+    }
+    if (item.occurredAt !== occurredAt || item.count !== count) return { ...item, occurredAt, count };
+    return item;
+}
 // --- 数据模型（仅首次无 v9_cats 时注入）---
 const DEFAULT_CATS = [
     { id: 1, name: "工作", icon: "💼", color: "#3b82f6", subs: ["办公", "开会", "沟通", "见客户", "上班"] },
@@ -188,7 +202,9 @@ if (!Array.isArray(parallelShortcuts)) {
 shortcuts = shortcuts.map(s => ({ ...s, customIcon: s.customIcon ?? (s.icon && s.icon !== '📌') }));
 parallelShortcuts = parallelShortcuts.map(s => ({ ...s, customIcon: s.customIcon ?? (s.icon && s.icon !== '📌') }));
 let logs = safeJSON('v9_logs') || [];
+const storedLogs = localStorage.getItem('v9_logs');
 let current = safeJSON('v9_current') || null;
+const storedCurrent = localStorage.getItem('v9_current');
 let recordMode = localStorage.getItem('v9_record_mode') === 'journal' ? 'journal' : 'continuous';
 let showUnassignedMain = localStorage.getItem('v9_show_unassigned_main') !== 'false';
 const savedUnlocatedLogs = safeJSON('v9_unlocated_logs', []);
@@ -208,7 +224,7 @@ function normalizeTimeRecord(record) {
     return record;
 }
 logs = logs.map(normalizeTimeRecord);
-if (logs.length) localStorage.setItem('v9_logs', JSON.stringify(logs));
+if (logs.length && JSON.stringify(logs) !== storedLogs) localStorage.setItem('v9_logs', JSON.stringify(logs));
 function normalizeCurrentTimestamps() {
     if (!current) return;
     current.startTime = toSecondMs(current.startTime);
@@ -223,10 +239,14 @@ function normalizeCurrentTimestamps() {
 normalizeCurrentTimestamps();
 let parallelCurrent = safeJSON('v9_parallel') || null;
 let parallelHistory = safeJSON('v9_parallel_history') || [];
+const storedParallel = localStorage.getItem('v9_parallel');
+const storedParallelHistory = localStorage.getItem('v9_parallel_history');
 parallelCurrent = normalizeTimeRecord(parallelCurrent);
 parallelHistory = parallelHistory.map(normalizeTimeRecord);
 let eventTypes = safeJSON('v9_event_types', []) || [];
 let eventRecords = safeJSON('v9_event_records', []) || [];
+const storedEventTypes = localStorage.getItem('v9_event_types');
+const storedEventRecords = localStorage.getItem('v9_event_records');
 const EVENT_RESERVED_NAMES = new Set(['睡觉']);
 const EVENT_COLORS = ['#0ea5e9', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444', '#22c55e', '#64748b'];
 
@@ -240,14 +260,29 @@ eventTypes = eventTypes
         group: typeof item.group === 'string' ? item.group.trim() : '',
         color: safeColor(item.color, EVENT_COLORS[index % EVENT_COLORS.length]),
     }));
-eventRecords = eventRecords
-    .filter((item) => item && item.typeId && Number.isFinite(Number(item.occurredAt)))
-    .map(({ parentId, ...item }) => ({ ...item, occurredAt: Number(item.occurredAt), count: Number.isInteger(item.count) && item.count > 0 ? item.count : 1 }));
-if (eventTypes.length) localStorage.setItem('v9_event_types', JSON.stringify(eventTypes));
-if (eventRecords.length) localStorage.setItem('v9_event_records', JSON.stringify(eventRecords));
-if (current) localStorage.setItem('v9_current', JSON.stringify(current));
-if (parallelCurrent) localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
-if (parallelHistory.length) localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
+const stripEventParents = localStorage.getItem('v9_event_record_migration_v1') !== 'done';
+const filteredEventRecords = eventRecords
+    .filter((item) => item && item.typeId && Number.isFinite(Number(item.occurredAt)));
+let eventRecordsChanged = filteredEventRecords.length !== eventRecords.length;
+eventRecords = filteredEventRecords.map((item) => {
+    const next = normalizeEventRecord(item, stripEventParents);
+    if (next !== item) eventRecordsChanged = true;
+    return next;
+});
+if (eventTypes.length && JSON.stringify(eventTypes) !== storedEventTypes) localStorage.setItem('v9_event_types', JSON.stringify(eventTypes));
+if (eventRecords.length && eventRecordsChanged) localStorage.setItem('v9_event_records', JSON.stringify(eventRecords));
+if (stripEventParents) localStorage.setItem('v9_event_record_migration_v1', 'done');
+if (current) {
+    const nextCurrent = JSON.stringify(current);
+    if (nextCurrent !== storedCurrent) localStorage.setItem('v9_current', nextCurrent);
+}
+if (parallelCurrent) {
+    const nextParallel = JSON.stringify(parallelCurrent);
+    if (nextParallel !== storedParallel) localStorage.setItem('v9_parallel', nextParallel);
+}
+if (parallelHistory.length && JSON.stringify(parallelHistory) !== storedParallelHistory) {
+    localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
+}
 
 // 旧版本曾用时间戳作为主线 ID；极端情况下场景和生活主线会共用一个 ID，
 // 令同一条并行同时挂到两边。先保证每个已结束主线都有唯一 ID，再修复子级归属。
@@ -310,7 +345,7 @@ function repairOrphanedParallelParents() {
             : null;
         // 父级存在但和并行时段完全不重叠，仍是错挂；按真实重叠时间修复。
         const parent = sceneParent || (!linkedParent || linkedOverlap <= 0 ? findParent(item) : null);
-        if (parent && item.parentId !== parent.id) {
+        if (parent && !sameId(item.parentId, parent.id)) {
             item.parentId = parent.id;
             changed = true;
         }
@@ -320,7 +355,7 @@ function repairOrphanedParallelParents() {
         }
     });
     parallelHistory.forEach((item) => {
-        if (!item.parentId || mainLogs.some((main) => main.id === item.parentId)) return;
+        if (!item.parentId || mainLogs.some((main) => sameId(main.id, item.parentId))) return;
         const parent = findParent(item);
         if (parent) {
             item.parentId = parent.id;
@@ -410,7 +445,7 @@ function migrateLegacySceneActivities() {
         const activeLegacy = {
             ...parallelCurrent,
             endTime,
-            duration: Math.max(1, Math.round((endTime - parallelCurrent.startTime) / 60000))
+            duration: Math.round((endTime - parallelCurrent.startTime) / 60000)
         };
         if (migrate(activeLegacy)) {
             logs.push(activeLegacy);
@@ -1106,6 +1141,17 @@ let lastBeijingDateStr = '';
 /** 已结束并行：只把落在 [segStart, segEnd) 内的部分挂到本日主线上，其余留待后续日界 */
 function flushParallelHistoryForSlice(mainLogId, segStart, segEnd) {
     const keep = [];
+    const usedIds = new Set(logs.map((item) => (item.id == null ? '' : String(item.id))).filter(Boolean));
+    const takeId = (preferred) => {
+        const key = preferred == null ? '' : String(preferred);
+        if (key && !usedIds.has(key)) {
+            usedIds.add(key);
+            return preferred;
+        }
+        const fresh = genId();
+        usedIds.add(String(fresh));
+        return fresh;
+    };
     parallelHistory.forEach((p) => {
         const pEnd = logEndMs(p);
         if (pEnd <= segStart || p.startTime >= segEnd) {
@@ -1117,9 +1163,10 @@ function flushParallelHistoryForSlice(mainLogId, segStart, segEnd) {
         if (clipEnd > clipStart) {
             logs.unshift({
                 ...p,
+                id: takeId(p.id),
                 startTime: clipStart,
                 endTime: clipEnd,
-                duration: Math.max(1, Math.round((clipEnd - clipStart) / 60000)),
+                duration: Math.round((clipEnd - clipStart) / 60000),
                 parallel: true,
                 parentId: mainLogId,
                 note: p.note || ''
@@ -1128,16 +1175,18 @@ function flushParallelHistoryForSlice(mainLogId, segStart, segEnd) {
         if (p.startTime < segStart) {
             keep.push({
                 ...p,
+                id: takeId(null),
                 endTime: segStart,
-                duration: Math.max(1, Math.round((segStart - p.startTime) / 60000))
+                duration: Math.round((segStart - p.startTime) / 60000)
             });
         }
         if (pEnd > segEnd) {
             keep.push({
                 ...p,
+                id: takeId(null),
                 startTime: segEnd,
-                endTime: p.endTime,
-                duration: Math.max(1, Math.round((pEnd - segEnd) / 60000))
+                endTime: pEnd,
+                duration: Math.round((pEnd - segEnd) / 60000)
             });
         }
     });
@@ -1190,7 +1239,7 @@ function settleCompletedParallelHistory() {
                             id: entryId,
                             startTime: start,
                             endTime: finish,
-                            duration: Math.max(1, Math.round((finish - start) / 60000)),
+                            duration: Math.round((finish - start) / 60000),
                             parallel: true,
                             parentId: parent.id,
                             sceneName: parent.scene ? parent.l2 : (piece.sceneName || ''),
@@ -1220,9 +1269,11 @@ function settleParallelForMainSlice(mainLogId, segStart, segEnd, opts) {
     if (parallelCurrent) {
         const pStart = Math.max(parallelCurrent.startTime, segStart);
         if (segEnd > pStart) {
-            const pDur = Math.max(1, Math.round((segEnd - pStart) / 60000));
+            const pDur = Math.round((segEnd - pStart) / 60000);
+            const entryId = logs.some((item) => sameId(item.id, parallelCurrent.id)) ? genId() : parallelCurrent.id;
             logs.unshift({
                 ...parallelCurrent,
+                id: entryId,
                 startTime: pStart,
                 endTime: segEnd,
                 duration: pDur,
@@ -1232,7 +1283,7 @@ function settleParallelForMainSlice(mainLogId, segStart, segEnd, opts) {
             });
         }
         if (continueSame || (rollover && !endParallel)) {
-            parallelCurrent = { ...parallelCurrent, id: segEnd + 0.001, startTime: segEnd };
+            parallelCurrent = { ...parallelCurrent, id: genId(), startTime: segEnd };
             localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
         } else {
             parallelCurrent = null;
@@ -1251,7 +1302,7 @@ function commitCurrentSlice(endMs, continueSame, parallelOpts) {
     const color = current.color || (cat ? cat.color : '#cbd5e1');
     // 当前主线启动时已获得唯一 ID；结束后保留它，子并行的 parentId 无须二次改挂。
     const mainLogId = current.id || genId();
-    const dur = Math.max(1, Math.round((endMs - current.startTime) / 60000));
+    const dur = Math.round((endMs - current.startTime) / 60000);
     const needsClassify = !current.l1 && !!(current.note || current.tag);
     logs.unshift({
         ...current,
@@ -1339,7 +1390,7 @@ function getParallelDisplayRecords(parallelLogs) {
             : [parentId, start, end, parallel.l1 || '', parallel.l2 || '', parallel.icon || ''].join('|');
         const existing = winners.get(key);
         // 同一条旧数据有一份已正确挂在目标主线时，优先保留那一份，便于后续编辑。
-        if (!existing || (existing.parentId !== parentId && parallel.parentId === parentId)) {
+        if (!existing || (!sameId(existing.parentId, parentId) && sameId(parallel.parentId, parentId))) {
             parallel._displayParentId = parentId;
             parallel._displayParent = parent;
             winners.set(key, parallel);
@@ -2363,10 +2414,11 @@ function flushUncategorizedClassifyPrompt() {
     document.getElementById('drawer-title').innerText = '请为未分类记录选择归档';
     document.getElementById('parallel-time-row').classList.add('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     const noteEl = document.getElementById('drawer-note');
     if (noteEl) {
         noteEl.value = log.note || '';
-        noteEl.placeholder = '可补充备注…';
+        noteEl.placeholder = '备注';
     }
     if (drawerViewMode === 'columns') drawerViewMode = 'flat';
     showDrawer();
@@ -2738,6 +2790,21 @@ function keepFreeInputVisible() {
 document.getElementById('free-input')?.addEventListener('focus', () => {
     setTimeout(keepFreeInputVisible, 350);
 });
+document.getElementById('free-input')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        handleFreeInput();
+    }
+});
+document.getElementById('drawer-note')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') saveDrawerNote(event);
+});
+document.getElementById('calendar-backfill-note')?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        saveCalendarBackfill();
+    }
+});
 window.visualViewport?.addEventListener('resize', () => {
     setTimeout(keepFreeInputVisible, 100);
 });
@@ -2965,14 +3032,14 @@ function moveParallelTailFromBoundary(boundary, splitAt, replacement) {
             {
                 ...item,
                 endTime: splitAt,
-                duration: Math.max(1, Math.round((splitAt - item.startTime) / 60000))
+                duration: Math.round((splitAt - item.startTime) / 60000)
             },
             {
                 ...item,
                 id: genId(),
                 startTime: splitAt,
                 endTime: itemEnd,
-                duration: Math.max(1, Math.round((itemEnd - splitAt) / 60000)),
+                duration: Math.round((itemEnd - splitAt) / 60000),
                 parentId: replacement.id
             }
         ];
@@ -3010,7 +3077,7 @@ function expandMainStartAcrossRecords(log, newStart, newEnd, done) {
         if (boundary) {
             moveParallelTailFromBoundary(boundary, newStart, log);
             boundary.endTime = newStart;
-            boundary.duration = Math.max(1, Math.round((newStart - boundary.startTime) / 60000));
+            boundary.duration = Math.round((newStart - boundary.startTime) / 60000);
         }
         const swallowedIds = new Set(swallowed.map((item) => item.id));
         if (swallowedIds.size) {
@@ -3020,7 +3087,7 @@ function expandMainStartAcrossRecords(log, newStart, newEnd, done) {
         }
         log.startTime = newStart;
         log.endTime = newEnd;
-        log.duration = Math.max(1, Math.round((newEnd - newStart) / 60000));
+        log.duration = Math.round((newEnd - newStart) / 60000);
         // 已存在的旧并行若此前因断档而失去父级，也在新的连续范围内重新归属。
         repairOrphanedParallelParents();
         done();
@@ -3091,7 +3158,7 @@ function applyEditedRange(log, newStart, newEnd, done) {
         }
         log.startTime = effectiveStart;
         log.endTime = effectiveEnd;
-        log.duration = Math.max(1, Math.round((effectiveEnd - effectiveStart) / 60000));
+        log.duration = Math.round((effectiveEnd - effectiveStart) / 60000);
         done();
         return;
     }
@@ -3456,8 +3523,8 @@ function mergeDeletedTime(target, direction) {
     const neighbors = getDeleteMergeNeighbors(target);
     const neighbor = direction === 'up' ? neighbors.up : neighbors.down;
     if (!neighbor) return;
-    const targetEnd = target.endTime || (target.startTime + (target.duration || 0) * 60000);
-    const neighborEnd = neighbor.endTime || (neighbor.startTime + (neighbor.duration || 0) * 60000);
+    const targetEnd = logEndMs(target);
+    const neighborEnd = logEndMs(neighbor);
     if (direction === 'up') {
         neighbor.startTime = Math.min(neighbor.startTime, target.startTime);
     } else {
@@ -3845,7 +3912,7 @@ function toggleParallel(l1, l2, icon) {
     const now = nowSecondMs();
     // 结束当前并行 → 存入 parallelHistory
     if (parallelCurrent) {
-        const dur = Math.max(1, Math.round((now - parallelCurrent.startTime) / 60000));
+        const dur = Math.round((now - parallelCurrent.startTime) / 60000);
         parallelHistory.unshift({
             ...parallelCurrent,
             endTime: now,
@@ -3889,8 +3956,8 @@ function openDrawer() {
     document.getElementById('parallel-time-row').classList.add('hidden');
     showDrawer();
     renderDrawerToggle();
-    document.getElementById('drawer-note').value = "";
-    document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(false);
+    document.getElementById('drawer-footer').classList.add('hidden');
     renderPicker();
 }
 function openDrawerForRecord() {
@@ -3899,12 +3966,65 @@ function openDrawerForRecord() {
     _parallelCallback = null;
     document.getElementById('drawer-title').innerText = "记一笔活动";
     document.getElementById('parallel-time-row').classList.add('hidden');
-    document.getElementById('drawer-footer').classList.remove('hidden');
-    document.getElementById('drawer-note').placeholder = "选填备注...";
-    document.getElementById('drawer-note').value = "";
+    document.getElementById('drawer-footer').classList.add('hidden');
+    setDrawerNoteVisible(false);
     showDrawer();
     renderPicker();
     renderDrawerToggle();
+}
+
+function setDrawerNoteVisible(visible) {
+    const note = document.getElementById('drawer-note');
+    const form = document.getElementById('drawer-note-form');
+    if (note) note.classList.toggle('hidden', !visible);
+    if (form) form.classList.toggle('hidden', !visible);
+}
+
+let drawerNoteParent = null;
+
+function rememberDrawerNoteParent(parent) {
+    drawerNoteParent = parent || null;
+}
+
+function persistActivityNote(record, text) {
+    if (!record) return false;
+    record.note = text;
+    if (record === current) localStorage.setItem('v9_current', JSON.stringify(current));
+    else if (record === parallelCurrent) localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
+    else if (parallelHistory.includes(record)) localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
+    else localStorage.setItem('v9_logs', JSON.stringify(logs));
+    return true;
+}
+
+function saveDrawerNote(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById('drawer-note');
+    const text = input ? input.value : '';
+    if (drawerNoteParent && pickerMode === 'parallel-backfill') persistActivityNote(drawerNoteParent, text);
+    input?.blur();
+    renderAll();
+}
+
+function saveEditedActivityNote() {
+    if (!editTarget) return;
+    const text = document.getElementById('edit-note-input').value;
+    let record = null;
+    if (editTarget.source === 'current') record = current;
+    else if (editTarget.source === 'parallelCurrent') record = parallelCurrent;
+    else if (editTarget.source === 'parallelHistory') record = parallelHistory.find((item) => item.id === editTarget.id);
+    else if (editTarget.source === 'logs') record = logs.find((item) => item.id === editTarget.id);
+    if (!record) {
+        confirmEdit();
+        return;
+    }
+    persistActivityNote(record, text);
+    document.getElementById('edit-note-input')?.blur();
+    document.getElementById('edit-modal').classList.add('hidden');
+    editIndex = null;
+    editTarget = null;
+    editOldL1 = null;
+    editOldL2 = null;
+    renderAll();
 }
 
 function editShortcut(idx) {
@@ -5476,8 +5596,9 @@ function openSceneParallelBackfillDrawer(sceneLog, options = {}) {
     document.getElementById('drawer-title').innerText = `补录场景活动于 ${displayName(sceneLog)}`;
     document.getElementById('parallel-time-row').classList.remove('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
-    document.getElementById('drawer-note').placeholder = '备注（选填）';
+    document.getElementById('drawer-note').placeholder = '备注';
     dateRow.classList.remove('hidden');
     const bounds = getSceneBackfillDateBounds(sceneName);
     dateInput.min = bounds.min;
@@ -5555,11 +5676,11 @@ function openBackfillDrawer(parentLog, options = {}) {
     document.getElementById('parallel-date-row').classList.add('hidden');
     document.getElementById('parallel-date').onchange = null;
     document.getElementById('drawer-footer').classList.remove('hidden');
-    document.getElementById('drawer-note').value = '';
-    document.getElementById('drawer-note').placeholder = '备注（选填）';
-    const parentEnd = liveParent
-        ? nowSecondMs()
-        : (parentLog.endTime || (parentLog.startTime + (parentLog.duration || 60) * 60000));
+    setDrawerNoteVisible(true);
+    rememberDrawerNoteParent(parentLog);
+    document.getElementById('drawer-note').value = parentLog.note || '';
+    document.getElementById('drawer-note').placeholder = '备注';
+    const parentEnd = liveParent ? nowSecondMs() : logEndMs(parentLog);
     _backfillRange = { start: parentLog.startTime, end: parentEnd };
     setTimeInFields('ps', new Date(parentLog.startTime));
     const endAtMidnight = parentEnd === beijingDateStrToDayStart(formatBeijingDate(parentLog.startTime)) + DAY_MS;
@@ -5576,9 +5697,9 @@ function openBackfillDrawer(parentLog, options = {}) {
         const dur = Math.round((e - clampedStart) / 60000);
         // 时间唯一性：检查与已有并行是否重叠
         const parentId = parentLog.id || parentLog.startTime;
-        const existingParallels = [...logs.filter(l => l.parallel && l.parentId === parentId), ...parallelHistory];
+        const existingParallels = [...logs.filter(l => l.parallel && sameId(l.parentId, parentId)), ...parallelHistory];
         const overlapConflict = existingParallels.some(p => {
-            const pEnd = p.endTime || (p.startTime + (p.duration || 0) * 60000);
+            const pEnd = logEndMs(p);
             return p.startTime < e && pEnd > clampedStart;
         });
         if (overlapConflict) {
@@ -5620,12 +5741,17 @@ function openSplitDrawer(parentLog, options = {}) {
     const pStart = parentLog.startTime;
     const liveParent = options.liveParent === true;
     const capturedParent = liveParent ? { ...parentLog } : parentLog;
-    const pEnd = liveParent ? nowSecondMs() : (parentLog.endTime || (pStart + (parentLog.duration || 60) * 60000));
+    const pEnd = liveParent ? nowSecondMs() : logEndMs(parentLog);
+    if (!liveParent && !(pEnd > pStart)) {
+        showConfirm('无法切割', '这条记录缺少结束时间，请重新选择后再切割。', '知道了', () => {});
+        return;
+    }
     document.getElementById('drawer-title').innerText = `✂️ 切割 — ${displayName(parentLog)}`;
     document.getElementById('parallel-time-row').classList.remove('hidden');
     document.getElementById('drawer-footer').classList.remove('hidden');
+    setDrawerNoteVisible(true);
     document.getElementById('drawer-note').value = '';
-    document.getElementById('drawer-note').placeholder = '备注（选填）';
+    document.getElementById('drawer-note').placeholder = '备注';
     _backfillRange = { start: pStart, end: pEnd };
     setTimeInFields('ps', new Date(pStart));
     const endAtMidnight = pEnd === beijingDateStrToDayStart(formatBeijingDate(pStart)) + DAY_MS;
@@ -5678,7 +5804,12 @@ function executeLiveSplit(parentLog, capturedEnd, l1, l2, selectedRange) {
 }
 function executeSplit(parentLog, l1, l2, selectedRange) {
     const pStart = parentLog.startTime;
-    const pEnd = parentLog.endTime || (pStart + (parentLog.duration || 60) * 60000);
+    const pEnd = logEndMs(parentLog);
+    if (!(pEnd > pStart)) {
+        showConfirm('无法切割', '这条记录缺少结束时间，请重新选择后再切割。', '知道了', () => {});
+        closeDrawer();
+        return;
+    }
     const splitStart = selectedRange?.start;
     const splitEnd = selectedRange?.end;
     if (!Number.isFinite(splitStart) || !Number.isFinite(splitEnd)
@@ -5688,9 +5819,9 @@ function executeSplit(parentLog, l1, l2, selectedRange) {
     }
     // 时间唯一性：切割区间不能与已有并行重叠
     const splitParentId = parentLog.id || parentLog.startTime;
-    const splitConflicts = [...logs.filter(l => l.parallel && l.parentId === splitParentId), ...parallelHistory].some(p => {
-        const pEnd = p.endTime || (p.startTime + (p.duration || 0) * 60000);
-        return p.startTime < splitEnd && pEnd > splitStart;
+    const splitConflicts = [...logs.filter(l => l.parallel && sameId(l.parentId, splitParentId)), ...parallelHistory].some(p => {
+        const parallelEnd = logEndMs(p);
+        return p.startTime < splitEnd && parallelEnd > splitStart;
     });
     if (splitConflicts) {
         showConfirm('⏰ 时间已被占用', '切割区间与已有并行活动冲突，请调整切割范围后重试，或先删除冲突的并行。', '知道了', () => {});
@@ -5717,12 +5848,12 @@ function executeSplit(parentLog, l1, l2, selectedRange) {
     // 主线切割后旧 parentId 会失效；把原有并行记录按重叠范围重新挂到新片段。
     const replacementMain = newLogs.filter((item) => !item.parallel).sort((a, b) => a.startTime - b.startTime);
     const oldParallel = [
-        ...logs.filter((item) => item.parallel && item.parentId === splitParentId),
-        ...parallelHistory.filter((item) => item.parentId === splitParentId),
+        ...logs.filter((item) => item.parallel && sameId(item.parentId, splitParentId)),
+        ...parallelHistory.filter((item) => sameId(item.parentId, splitParentId)),
     ];
     if (oldParallel.length) {
-        logs = logs.filter((item) => !(item.parallel && item.parentId === splitParentId));
-        parallelHistory = parallelHistory.filter((item) => item.parentId !== splitParentId);
+        logs = logs.filter((item) => !(item.parallel && sameId(item.parentId, splitParentId)));
+        parallelHistory = parallelHistory.filter((item) => !sameId(item.parentId, splitParentId));
         oldParallel.forEach((parallelLog) => {
             const parallelEnd = logEndMs(parallelLog);
             replacementMain.forEach((mainPart) => {
@@ -5734,7 +5865,7 @@ function executeSplit(parentLog, l1, l2, selectedRange) {
                     id: genId(),
                     startTime: start,
                     endTime: end,
-                    duration: Math.max(1, Math.round((end - start) / 60000)),
+                    duration: Math.round((end - start) / 60000),
                     parentId: mainPart.id,
                     parallel: true,
                 });
@@ -5785,15 +5916,15 @@ function mergeAdjacentSameActivity() {
 // 吸附到最近的空闲区段边界（考虑已有并行占用）
 function snapToNearestFreeZone(pct, parentLog, parentEnd) {
     const pStart = parentLog.startTime;
-    const pEnd = parentEnd || (pStart + (parentLog.duration || 60) * 60000);
+    const pEnd = parentEnd || logEndMs(parentLog);
     const total = pEnd - pStart;
     if (total <= 0) return Math.max(0, Math.min(1, pct));
     const pid = parentLog.id || parentLog.startTime;
     // 收集所有已占用的时间区间
-    const occupied = [...logs.filter(l => l.parallel && l.parentId === pid), ...parallelHistory]
+    const occupied = [...logs.filter(l => l.parallel && sameId(l.parentId, pid)), ...parallelHistory]
         .map(p => ({
             start: Math.max(p.startTime, pStart),
-            end: Math.min(p.endTime || (p.startTime + (p.duration || 0) * 60000), pEnd)
+            end: Math.min(logEndMs(p), pEnd)
         }))
         .filter(r => r.end > r.start)
         .sort((a, b) => a.start - b.start);
@@ -5914,7 +6045,7 @@ function setupBackfillDrag(parentLog, parentEnd) {
     document.addEventListener('touchend', onEnd);
 }
 function syncBackfillProgress(parentLog, parentEndOverride) {
-    const parentEnd = parentEndOverride || parentLog.endTime || (parentLog.startTime + (parentLog.duration || 60) * 60000);
+    const parentEnd = parentEndOverride || logEndMs(parentLog);
     const total = parentEnd - parentLog.startTime;
     if (total <= 0) return;
     let startMs = parseTimeFromInput('ps', parentLog.startTime);
@@ -5942,9 +6073,9 @@ function syncBackfillProgress(parentLog, parentEndOverride) {
     if (occupiedBox) {
         const pid = parentLog.id || parentLog.startTime;
         occupiedBox.innerHTML = '';
-        [...logs.filter(l => l.parallel && l.parentId === pid), ...parallelHistory].forEach(p => {
+        [...logs.filter(l => l.parallel && sameId(l.parentId, pid)), ...parallelHistory].forEach(p => {
             const pStart = Math.max(p.startTime, parentLog.startTime);
-            const pEnd = Math.min(p.endTime || (p.startTime + (p.duration || 0) * 60000), parentEnd);
+            const pEnd = Math.min(logEndMs(p), parentEnd);
             if (pEnd <= pStart) return;
             const oLeft = ((pStart - parentLog.startTime) / total) * 100;
             const oWidth = ((pEnd - pStart) / total) * 100;
@@ -6139,10 +6270,10 @@ function getSegmentsInRange(rangeStart, rangeEnd, now = nowSecondMs()) {
     const currentLog = current ? { ...current, endTime: now, live: true } : null;
     const parallelLive = parallelCurrent ? { ...parallelCurrent, endTime: now, parallel: true, parentId: current?.id || null } : null;
     return logs
-        .map(l => ({ ...l, endTime: l.endTime || l.startTime }))
+        .map(l => ({ ...l, endTime: logEndMs(l) }))
         .concat(currentLog ? [currentLog] : [])
         .concat(parallelLive ? [parallelLive] : [])
-        .concat(parallelHistory.map(l => ({ ...l, endTime: l.endTime || (l.startTime + (l.duration || 0) * 60000), parallel: true })))
+        .concat(parallelHistory.map(l => ({ ...l, endTime: logEndMs(l), parallel: true })))
         .filter(Boolean)
         .filter(l => l.endTime > rangeStart && l.startTime < rangeEnd)
         .map(l => ({
@@ -6158,6 +6289,49 @@ function getTodaySegments() {
     const now = nowSecondMs();
     const dayStart = beijingPeriodStart(now, DAY_MS);
     return getSegmentsInRange(dayStart, dayStart + DAY_MS, now);
+}
+
+function buildWidgetSnapshot() {
+    const now = nowSecondMs();
+    const day = formatBeijingDate(now);
+    const dayStart = beijingPeriodStart(now, DAY_MS);
+    const rows = new Map();
+    const touch = (l1, l2) => {
+        if (!l1 && !l2) return null;
+        const id = JSON.stringify([l1 || '', l2 || '']);
+        let row = rows.get(id);
+        if (!row) {
+            row = { id, name: l2 || l1, category: l1 || '', totalMs: 0, segmentMs: 0, live: false };
+            rows.set(id, row);
+        }
+        return row;
+    };
+    cats.forEach((cat) => (cat.subs || []).forEach((sub) => touch(cat.name, sub)));
+    shortcuts.forEach((shortcut) => touch(shortcut.l1, shortcut.l2));
+    getTodaySegments().filter((segment) => !segment.parallel && !segment.sceneActivity).forEach((segment) => {
+        const row = touch(segment.l1, segment.l2);
+        if (!row) return;
+        const ms = Math.max(0, segment.clippedEnd - segment.clippedStart);
+        row.totalMs += ms;
+        if (segment.live) {
+            row.live = true;
+            row.segmentMs = ms;
+            row.color = logSegmentColor(segment) || getCat(segment.l1)?.color || '#526A91';
+        }
+    });
+    unlocatedLogs.filter((item) => item.date === day).forEach((item) => {
+        const row = touch(item.l1, item.l2);
+        if (row) row.totalMs += item.durationMs || 0;
+    });
+    if (current) {
+        const row = touch(current.l1, current.l2);
+        if (row) {
+            row.live = true;
+            row.color = row.color || logSegmentColor(current) || getCat(current.l1)?.color || '#526A91';
+            if (!row.segmentMs) row.segmentMs = Math.max(0, now - Math.max(Number(current.startTime) || 0, dayStart));
+        }
+    }
+    return { day, at: now, rows: Array.from(rows.values()) };
 }
 
 const UNRECORDED_COLOR = '#cbd5e1';
@@ -7282,10 +7456,10 @@ function renderFlow() {
 
     const currentLog = current ? { ...current, endTime: now, live: true } : null;
     const all = logs
-        .map(l => ({ ...l, endTime: l.endTime || l.startTime }))
+        .map(l => ({ ...l, endTime: logEndMs(l) }))
         .concat(currentLog ? [currentLog] : [])
         .concat(parallelCurrent ? [{ ...parallelCurrent, endTime: now, parallel: true, parentId: current?.id || null }] : [])
-        .concat(parallelHistory.filter(ph => ph.endTime > dayStart || (ph.startTime && ph.startTime < dayEnd)).map(ph => ({ ...ph, endTime: ph.endTime || (ph.startTime + (ph.duration || 0) * 60000) })))
+        .concat(parallelHistory.filter(ph => logEndMs(ph) > dayStart || (ph.startTime && ph.startTime < dayEnd)).map(ph => ({ ...ph, endTime: logEndMs(ph) })))
         .filter(Boolean);
 
     if (show60) {
@@ -7675,6 +7849,7 @@ function closeDrawer() {
         editDrawerPreviousViewMode = null;
     }
     pickerMode = 'record';
+    drawerNoteParent = null;
     _parallelCallback = null;
     if (wasClassify) {
         _classifyPromptOpen = false;
@@ -7737,15 +7912,15 @@ function editL1(id) {
     const prevIcon = cat.icon;
     showPrompt("编辑一级分类名称", "输入大类名称", cat.name, (name) => {
         if (!name || !name.trim()) return;
-        cat.name = name.trim();
-        shortcuts.forEach(s => { if (s.l1 === oldName) s.l1 = cat.name; });
-        syncParallelShortcutRefs(oldName, cat.name, null, null, null);
-        logs.forEach(l => { if (l.l1 === oldName) l.l1 = cat.name; });
-        if (current?.l1 === oldName) current.l1 = cat.name;
+        const nextName = name.trim();
+        const renamed = nextName !== oldName;
+        cat.name = nextName;
         if (selL1 === oldName) selL1 = cat.name;
+        if (renamed) renameActivityRef(oldName, '', nextName, '');
         showCategoryPicker(`为「${cat.name}」选择图标（点空白处可保留原图标）`, (icon) => {
             if (icon) cat.icon = icon;
             else cat.icon = prevIcon;
+            if (renamed) persistRenamedActivityStores();
             saveAll();
         });
     });
@@ -7791,18 +7966,53 @@ function editS(id, oldName) {
 }
 
 function updateReportSummaryCategoryRefs(oldL1, oldL2, newL1, newL2) {
+    const wholeL1 = oldL2 == null || oldL2 === '';
     ['v9_report_summary_main', 'v9_report_summary_parallel', 'v9_report_summary_week_main', 'v9_report_summary_week_parallel', 'v9_report_summary_month_main', 'v9_report_summary_month_parallel'].forEach((key) => {
         const raw = safeJSON(key);
         if (!Array.isArray(raw)) return;
         let changed = false;
         raw.forEach((slot) => {
-            if (slot?.id !== 'categoryAverage' || slot.l1 !== oldL1 || slot.l2 !== oldL2) return;
+            if (slot?.id !== 'categoryAverage' || slot.l1 !== oldL1) return;
+            if (!wholeL1 && slot.l2 !== oldL2) return;
             slot.l1 = newL1;
-            slot.l2 = newL2;
+            if (!wholeL1) slot.l2 = newL2;
             changed = true;
         });
         if (changed) localStorage.setItem(key, JSON.stringify(raw));
     });
+}
+
+function renameActivityRef(oldL1, oldL2, newL1, newL2, color) {
+    const wholeL1 = oldL2 == null || oldL2 === '';
+    const matches = (record) => !!record && record.l1 === oldL1 && (wholeL1 || record.l2 === oldL2);
+    const updateRecord = (record, paint) => {
+        if (!matches(record)) return false;
+        record.l1 = newL1;
+        if (!wholeL1) record.l2 = newL2;
+        if (paint && color) record.color = color;
+        return true;
+    };
+    logs.forEach((record) => updateRecord(record, true));
+    parallelHistory.forEach((record) => updateRecord(record, true));
+    unlocatedLogs.forEach((record) => updateRecord(record, true));
+    updateRecord(current, true);
+    updateRecord(parallelCurrent, true);
+    shortcuts.forEach((record) => updateRecord(record, false));
+    parallelShortcuts.forEach((record) => updateRecord(record, false));
+    const recents = safeJSON('v9_recent_picks') || [];
+    let recentsChanged = false;
+    recents.forEach((recent) => { if (updateRecord(recent, false)) recentsChanged = true; });
+    if (recentsChanged) localStorage.setItem('v9_recent_picks', JSON.stringify(recents));
+    let aliasesChanged = false;
+    Object.values(inputAliases || {}).forEach((alias) => { if (updateRecord(alias, false)) aliasesChanged = true; });
+    if (aliasesChanged) localStorage.setItem('v9_input_aliases', JSON.stringify(inputAliases));
+    updateReportSummaryCategoryRefs(oldL1, wholeL1 ? '' : oldL2, newL1, wholeL1 ? '' : newL2);
+}
+
+function persistRenamedActivityStores() {
+    localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
+    localStorage.setItem('v9_unlocated_logs', JSON.stringify(unlocatedLogs));
+    if (parallelCurrent) localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
 }
 
 function applySubCategoryEdit(source, target, oldName, next) {
@@ -7828,50 +8038,13 @@ function applySubCategoryEdit(source, target, oldName, next) {
     if (source.subIcons) delete source.subIcons[oldName];
     if (carriedIcon && !targetAlreadyHasName) setSubIcon(target, next, carriedIcon);
 
-    const updateRecord = (record) => {
-        if (!record || record.l1 !== oldL1 || record.l2 !== oldName) return;
-        record.l1 = newL1;
-        record.l2 = next;
-        record.color = target.color || record.color;
-    };
-    logs.forEach(updateRecord);
-    parallelHistory.forEach(updateRecord);
-    unlocatedLogs.forEach(updateRecord);
-    updateRecord(current);
-    updateRecord(parallelCurrent);
-    shortcuts.forEach((shortcut) => {
-        if (shortcut.l1 === oldL1 && shortcut.l2 === oldName) {
-            shortcut.l1 = newL1;
-            shortcut.l2 = next;
-        }
-    });
-    parallelShortcuts.forEach((shortcut) => {
-        if (shortcut.l1 === oldL1 && shortcut.l2 === oldName) {
-            shortcut.l1 = newL1;
-            shortcut.l2 = next;
-        }
-    });
-    const recents = safeJSON('v9_recent_picks') || [];
-    let recentsChanged = false;
-    recents.forEach((recent) => {
-        if (recent.l1 === oldL1 && recent.l2 === oldName) {
-            recent.l1 = newL1;
-            recent.l2 = next;
-            recentsChanged = true;
-        }
-    });
-    if (recentsChanged) localStorage.setItem('v9_recent_picks', JSON.stringify(recents));
-    Object.values(inputAliases).forEach(updateRecord);
-    localStorage.setItem('v9_input_aliases', JSON.stringify(inputAliases));
-    updateReportSummaryCategoryRefs(oldL1, oldName, newL1, next);
+    renameActivityRef(oldL1, oldName, newL1, next, target.color);
 
     const previousIcon = target.subIcons?.[next] || carriedIcon;
     showCategoryPicker(`为「${next}」选择图标（点空白处可保留原图标）`, (icon) => {
         if (icon) setSubIcon(target, next, icon);
         else if (previousIcon) setSubIcon(target, next, previousIcon);
-        localStorage.setItem('v9_parallel_history', JSON.stringify(parallelHistory));
-        localStorage.setItem('v9_unlocated_logs', JSON.stringify(unlocatedLogs));
-        if (parallelCurrent) localStorage.setItem('v9_parallel', JSON.stringify(parallelCurrent));
+        persistRenamedActivityStores();
         saveAll();
     });
 }

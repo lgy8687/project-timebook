@@ -20,6 +20,11 @@ test('report selectors use Klein blue while B33 retains its own toolbar shell', 
     assert.match(designCss, /#page-report #report-period-toolbar #seg-period\s*\{[^}]*border: 1px solid #002fa7/);
 });
 
+test('developer inspector stays off unless the stored value is exactly true', () => {
+    assert.match(inspector, /let enabled = localStorage\.getItem\(STORAGE_KEY\) === 'true'/);
+    assert.doesNotMatch(inspector, /getItem\(STORAGE_KEY\) !== 'false'/);
+});
+
 test('developer shortcut follows the shared inspector state and drawer exposes two modes', () => {
     assert.match(html, /id="dev-inspector-shortcut"/);
     assert.match(inspector, /shortcut\.setAttribute\('aria-pressed', String\(enabled\)\)/);

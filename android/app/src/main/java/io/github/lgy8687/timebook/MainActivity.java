@@ -35,16 +35,10 @@ public class MainActivity extends Activity {
     private final Runnable widgetSync = new Runnable() {
         @Override public void run() {
             if (webView != null) {
-                webView.evaluateJavascript("(function(){try{const now=nowSecondMs(),day=formatBeijingDate(now),rows=new Map();" +
-                    "function add(l1,l2,ms,live,color){if(!l1&&!l2)return;const id=JSON.stringify([l1||'',l2||'']);let row=rows.get(id)||{id,name:l2||l1,category:l1||'',ms:0,live:false};row.ms+=ms||0;row.live=row.live||!!live;if(live)row.color=color||getCat(l1)?.color||'#526A91';rows.set(id,row)}" +
-                    "cats.forEach(c=>(c.subs||[]).forEach(s=>add(c.name,s,0,false)));shortcuts.forEach(s=>add(s.l1,s.l2,0,false));" +
-                    "getTodaySegments().filter(x=>!x.parallel&&!x.sceneActivity).forEach(x=>add(x.l1,x.l2,x.clippedEnd-x.clippedStart,x.live,x.live?logSegmentColor(x):null));" +
-                    "unlocatedLogs.filter(x=>x.date===day).forEach(x=>add(x.l1,x.l2,x.durationMs,false));" +
-                    "if(current)add(current.l1,current.l2,0,true,logSegmentColor(current));return JSON.stringify({day,at:now,rows:Array.from(rows.values())});}catch(e){return null}})()", value -> {
+                webView.evaluateJavascript("buildWidgetSnapshot()", value -> {
                     try {
-                        Object decoded = new org.json.JSONTokener(value).nextValue();
-                        if (!(decoded instanceof String)) return;
-                        JSONObject state = new JSONObject((String) decoded);
+                        if (value == null || "null".equals(value)) return;
+                        JSONObject state = new JSONObject(value);
                         MainActivityWidget.saveState(MainActivity.this, state);
                     } catch (Exception ignored) { }
                 });
