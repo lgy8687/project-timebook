@@ -50,8 +50,7 @@ main > .tab-content { max-width: 760px; margin-inline: auto; }
 .free-note-row { display: flex; align-items: stretch; gap: 8px; }
 .free-note-label { flex: 0 0 auto; min-width: 72px; padding: 0 14px; border-radius: 8px; font-size: var(--ui-body); font-weight: 600; box-shadow: none; }
 .free-note-input { min-width: 0; }
-.free-note-event-btn { flex: 0 0 40px; width: 40px; height: 40px; min-height: 0; align-self: center; display: flex; align-items: center; justify-content: center; border: 1px solid var(--ui-border); border-radius: 50%; background: var(--ui-surface); color: var(--ui-accent); font-size: 20px; line-height: 1; transition: transform .15s ease, background-color .2s ease; }
-.free-note-event-btn:active { transform: scale(.92); }
+.free-note-event-btn { flex: 0 0 48px; min-height: 48px; border: 1px solid var(--ui-border); border-radius: 8px; background: var(--ui-surface); color: var(--ui-accent); font-size: 24px; line-height: 1; }
 .update-overlay { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(15, 23, 42, .4); backdrop-filter: blur(4px); }
 .update-overlay.hidden { display: none; }
 .update-card { width: min(88vw, 320px); padding: 28px 24px 24px; border-radius: 24px; background: #fff; box-shadow: 0 18px 44px rgba(15, 23, 42, .24); text-align: center; animation: update-pop .28s cubic-bezier(.34, 1.56, .64, 1); }
@@ -366,8 +365,8 @@ button:focus-visible, input:focus-visible, [role="button"]:focus-visible {
 .unassigned-visibility input:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
 .unassigned-main-card.swipe-card.log-flow-card--main-log { display: block; width: 100%; border: 1px solid #dce3e9; border-radius: 1rem; background: #e9eef2; text-align: left; cursor: pointer; }
 .unassigned-main-card .log-flow-inner { min-height: var(--tb-log-inner-min-h); }
-.unassigned-main-card--live .log-flow-inner { padding-right: 48px; }
-.unassigned-live-event-btn { position: absolute; z-index: 2; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; }
+.unassigned-main-card--live .log-flow-inner { padding-right: 36px; }
+.unassigned-live-event-btn { position: absolute; z-index: 2; right: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; font-size: 15px; }
 .unassigned-live-event-btn:active { transform: translateY(-50%) scale(.94); }
 .unassigned-main-parts { display: flex; flex: 1; min-width: 0; height: 30px; overflow: hidden; border-radius: 5px; }
 .unassigned-main-part { display: flex; align-items: center; justify-content: center; min-width: 0; height: 100%; padding: 0 2px; container-type: inline-size; color: #fff; font-size: var(--ui-type-1-8); font-weight: 700; white-space: nowrap; }

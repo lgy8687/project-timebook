@@ -1,6 +1,6 @@
 {
-  "versionCode": 14,
-  "versionName": "0.14",
-  "apkUrl": "https://github.com/lgy8687/project-timebook/releases/download/android-v0.14/timebook-android-0.14.apk",
-  "notes": "更新过程改为带动画的应用内界面（检查转圈、下载圆环进度、完成打勾）；事件入口＋缩小为精致圆钮。"
+  "versionCode": 15,
+  "versionName": "0.15",
+  "apkUrl": "https://github.com/lgy8687/project-timebook/releases/download/android-v0.15/timebook-android-0.15.apk",
+  "notes": "修正事件入口：进行中「未分配」行的＋缩小为精致圆钮；随手记旁的＋还原为原来的方形按钮。"
 }
