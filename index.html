@@ -778,12 +778,36 @@
         </div>
     </div>
 
+    <div id="update-overlay" class="update-overlay hidden" onclick="if(event.target===this)closeUpdateOverlay()">
+        <div class="update-card" role="dialog" aria-modal="true" aria-labelledby="update-title">
+            <div class="update-visual">
+                <div id="update-spinner" class="update-spinner" aria-hidden="true"></div>
+                <div id="update-ringwrap" class="update-ringwrap hidden" aria-hidden="true">
+                    <svg class="update-ring" viewBox="0 0 80 80">
+                        <circle class="update-ring-track" cx="40" cy="40" r="34"></circle>
+                        <circle id="update-ring-fill" class="update-ring-fill" cx="40" cy="40" r="34"></circle>
+                    </svg>
+                    <span id="update-percent" class="update-percent">0%</span>
+                </div>
+                <div id="update-icon" class="update-icon hidden" aria-hidden="true"></div>
+            </div>
+            <h3 id="update-title" class="update-title">检查更新</h3>
+            <p id="update-message" class="update-message"></p>
+            <div class="update-actions">
+                <button type="button" id="update-cancel" class="update-btn update-btn--quiet" onclick="closeUpdateOverlay()">取消</button>
+                <button type="button" id="update-confirm" class="update-btn update-btn--primary hidden" onclick="startTimeBookUpdate()">立即更新</button>
+                <button type="button" id="update-close" class="update-btn update-btn--primary hidden" onclick="closeUpdateOverlay()">知道了</button>
+            </div>
+        </div>
+    </div>
+
     <div id="tip"></div>
 
     <script src="report-metrics.js?v=5.66"></script>
     <script src="report.js?v=6.04"></script>
     <script src="ui-theme.js?v=5.39"></script>
     <script src="app.js?v=6.14"></script>
+    <script src="update-ui.js?v=1"></script>
     <script src="backup.js?v=5"></script>
     <script src="dev-appearance.js?v=5.39"></script>
     <script src="dev-inspector.js?v=6.06"></script>

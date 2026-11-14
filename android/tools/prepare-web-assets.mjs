@@ -26,7 +26,7 @@ html = html.replace(/\s*<div id="demo-mode-layer"[\s\S]*?<\/div><\/div><\/div>/,
 html = html.replace('<script src="demo-sandbox.js?v=3"></script>',
     '<script>window.__timebookOffline = true;</script>');
 html = html.replace(/(<div id="cache-buster"[^>]*>)([^<]+)/,
-    '$1$2 · Android 0.13 单机内测');
+    '$1$2 · Android 0.14 单机内测');
 if (/(?:src|href)="https?:\/\//.test(html)) throw new Error('Remote HTML dependency found');
 writeFileSync(join(output, 'index.html'), html);
 execFileSync(process.execPath, [join(here, 'node_modules/@tailwindcss/cli/dist/index.mjs'),

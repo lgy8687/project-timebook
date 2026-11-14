@@ -1,8 +1,6 @@
 package io.github.lgy8687.timebook;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
@@ -11,7 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.webkit.JavascriptInterface;
-import android.widget.Toast;
+import android.webkit.WebView;
 import androidx.core.content.FileProvider;
 
 import org.json.JSONObject;
@@ -27,17 +25,21 @@ public class AppUpdater {
     private static final String MANIFEST_URL =
         "https://github.com/lgy8687/project-timebook/releases/latest/download/update.json";
     private final Activity activity;
+    private final WebView webView;
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile boolean busy;
+    private JSONObject pendingManifest;
 
-    public AppUpdater(Activity activity) {
+    public AppUpdater(Activity activity, WebView webView) {
         this.activity = activity;
+        this.webView = webView;
     }
 
     @JavascriptInterface
     public void checkUpdate() {
         if (busy) return;
         busy = true;
+        emit(state("checking"));
         new Thread(() -> {
             try {
                 JSONObject manifest = fetchJson(MANIFEST_URL);
@@ -45,67 +47,65 @@ public class AppUpdater {
                 long local = localVersionCode();
                 main.post(() -> {
                     busy = false;
-                    if (remote > local) showUpdateDialog(manifest);
-                    else toast("已是最新版本");
+                    if (remote > local) {
+                        pendingManifest = manifest;
+                        JSONObject ev = state("available");
+                        try {
+                            ev.put("versionName", manifest.optString("versionName", ""));
+                            ev.put("notes", manifest.optString("notes", ""));
+                        } catch (Exception ignored) { }
+                        emit(ev);
+                    } else {
+                        emit(state("latest"));
+                    }
                 });
             } catch (Exception error) {
                 main.post(() -> {
                     busy = false;
-                    toast("检查更新失败，请检查网络");
+                    emit(error("检查更新失败，请检查网络"));
                 });
             }
         }).start();
     }
 
-    private void showUpdateDialog(JSONObject manifest) {
-        String name = manifest.optString("versionName", "");
-        String notes = manifest.optString("notes", "");
-        new AlertDialog.Builder(activity)
-            .setTitle("发现新版本 " + name)
-            .setMessage(notes)
-            .setPositiveButton("立即更新", (dialog, which) ->
-                downloadAndInstall(manifest.optString("apkUrl", "")))
-            .setNegativeButton("取消", null)
-            .show();
-    }
-
-    private void downloadAndInstall(String apkUrl) {
-        if (apkUrl.isEmpty() || busy) return;
+    @JavascriptInterface
+    public void startUpdate() {
+        if (busy || pendingManifest == null) return;
+        String apkUrl = pendingManifest.optString("apkUrl", "");
+        if (apkUrl.isEmpty()) return;
         busy = true;
-        ProgressDialog progress = new ProgressDialog(activity);
-        progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progress.setMessage("正在下载更新…");
-        progress.setCancelable(false);
-        progress.show();
+        emit(progress(0));
         new Thread(() -> {
             File target = new File(activity.getCacheDir(), "update/timebook-update.apk");
             try {
                 target.getParentFile().mkdirs();
                 HttpURLConnection connection = open(apkUrl);
                 int total = connection.getContentLength();
-                main.post(() -> progress.setMax(Math.max(total, 1)));
                 try (InputStream input = connection.getInputStream();
                      FileOutputStream output = new FileOutputStream(target)) {
                     byte[] buffer = new byte[8192];
-                    int done = 0;
+                    long done = 0;
+                    int lastPercent = 0;
                     int read;
                     while ((read = input.read(buffer)) != -1) {
                         output.write(buffer, 0, read);
                         done += read;
-                        final int value = done;
-                        main.post(() -> progress.setProgress(value));
+                        int percent = total > 0 ? (int) (done * 100 / total) : -1;
+                        if (percent != lastPercent) {
+                            lastPercent = percent;
+                            emit(progress(percent));
+                        }
                     }
                 }
                 main.post(() -> {
-                    progress.dismiss();
                     busy = false;
+                    emit(state("installing"));
                     install(target);
                 });
             } catch (Exception error) {
                 main.post(() -> {
-                    progress.dismiss();
                     busy = false;
-                    toast("下载更新失败，请重试");
+                    emit(error("下载更新失败，请重试"));
                 });
             }
         }).start();
@@ -114,7 +114,7 @@ public class AppUpdater {
     private void install(File apk) {
         if (Build.VERSION.SDK_INT >= 26
                 && !activity.getPackageManager().canRequestPackageInstalls()) {
-            toast("请先允许本应用安装未知应用，返回后再点检查更新");
+            emit(state("needPermission"));
             Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                 Uri.parse("package:" + activity.getPackageName()));
             settings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -155,7 +155,26 @@ public class AppUpdater {
         }
     }
 
-    private void toast(String message) {
-        Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+    private JSONObject state(String type) {
+        JSONObject ev = new JSONObject();
+        try { ev.put("type", type); } catch (Exception ignored) { }
+        return ev;
+    }
+
+    private JSONObject progress(int percent) {
+        JSONObject ev = state("downloading");
+        try { ev.put("percent", percent); } catch (Exception ignored) { }
+        return ev;
+    }
+
+    private JSONObject error(String message) {
+        JSONObject ev = state("error");
+        try { ev.put("message", message); } catch (Exception ignored) { }
+        return ev;
+    }
+
+    private void emit(JSONObject ev) {
+        main.post(() -> webView.evaluateJavascript(
+            "window.__tbUpdateEvent && window.__tbUpdateEvent(" + ev.toString() + ")", null));
     }
 }

@@ -91,7 +91,7 @@ public class MainActivity extends Activity {
         webView.getSettings().setAllowContentAccess(false);
         webView.getSettings().setBlockNetworkLoads(true);
         webView.addJavascriptInterface(new BackupBridge(), "TimeBookAndroid");
-        webView.addJavascriptInterface(new AppUpdater(this), "TimeBookUpdate");
+        webView.addJavascriptInterface(new AppUpdater(this, webView), "TimeBookUpdate");
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
