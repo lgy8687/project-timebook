@@ -760,7 +760,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.TimeBookAndroid && typeof window.TimeBookAndroid.openWidgetSettings === 'function') {
         document.getElementById('widget-settings-entry')?.classList.remove('hidden');
     }
+    if (window.TimeBookUpdate && typeof window.TimeBookUpdate.checkUpdate === 'function') {
+        document.getElementById('update-entry')?.classList.remove('hidden');
+    }
 });
+function checkAppUpdate() {
+    if (window.TimeBookUpdate) window.TimeBookUpdate.checkUpdate();
+}
 let editDrawerPreviousViewMode = null;
 const BJ_OFFSET = 8 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -7395,16 +7401,20 @@ function tick() {
             renderReport();
         }
 
+        const headerTimer = document.getElementById('header-timer');
         if(current) {
             document.getElementById('status-light').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+            if (headerTimer) headerTimer.style.setProperty('--tb-header-timer', '#059669');
             setText('header-l2', displayName(current));
             setText('header-memo', current.note || "");
         } else if (liveUnassigned) {
             document.getElementById('status-light').className = 'w-2.5 h-2.5 rounded-full bg-slate-400 animate-pulse shrink-0';
+            if (headerTimer) headerTimer.style.setProperty('--tb-header-timer', '#059669');
             setText('header-l2', '未分配');
             setText('header-memo', '');
         } else {
             document.getElementById('status-light').className = "w-2.5 h-2.5 rounded-full bg-slate-300 shrink-0";
+            if (headerTimer) headerTimer.style.removeProperty('--tb-header-timer');
             setText('header-l2', "等待开启...");
             setText('header-memo', "");
         }

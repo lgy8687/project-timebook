@@ -30,7 +30,7 @@
                     </div>
                 </div>
             </div>
-            <div id="header-timer" class="header-main-timer text-2xl font-mono font-black text-indigo-600">00:00:00</div>
+            <div id="header-timer" class="header-main-timer text-2xl font-mono font-black">00:00:00</div>
         </div>
         <button id="scene-entry-btn" type="button" class="scene-zone-tile" title="切换区域">
             <span id="scene-entry-label" class="scene-zone-tile-label">生活区</span>
@@ -288,6 +288,10 @@
                 <button type="button" id="widget-settings-entry" class="config-tile hidden" onclick="window.TimeBookAndroid.openWidgetSettings()">
                     <span class="config-tile-icon">▦</span>
                     <span class="config-tile-label">桌面小组件</span>
+                </button>
+                <button type="button" id="update-entry" class="config-tile hidden" onclick="checkAppUpdate()">
+                    <span class="config-tile-icon">⬆</span>
+                    <span class="config-tile-label">检查更新</span>
                 </button>
             </div>
             </div>

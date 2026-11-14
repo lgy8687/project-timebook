@@ -1,0 +1,6 @@
+{
+  "versionCode": 13,
+  "versionName": "0.13",
+  "apkUrl": "https://github.com/lgy8687/project-timebook/releases/download/android-v0.13/timebook-android-0.13.apk",
+  "notes": "顶部界面修复：去除开发者模式移除后的空位；进行中计时改为绿色；新增应用内一键更新（我的-检查更新）。"
+}
