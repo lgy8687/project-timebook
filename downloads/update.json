@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "0.15",
-  "apkUrl": "https://github.com/lgy8687/project-timebook/releases/download/android-v0.15/timebook-android-0.15.apk",
-  "notes": "修正事件入口：进行中「未分配」行的＋缩小为精致圆钮；随手记旁的＋还原为原来的方形按钮。"
+  "versionCode": 16,
+  "versionName": "0.16",
+  "apkUrl": "https://github.com/lgy8687/project-timebook/releases/download/android-v0.16/timebook-android-0.16.apk",
+  "notes": "应用图标更换为沙漏金币新图标。"
 }
