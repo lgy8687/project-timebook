@@ -66,8 +66,9 @@ gradle.taskGraph.whenReady { graph ->
     if (needsInternalKey && !internalKeystore.isFile()) {
         throw new GradleException(
             "Missing ${internalKeystore}. Copy your Mac debug keystore first:\n" +
-            "  bash android/tools/install-local-signing-keystore.sh\n" +
-            "Default source is ~/.android/debug.keystore. Do not commit the keystore."
+            "  From the repository root: bash android/tools/install-local-signing-keystore.sh /path/to/original/debug.keystore EXPECTED_CERT_SHA256\n" +
+            "Use the original Mac key and the known working APK certificate fingerprint. Do not commit the keystore."
         )
     }
 }
+

@@ -11,10 +11,13 @@ Before the first release build on a machine, install the phone-compatible debug
 keystore (do not commit it):
 
 ```bash
-bash android/tools/install-local-signing-keystore.sh
+bash android/tools/install-local-signing-keystore.sh /path/to/original/debug.keystore EXPECTED_CERT_SHA256
 ```
 
-That copies `~/.android/debug.keystore` to `android/keystore/timebook-debug.keystore`.
+Use the original Mac key and the certificate SHA-256 fingerprint from a known
+working APK. See [keystore setup](keystore/README.md) for fingerprint instructions.
+The script requires Java keytool and OpenSSL, checks the fingerprint, and refuses
+to overwrite an existing `android/keystore/timebook-debug.keystore`.
 Release signing no longer uses the build machine's default debug key, so a cloud
 rebuild cannot silently create an uninstallable update.
 
@@ -36,3 +39,4 @@ Acceptance: cold start in airplane mode; record activities/events; force-stop an
 reopen; check reports; export/import; install an update over the
 offline APK. The install has no October example and no page-code button.
 Run shared tests and `tests/android-offline.test.js` before delivery.
+

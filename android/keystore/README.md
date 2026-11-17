@@ -8,15 +8,28 @@ release key.
 
 ## Setup (once per machine)
 
+Use the original Mac `~/.android/debug.keystore`, transferred privately if needed.
+A different machine's default debug key cannot update the existing phone install.
+Java `keytool` and OpenSSL are required.
+
+Read the trusted certificate SHA-256 from the APK that already installs correctly:
+
 ```bash
-bash android/tools/install-local-signing-keystore.sh
+apksigner verify --print-certs /path/to/known-working.apk
 ```
 
-Or copy manually:
+Use the **signer certificate SHA-256 digest**, not the APK file hash. Run from the
+repository root, replacing the path and fingerprint:
 
 ```bash
-cp ~/.android/debug.keystore android/keystore/timebook-debug.keystore
+bash android/tools/install-local-signing-keystore.sh /path/to/original/debug.keystore EXPECTED_CERT_SHA256
 ```
+
+The fingerprint accepts hexadecimal digits with optional colons. Do not obtain
+it from an unverified candidate key; that would defeat the compatibility check.
+The installer validates a staged copy and publishes it without overwriting an
+existing file. If a key is already installed, preserve it. To replace a known wrong
+key, move it aside manually only after confirming the correct fingerprint.
 
 ## Rules
 
@@ -25,3 +38,4 @@ cp ~/.android/debug.keystore android/keystore/timebook-debug.keystore
   still want over-install updates on existing devices.
 - Cloud agents without this file must fail the release build instead of signing
   with a new machine debug key.
+
