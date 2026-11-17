@@ -7,11 +7,25 @@ The October example and the page-code inspector are removed from this install.
 The packaged page includes the current web changes.
 
 Build requirements: Node.js/npm, Java 17, Gradle 8.11.1, Android SDK 35.
-Run `npm ci` in `android/tools`, then `gradle assembleRelease` in `android`.
+Before the first release build on a machine, install the phone-compatible debug
+keystore (do not commit it):
+
+```bash
+bash android/tools/install-local-signing-keystore.sh /path/to/original/debug.keystore EXPECTED_CERT_SHA256
+```
+
+Use the original Mac key and the certificate SHA-256 fingerprint from a known
+working APK. See [keystore setup](keystore/README.md) for fingerprint instructions.
+The script requires Java keytool and OpenSSL, checks the fingerprint, and refuses
+to overwrite an existing `android/keystore/timebook-debug.keystore`.
+Release signing no longer uses the build machine's default debug key, so a cloud
+rebuild cannot silently create an uninstallable update.
+
+Then run `npm ci` in `android/tools`, then `gradle assembleRelease` in `android`.
 `prepareWebAssets` regenerates `app/build/generated/webAssets` before each build.
 Output: `app/build/outputs/apk/release/app-release.apk`.
 
-The APK uses the existing debug signing key for internal testing, not production.
+The APK uses that project-local debug key for internal testing, not production.
 Website publishing no longer changes this APK; rebuild/install to update it.
 Old online-origin data is intentionally not migrated. Local records survive
 same-signature upgrades, but uninstalling/clearing app data deletes them.
@@ -25,3 +39,4 @@ Acceptance: cold start in airplane mode; record activities/events; force-stop an
 reopen; check reports; export/import; install an update over the
 offline APK. The install has no October example and no page-code button.
 Run shared tests and `tests/android-offline.test.js` before delivery.
+

@@ -11,3 +11,6 @@ android/.gradle/
 android/build/
 android/app/build/
 android/local.properties
+android/keystore/*.keystore
+android/keystore/*.jks
+!android/keystore/README.md
